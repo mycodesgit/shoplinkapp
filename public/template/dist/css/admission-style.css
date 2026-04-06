@@ -1,0 +1,113 @@
+.content-header {
+    /*position: fixed !important;*/
+    width: 100% !important;
+    z-index: 999 !important;
+}
+.custom-container {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 10px;
+}
+.container-fluid {
+    padding-right: 3% !important;
+    padding-left: 3% !important;
+    /*margin-right: auto !important;
+    margin-left: auto !important;*/
+}
+.container-fluid1 {
+    padding-right: 2.5% !important;
+    padding-left: 2.5% !important;
+}
+.btn-primary{
+    background-color: #1f5036 !important;
+    border: #1f5036 !important;
+}
+.btnprim{
+    padding-top: 5px !important;
+    background-color: #1f5036 !important;
+    border: #1f5036 !important;
+}
+.btn-app{
+    color: #1f5036;
+    box-shadow: 1px 2px 3px rgba(0, 0, 0, 0.2) !important;
+    font-size: 11pt !important;
+    font-weight: bold;
+}
+.btn-app:hover{
+    background-color: #187744;
+    color: #fff;
+    border: 1px solid #187744;
+
+}
+.btn-app.active{
+    background-color: #187744;
+    color: #fff;
+    border: 1px solid #187744;
+}
+.center-top {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.btn-home {
+    background-color: #04401f !important;
+    color: #ffffff !important;
+}
+
+a.list-group-item {
+    font-size: 12pt !important;
+    color: #000 !important;
+    padding: 8px !important;
+}
+
+a.list-group-item:focus,
+a.list-group-item:hover,
+a.list-group-item.active,
+button.list-group-item:focus,
+button.list-group-item:hover {
+    /*background-color: #04401f !important;*/
+    background-color: #1f5036 !important;
+    color: #fff !important;
+    border-color: #04401f !important;
+}
+
+.page-item.active .page-link {
+    z-index: 3;
+    color: #fff !important;
+    background-color: #ffc107 !important;
+    border-color: #ffc107 !important;
+}
+
+.page-link {
+    position: relative;
+    display: block;
+    padding: 0.5rem 0.75rem;
+    margin-left: -1px;
+    line-height: 1.25;
+    color: #1f5036 !important;
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+}
+
+.nav-pills>a {
+    margin-top: 3px !important;
+    color: #000 !important;
+}
+
+.nav-pills>a.active {
+    background-color: #04401f !important;
+    border-color: #eee;
+    color: #fff !important;
+}
+
+.nav-pills>a:hover {
+    background-color: #04401f !important;
+    border-color: #eee;
+    color: #fff !important;
+}
+
+/*#coas_camera {
+    border: 5px solid #04401f !important;
+}*/

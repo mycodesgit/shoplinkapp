@@ -1,0 +1,100 @@
+input[readonly] {
+    background-color: #fff !important;
+}
+.toast-top-right {
+    margin-top: 50px;
+}
+body {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.highlight {
+    background-color: #b2b9bf;
+}
+
+/* Allow text selection within the schedule grid */
+#schedule-grid {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
+
+/* Prevent text selection for time labels */
+.time-label {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+.day-label {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+.time-slot {
+    user-select: none; /* Disable text selection */
+    -webkit-user-select: none; /* For older versions of Chrome/Safari */
+    -moz-user-select: none; /* For older versions of Firefox */
+    -ms-user-select: none; /* For older versions of IE/Edge */
+}
+
+#schedule-grid {
+    border-collapse: collapse; 
+    width: 100%; 
+}
+
+#schedule-view {
+    border-collapse: collapse; 
+    width: 100%; 
+}
+
+#schedule-grid th, #schedule-grid td {
+    border: 1px solid #ccc; 
+    padding: 8px; 
+    text-align: center;
+    height: 8px; 
+    line-height: 12px; 
+}
+
+#schedule-view th, #schedule-view td {
+    border: 1px solid #ccc; 
+    padding: 8px;
+    text-align: center; 
+    height: 8px; 
+    line-height: 12px; 
+}
+
+#schedule-grid th {
+    background-color: #83a986; 
+}
+
+#schedule-grid .time-label {
+    /*background-color: #b2b9bf;*/
+}
+
+#schedule-grid .highlight {
+    background-color: #b2b9bf;
+}
+
+.schedule-table {
+    table-layout: fixed;
+    width: 100%;
+}
+
+.schedule-table th,
+.schedule-table td {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    vertical-align: middle;
+    text-align: center;
+    padding: 2px;
+}
+
+.time-slot.highlight {
+    white-space: normal;
+}

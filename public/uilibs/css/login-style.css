@@ -1,0 +1,58 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap');
+
+body{
+    font-family: 'Poppins', sans-serif;
+    background: #ececec;
+}
+.box-area{
+    width: 930px;
+}
+.right-box{
+    padding: 40px 30px 40px 40px;
+}
+
+::placeholder{
+    font-size: 16px;
+}
+
+.rounded-4{
+    border-radius: 20px;
+}
+.rounded-5{
+    border-radius: 30px;
+}
+
+@media only screen and (max-width: 768px){
+        .box-area{
+        margin: 0 10px;
+
+        }
+        .left-box{
+        height: 100px;
+        overflow: hidden;
+        }
+        .right-box{
+        padding: 20px;
+        }
+}
+@media (min-width: 769px) { 
+    #cpsulogoImage {
+        display: none !important; /* Default: Hidden */
+    }
+}
+
+@media (max-width: 768px) { 
+    #cpsulogoleftsideImage {
+        display: none !important;
+    }
+}
+#particles-js {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    /* background-image: url('{{ asset('template/img/bg-campuswifi.png') }}'); */
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: 100%;
+    z-index: -1;
+}

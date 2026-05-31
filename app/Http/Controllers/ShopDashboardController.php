@@ -24,5 +24,13 @@ class ShopDashboardController extends Controller
         $products = Product::all();
 
         return view('customer.home.dashboard', compact('banner', 'categories', 'products'));
+        //return view('customer.layouts.app', compact('banner', 'categories', 'products'));
+    }
+
+    public function store()
+    {
+        $products = Product::all();
+
+        return view('customer.shop.items', compact('products'));
     }
 }

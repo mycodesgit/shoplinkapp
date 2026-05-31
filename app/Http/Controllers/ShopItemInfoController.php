@@ -16,6 +16,6 @@ class ShopItemInfoController extends Controller
     {
         $product = Product::findOrFail($id);
         
-        return view('customer.iteminfo.viewiteminfo', compact('product'));
+        return view('customer.shop.details', compact('product'));
     }
 }

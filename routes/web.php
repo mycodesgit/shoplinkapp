@@ -14,8 +14,12 @@ use App\Http\Controllers\BannerController;
 
 
 
+use App\Http\Controllers\ShopLoginController;
+
 use App\Http\Controllers\ShopDashboardController;
 use App\Http\Controllers\ShopItemInfoController;
+use App\Http\Controllers\ShopCartController;
+use App\Http\Controllers\ShopProfileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,8 +34,18 @@ use App\Http\Controllers\ShopItemInfoController;
 
 Route::group(['middleware'=>['guest']],function(){
 
-    Route::get('/',[ShopDashboardController::class,'index'])->name('index-dashboard');
-    Route::get('/item/info/{id}',[ShopItemInfoController::class,'index'])->name('item-info');
+    Route::get('/shop/login',[ShopLoginController::class,'index'])->name('shop.login');
+    Route::post('/shop/login',[ShopLoginController::class,'login'])->name('shop.login.post');
+
+    Route::get('/',[ShopDashboardController::class,'index'])->name('dashboard.index');
+    Route::get('/shop/items',[ShopDashboardController::class,'store'])->name('dashboard.items');
+
+    Route::get('/item/info/{id}',[ShopItemInfoController::class,'index'])->name('itemdetails.index');
+
+    Route::get('/cart/list',[ShopCartController::class,'index'])->name('cart.index');
+
+    Route::get('/profile/account',[ShopProfileController::class,'index'])->name('profile.account');
+    
 
     Route::get('/erroradmin',[LoginController::class,'getLogin'])->name('getLogin');
     Route::post('/login',[LoginController::class,'postLogin'])->name('postLogin');

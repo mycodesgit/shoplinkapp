@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('category', function (Blueprint $table) {
             $table->id();
             $table->string('catname');
-            $table->string('subcatname')->default('1,2,3');
+            $table->string('subcategory');
             $table->string('caticon');
             $table->string('posted');
             $table->enum('pcstatus', ['1', '2', '3'])->default('1');

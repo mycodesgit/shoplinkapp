@@ -20,7 +20,7 @@ class ShopDashboardController extends Controller
     public function index()
     {
         $banner = WelcomeBanner::where('welcomestatus', 'Active')->first();
-        $categories = Category::where('pcstatus', '!=', 3)->orderBy('catname', 'ASC')->get();
+        $categories = Category::where('pcstatus', '=', 1)->orderBy('catname', 'ASC')->get();
         $products = Product::all();
 
         return view('customer.home.dashboard', compact('banner', 'categories', 'products'));

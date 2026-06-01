@@ -3,6 +3,8 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -26,6 +28,22 @@ return new class extends Migration
             $table->rememberToken();
             $table->timestamps();
         });
+
+        DB::table('users')->insert([
+            'ustatus' => 1,
+            'fname' => 'Admin',
+            'mname' => '',
+            'lname' => 'User',
+            'username' => 'administrator',
+            'password' => Hash::make('password123'),
+            'role' => 'Administrator',
+            'gender' => 'Male',
+            'posted_by' => 1,
+            'avatar' => '',
+            'remember_token' => '',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 
     /**

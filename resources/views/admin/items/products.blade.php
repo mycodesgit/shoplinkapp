@@ -158,7 +158,7 @@
                                     <select name="catid" class="form-control" id="productCat">
                                         <option disabled selected> --Select Category-- </option>
                                         @foreach ($categories as $item)
-                                            <option value="{{ $item->id }}">{{ $item->catname }}</option>
+                                            <option value="{{ $item->id }}">{{ $item->catname }} - {{ $item->subcategory }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -170,6 +170,7 @@
                                         <option value="1">Men</option>
                                         <option value="2">Women</option>
                                         <option value="3">Kids</option>
+                                        <option value="4">Accessories</option>
                                     </select>
                                 </div>
                             </div>
@@ -231,11 +232,6 @@
                                             <option value="Sale">Sale</option>
                                         </select>
                                 </div>
-                                <div class="col-md-4">
-                                    <label for="productPercentageOff">Product Percentage Off :</label>
-                                    <input type="number" class="form-control" id="productPercentageOff" name="prdctpercentageoff"
-                                        placeholder="Enter Product percentage off">
-                                </div>
                             </div>
                         </div>
 
@@ -283,7 +279,7 @@
                                     <select name="catid" class="form-control" id="editproductCat">
                                         <option disabled selected> --Select Category-- </option>
                                         @foreach ($categories as $item)
-                                            <option value="{{ $item->id }}">{{ $item->catname }}</option>
+                                            <option value="{{ $item->id }}">{{ $item->catname }} - {{ $item->subcategory }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -295,6 +291,7 @@
                                         <option value="1">Men</option>
                                         <option value="2">Women</option>
                                         <option value="3">Kids</option>
+                                        <option value="4">Accessories</option>
                                     </select>
                                 </div>
                             </div>

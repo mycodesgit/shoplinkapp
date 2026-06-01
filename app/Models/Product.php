@@ -26,7 +26,6 @@ class Product extends Model
         'prdctslug',
         'prdctvariation',
         'prdcttag',
-        'prdctpercentageoff'
     ];
 
     protected static function boot()

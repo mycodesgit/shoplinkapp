@@ -49,7 +49,6 @@ class ProductsController extends Controller
                 'prdctprice'  => $request->prdctprice,
                 'prdctstock'  => $request->prdctstock,
                 'prdctimage'  => json_encode($paths),
-                'prdctpercentageoff' => $request->prdctpercentageoff,
                 'prdctvariation' => $request->prdctvariation,
                 'prdcttag' => $request->prdcttag,
             ]);

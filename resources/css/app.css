@@ -376,3 +376,42 @@ body {
 .btn-press:active {
     transform: scale(0.98);
 }
+
+
+
+/* Moving Marquee Animation */
+@keyframes marqueeScroll {
+    0% {
+        transform: translateX(0);
+    }
+    50% {
+        transform: translateX(-50%);
+    }
+    100% {
+        transform: translateX(-100%);
+    }
+}
+.marquee-track {
+    animation: marqueeScroll 30s linear infinite;
+    width: max-content;
+}
+.category-marquee-section:hover .marquee-track {
+    animation-play-state: paused;
+}
+@media (max-width: 768px) {
+    .marquee-track {
+        animation-duration: 30s;
+    }
+}
+.category-chip.active {
+    background-color: #000000 !important;
+    color: white !important;
+}
+.category-chip {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+.category-chip:hover {
+    transform: translateY(-2px) scale(1.05);
+}

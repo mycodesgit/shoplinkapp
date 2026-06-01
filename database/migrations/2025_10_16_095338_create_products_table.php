@@ -25,7 +25,6 @@ return new class extends Migration
             $table->string('prdctslug')->unique();
             $table->string('prdctvariation');
             $table->string('prdcttag');
-            $table->integer('prdctpercentageoff');
             $table->timestamps();
         });
     }

@@ -95,7 +95,7 @@
                     data: 'id',
                     render: function(data, type, row) {
                         if (type === 'display') {
-                            var buttons = '<button type="button" class="btn btn-sm btn-outline-success btn-productedit" data-id="' + row.id + '" data-catid="' + row.catid + '" data-subcatid="' + row.subcatid + '" data-prdctname="' + row.prdctname + '" data-prdctname="' + row.prdctname + '" data-prdctdesc="' + row.prdctdesc + '" data-prdctcode="' + row.prdctcode + '" data-prdctprice="' + row.prdctprice + '" data-prdctsku="' + row.prdctsku + '" data-prdctimage="' + row.prdctimage + '" data-toggle="tooltip" data-placement="top" title="Edit Product."><i class="ti ti-pencil"></i> </button>&nbsp;';
+                            var buttons = '<button type="button" class="btn btn-sm btn-outline-success btn-productedit" data-id="' + row.id + '" data-catid="' + row.catid + '" data-subcatid="' + row.subcatid + '" data-prdctname="' + row.prdctname + '" data-prdctname="' + row.prdctname + '" data-prdctdesc="' + row.prdctdesc + '" data-prdctcode="' + row.prdctcode + '" data-prdctprice="' + row.prdctprice + '" data-prdctsku="' + row.prdctsku + '" data-prdctstock="' + row.prdctstock + '" data-prdctimage="' + row.prdctimage + '" data-toggle="tooltip" data-placement="top" title="Edit Product."><i class="ti ti-pencil"></i> </button>&nbsp;';
                                 buttons += '<button type="button" value="' + data + '" class="btn btn-sm btn-outline-danger prod-delete" data-toggle="tooltip" data-placement="top" title="Delete Product."><i class="ti ti-trash"></i> </button>';
                             return buttons;
                         } else {
@@ -127,6 +127,7 @@
         var prdctcode = $(this).data('prdctcode');
         var prdctprice = $(this).data('prdctprice');
         var prdctsku = $(this).data('prdctsku');
+        var prdctstock = $(this).data('prdctstock');
         var prdctimage = $(this).data('prdctimage');
 
         $('#editproductId').val(id);
@@ -136,6 +137,7 @@
         $('#editproductDescription').val(prdctdesc);
         $('#editproductCode').val(prdctcode);
         $('#editproductPrice').val(prdctprice);
+        $('#editproductStock').val(prdctstock);
         $('#productSku').val(prdctsku);
         $('#editUploadPhotoProd').val(prdctimage);
 

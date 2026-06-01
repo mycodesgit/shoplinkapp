@@ -15,6 +15,34 @@
             <div class="absolute bottom-0 left-0 w-40 h-40 bg-white/5 rounded-full blur-2xl"></div>
         </div>
 
+        <!-- Moving Marquee Category Tabs -->
+        <div class="category-marquee-section mb-10 overflow-hidden relative">
+            <div class="relative">
+                <!-- Gradient fade edges for smooth effect -->
+                <div class="absolute left-0 top-0 bottom-0 w-8 md:w-16 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none"></div>
+                <div class="absolute right-0 top-0 bottom-0 w-8 md:w-16 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none"></div>
+                
+                <!-- Infinite Marquee Container -->
+                <div class="overflow-hidden py-3">
+                    <div class="marquee-track flex gap-3 md:gap-4 animate-marquee">
+                        <!-- Category Items - First Set -->
+                        @foreach($categories as $index => $category)
+                            <button class="category-chip flex-shrink-0 px-4 md:px-6 py-2 md:py-2.5 rounded-full text-sm md:text-base font-medium {{ $index === 0 ? 'bg-gray-100 text-gray-800' : 'bg-gray-100 text-gray-800 hover:bg-gray-200' }} transition-all duration-200 hover:scale-105" data-category="{{ $category->catname }}">
+                                <i class="{{ $category->caticon }} mr-1.5 text-xs"></i> {{ $category->catname }}
+                            </button>
+                        @endforeach
+                        
+                        <!-- Duplicate Set for Seamless Loop -->
+                        {{-- @foreach($categories as $category)
+                            <button class="category-chip flex-shrink-0 px-4 md:px-6 py-2 md:py-2.5 rounded-full text-sm md:text-base font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-all duration-200 hover:scale-105" data-category="{{ $category->catname }}">
+                                <i class="{{ $category->caticon }} mr-1.5 text-xs"></i> {{ $category->catname }}
+                            </button>
+                        @endforeach --}}
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Recommended Styles Section -->
         <div class="mb-10">
             <div class="flex justify-between items-center mb-5 animate-slide-right">
@@ -29,15 +57,15 @@
                             <div class="relative">
                                 @if ($item->prdcttag === 'Popular')
                                     <div class="discount-badge popular rounded-pill text-xs spantag">
-                                        {{ $item->prdcttag }} - {{ $item->prdctpercentageoff }}% Off
+                                        {{ $item->prdcttag }}
                                     </div>
                                 @elseif ($item->prdcttag === 'New Arrival')
                                     <div class="discount-badge new-arrival rounded-pill text-xs">
-                                        {{ $item->prdcttag }} - {{ $item->prdctpercentageoff }}% Off
+                                        {{ $item->prdcttag }}
                                     </div>
                                 @elseif ($item->prdcttag === 'Sale')
                                     <div class="discount-badge sale rounded-pill text-xs">
-                                        {{ $item->prdcttag }} - {{ $item->prdctpercentageoff }}% Off
+                                        {{ $item->prdcttag }}
                                     </div>
                                 @endif
 
@@ -104,3 +132,38 @@
         </div>
     </main>
 @endsection
+
+@push('scripts')
+    {{-- <script>
+        // Category filtering functionality for the marquee
+        document.querySelectorAll('.category-chip').forEach(chip => {
+            chip.addEventListener('click', function() {
+                const category = this.getAttribute('data-category');
+                
+                // Update active state on all chips
+                document.querySelectorAll('.category-chip').forEach(c => {
+                    if (c.getAttribute('data-category') === category) {
+                        c.classList.add('active');
+                        c.classList.remove('bg-gray-100', 'text-gray-800');
+                        c.classList.add('bg-black', 'text-white');
+                    } else {
+                        c.classList.remove('active');
+                        c.classList.add('bg-gray-100', 'text-gray-800');
+                        c.classList.remove('bg-black', 'text-white');
+                    }
+                });
+                
+                // Filter products - add your product filtering logic here
+                // Example: filter products by data-category attribute
+                document.querySelectorAll('#products-grid .product-link').forEach(product => {
+                    const productCategory = product.getAttribute('data-category');
+                    if (category === 'all' || productCategory === category) {
+                        product.style.display = '';
+                    } else {
+                        product.style.display = 'none';
+                    }
+                });
+            });
+        });
+    </script> --}}
+@endpush

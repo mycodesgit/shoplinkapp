@@ -27,7 +27,8 @@ class CategoryController extends Controller
             ]);
 
             $categoryName = $request->input('catname'); 
-            $existingCategory = Category::where('catname', $categoryName)->first();
+            $subcategory = $request->input('subcategory');
+            $existingCategory = Category::where('catname', $categoryName)->where('subcategory', $subcategory)->first();
 
             if ($existingCategory) {
                 return response()->json(['error' => true, 'message' => 'Category already exists!'],  404);
@@ -36,6 +37,7 @@ class CategoryController extends Controller
             try {
                 Category::create([
                     'catname' => $request->input('catname'),
+                    'subcategory' => $request->input('subcategory'),
                     'caticon' => $request->input('caticon'),
                     'posted' => Auth::guard('web')->user()->fname .' ' . Auth::guard('web')->user()->lname,
                 ]);
@@ -63,7 +65,8 @@ class CategoryController extends Controller
 
         try {
             $categoryName = $request->input('catname');
-            $existingCategory = Category::where('catname', $categoryName)->where('id', '!=', $request->input('id'))->first();
+            $subcategory = $request->input('subcategory');
+            $existingCategory = Category::where('catname', $categoryName)->where('subcategory', $subcategory)->where('id', '!=', $request->input('id'))->first();
 
             if ($existingCategory) {
                 return response()->json(['error' => true, 'message' => 'Category already exists!'], 200);
@@ -77,6 +80,8 @@ class CategoryController extends Controller
             $category = Category::findOrFail($request->input('id'));
             $category->update([
                 'catname' => $categoryName,
+                'subcategory' => $subcategory,
+                'pcstatus' => $request->input('pcstatus'),
                 'caticon' => $categoryIcon,
                 'posted' => Auth::guard('web')->user()->fname .' ' . Auth::guard('web')->user()->lname,
             ]);

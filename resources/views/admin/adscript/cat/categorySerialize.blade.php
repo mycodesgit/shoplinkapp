@@ -45,6 +45,7 @@
             paging: true,
             "columns": [
                 {data: 'catname'},
+                {data: 'subcategory'},
                 {data: 'pcstatus',
                         render: function(data, type, row) {
                         switch(parseInt(data)) {
@@ -64,7 +65,7 @@
                     data: 'id',
                     render: function(data, type, row) {
                         if (type === 'display') {
-                            var buttons = '<button type="button" class="btn btn-sm btn-outline-success btn-categoryedit" data-id="' + row.id + '" data-categoryname="' + row.catname + '" data-caticon="' + row.caticon + '" data-toggle="tooltip" data-placement="top" title="Edit Category."><i class="ti ti-pencil"></i></button>&nbsp;';
+                            var buttons = '<button type="button" class="btn btn-sm btn-outline-success btn-categoryedit" data-id="' + row.id + '" data-categoryname="' + row.catname + '" data-subcategory="' + row.subcategory + '" data-pcstatus="' + row.pcstatus + '" data-caticon="' + row.caticon + '" data-toggle="tooltip" data-placement="top" title="Edit Category."><i class="ti ti-pencil"></i></button>&nbsp;';
                                 buttons += '<button type="button" value="' + data + '" class="btn btn-sm btn-outline-danger category-delete" data-toggle="tooltip" data-placement="top" title="Delete Category."><i class="ti ti-trash"></i> </button>';
                             return buttons;
                         } else {
@@ -90,10 +91,14 @@
     $(document).on('click', '.btn-categoryedit', function() {
         var id = $(this).data('id');
         var categoryName = $(this).data('categoryname');
+        var subCategory = $(this).data('subcategory');
+        var pcstatus = $(this).data('pcstatus');
         var caticon = $(this).data('caticon');
 
         $('#editCategoryId').val(id);
         $('#editCategoryName').val(categoryName);
+        $('#editSubCategory').val(subCategory);
+        $('#editStatus').val(pcstatus);
         $('#caticon-hidden').val(caticon);
         $('#editCategoryModal').modal('show');
     });
@@ -113,6 +118,7 @@
                 if(response.success) {
                     toastr.success(response.message);
                     $('#editCategoryModal').modal('hide');
+                    $('#editCategoryForm')[0].reset();
                     $(document).trigger('categoryAdded');
                 } else {
                     toastr.error(response.message);

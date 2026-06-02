@@ -35,7 +35,7 @@
                         <!-- Shop / Products -->
                         <li class="inline-flex items-center">
                             <a href="{{ route('dashboard.items') }}" class="text-gray-500 hover:text-indigo-600 transition-colors duration-200">
-                                <span class="sm:hidden">Shop</span>
+                                <span>Shop</span>
                             </a>
                             <i class="fas fa-chevron-right text-gray-300 text-xs mx-1 md:mx-1.5"></i>
                         </li>
@@ -101,7 +101,7 @@
                 
                 <div class="mb-5">
                     <p class="font-semibold mb-2">Select Color</p>
-                    <div class="flex gap-3" id="colorContainer">Color</div>
+                    <div class="flex gap-3" id="colorContainer">{{ $product->prdctvariation }}</div>
                 </div>
                 
                 <div class="mb-5">

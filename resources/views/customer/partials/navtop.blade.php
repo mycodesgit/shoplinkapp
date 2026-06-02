@@ -23,13 +23,26 @@
                 <a href="{{ route('profile.account') }}" class="{{ $profileActive }}">Profile</a>
             </div>
 
-            <div class="flex items-center gap-4">
-                <i class="fas fa-search text-gray-700 text-lg cursor-pointer"></i>
-                <a href="{{ route('cart.index') }}" class="relative">
-                    <i class="fas fa-shopping-bag text-gray-700 text-lg"></i>
-                    <span id="cartCount" class="absolute -top-2 -right-3 bg-black text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">0</span>
-                </a>
-            </div>
+            @if(Auth::guard('customer')->check())
+                <div class="flex items-center gap-4">
+                    <span class="text-gray-700 text-sm">Hello, {{ Auth::guard('customer')->user()->fname }}</span>
+                    <a href="{{ route('cart.index') }}" class="relative">
+                        <i class="fas fa-shopping-bag text-gray-700 text-lg"></i>
+                        <span id="cartCount" class="absolute -top-2 -right-3 bg-orange-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">0</span>
+                    </a>
+                </div>
+            @else
+    <div class="flex items-center gap-4">
+        <a href="@" class="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:scale-105">
+            <i class="fas fa-sign-in-alt text-sm"></i>
+            Sign In
+        </a>
+        <a href="{{ route('cart.index') }}" class="relative">
+            <i class="fas fa-shopping-bag text-gray-700 text-lg"></i>
+            <span id="cartCount" class="absolute -top-2 -right-3 bg-orange-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">0</span>
+        </a>
+    </div>
+@endif
         </div>
     </div>
 </header>

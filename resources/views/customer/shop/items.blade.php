@@ -30,8 +30,8 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5" id="productsGrid">
 
             @forelse ($products->take(8) as $item)
-                <a href="{{ route('itemdetails.index', $item->id) }}">
-                    <div class="product-card group card-item">
+                <div class="product-card group card-item">
+                    <a href="{{ route('itemdetails.index', $item->id) }}">
                         <div class="relative">
                             @if ($item->prdcttag === 'Popular')
                                 <div class="discount-badge popular rounded-pill text-xs spantag">
@@ -55,53 +55,53 @@
                                 <img src="{{ $firstImage ? asset('storage/' . $firstImage) : asset('storage/products/default.png') }}" class="product-image" alt="{{ $item->prdctname }}">
                             </div>
                         </div>
-                        <div class="p-4 pt-0">
-                            <div class="flex justify-between items-start mb-1">
-                                <h3 class="font-semibold text-gray-900 text-base" onclick="window.location.href='product.html?id=${product.id}'">
-                                    {{ strlen($item->prdctname) > 25 
-                                            ? substr($item->prdctname, 0, 25) . '...' 
-                                            : $item->prdctname }}
-                                </h3>
-                                <div class="flex items-center gap-1">
-                                    <i class="fas fa-star rating-star"></i>
-                                    <span class="text-xs font-medium text-gray-700">4.5</span>
-                                </div>
-                            </div>
-                            
-                            <div class="flex items-center gap-2 mb-1">
-                                <span class="text-xl font-bold text-gray-900">₱{{ number_format($item->prdctprice, 2) }}</span>
-                                <span class="text-sm text-gray-400 line-through">₱200.00</span>
-                            </div>
-                            
-                            <p class="text-xs text-gray-500 mb-2">Colors</p>
-                            
-                            <div class="flex items-center justify-between mb-3">
-                                <div class="flex items-center gap-2">
-                                    <i class="far fa-clock text-xs text-gray-400"></i>
-                                    <span class="text-xs text-gray-500">
-                                        {{ $item->created_at->diffForHumans(null, true) === '0 seconds'
-                                                    ? 'Now'
-                                                    : $item->created_at->diffForHumans() }}
-                                    </span>
-                                </div>
-                                <div class="flex items-center gap-1">
-                                    <i class="fas fa-eye text-xs text-gray-400"></i>
-                                    <span class="text-xs text-gray-500">reviews</span>
-                                </div>
-                            </div>
-                            
-                            <div class="flex gap-2">
-                                <button class="add-cart-btn flex-1">
-                                    <i class="fas fa-shopping-cart text-sm"></i>
-                                    Add Cart
-                                </button>
-                                <button class="buy-now-btn flex-1">
-                                    Buy Now
-                                </button>
+                    </a>
+                    <div class="p-4 pt-0">
+                        <div class="flex justify-between items-start mb-1">
+                            <h3 class="font-semibold text-gray-900 text-base" onclick="window.location.href='product.html?id=${product.id}'">
+                                {{ strlen($item->prdctname) > 25 
+                                        ? substr($item->prdctname, 0, 25) . '...' 
+                                        : $item->prdctname }}
+                            </h3>
+                            <div class="flex items-center gap-1">
+                                <i class="fas fa-star rating-star"></i>
+                                <span class="text-xs font-medium text-gray-700">4.5</span>
                             </div>
                         </div>
+                        
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-xl font-bold text-gray-900">₱{{ number_format($item->prdctprice, 2) }}</span>
+                            <span class="text-sm text-gray-400 line-through">₱200.00</span>
+                        </div>
+                        
+                        <p class="text-xs text-gray-500 mb-2">Colors</p>
+                        
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-2">
+                                <i class="far fa-clock text-xs text-gray-400"></i>
+                                <span class="text-xs text-gray-500">
+                                    {{ $item->created_at->diffForHumans(null, true) === '0 seconds'
+                                                ? 'Now'
+                                                : $item->created_at->diffForHumans() }}
+                                </span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <i class="fas fa-eye text-xs text-gray-400"></i>
+                                <span class="text-xs text-gray-500">reviews</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex gap-2">
+                            <button class="add-cart-btn flex-1">
+                                <i class="fas fa-shopping-cart text-sm"></i>
+                                Add Cart
+                            </button>
+                            <button class="buy-now-btn flex-1">
+                                Buy Now
+                            </button>
+                        </div>
                     </div>
-                </a>
+                </div>
             @empty
                 <div class="col-span-full text-center py-16"><i class="fas fa-box-open text-5xl text-gray-300 mb-4"></i><p class="text-gray-500">No products found</p></div>
             @endforelse

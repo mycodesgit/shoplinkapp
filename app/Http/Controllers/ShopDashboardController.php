@@ -33,4 +33,9 @@ class ShopDashboardController extends Controller
 
         return view('customer.shop.items', compact('products'));
     }
+
+    public function about()
+    {
+        return view('customer.aboutapp.aboutappinfo');
+    }
 }

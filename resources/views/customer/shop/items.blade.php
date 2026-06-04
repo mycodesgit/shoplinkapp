@@ -92,13 +92,23 @@
                         </div>
                         
                         <div class="flex gap-2">
-                            <button class="add-cart-btn flex-1">
-                                <i class="fas fa-shopping-cart text-sm"></i>
-                                Add Cart
-                            </button>
-                            <button class="buy-now-btn flex-1">
-                                Buy Now
-                            </button>
+                            @if(Auth::guard('customer')->check())
+                                <button class="add-cart-btn flex-1">
+                                    <i class="fas fa-shopping-cart text-sm"></i>
+                                    Add Cart
+                                </button>
+                                <button class="buy-now-btn flex-1">
+                                    Buy Now
+                                </button>
+                            @else
+                                <button class="add-cart-btn flex-1" onclick="redirectToLogin()">
+                                    <i class="fas fa-shopping-cart text-sm"></i>
+                                    Add Cart
+                                </button>
+                                <button class="buy-now-btn flex-1" onclick="redirectToLogin()">
+                                    Buy Now
+                                </button>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -107,4 +117,11 @@
             @endforelse
         </div>
     </main>
+
+    <script>
+        function redirectToLogin() {
+            const currentUrl = window.location.href;
+            window.location.href = "{{ route('shop.login') }}?redirect=" + encodeURIComponent(currentUrl);
+        }
+    </script>
 @endsection

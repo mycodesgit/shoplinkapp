@@ -18,9 +18,13 @@
             <div class="hidden md:flex items-center gap-8 text-gray-700 font-medium">
                 <a href="{{ route('dashboard.index') }}" class="{{ $dashActive }}">Home</a>
                 <a href="{{ route('dashboard.items') }}" class="{{ $itemsActive }}">Shop</a>
-                <a href="wishlist.html" class="hover:text-gray-600">Wishlist</a>
-                <a href="{{ route('cart.index') }}" class="{{ $cartActive }}">Cart</a>
-                <a href="{{ route('profile.account') }}" class="{{ $profileActive }}">Profile</a>
+                @if(Auth::guard('customer')->check())
+                    <a href="wishlist.html" class="hover:text-gray-600">Wishlist</a>
+                    <a href="{{ route('cart.index') }}" class="{{ $cartActive }}">Cart</a>
+                    <a href="{{ route('profile.account') }}" class="{{ $profileActive }}">Profile</a>
+                @else
+                    
+                @endif
             </div>
 
             @if(Auth::guard('customer')->check())
@@ -32,17 +36,14 @@
                     </a>
                 </div>
             @else
-    <div class="flex items-center gap-4">
-        <a href="@" class="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:scale-105">
-            <i class="fas fa-sign-in-alt text-sm"></i>
-            Sign In
-        </a>
-        <a href="{{ route('cart.index') }}" class="relative">
-            <i class="fas fa-shopping-bag text-gray-700 text-lg"></i>
-            <span id="cartCount" class="absolute -top-2 -right-3 bg-orange-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">0</span>
-        </a>
-    </div>
-@endif
+                <div class="flex items-center gap-4">
+                    <a href="{{ route('shop.login') }}" 
+                    class="flex items-center gap-2 bg-transparent hover:bg-amber-500 text-amber-600 hover:text-white border-2 border-amber-500 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200">
+                        <i class="fas fa-sign-in-alt text-sm"></i>
+                        Sign In
+                    </a>
+                </div>
+            @endif
         </div>
     </div>
 </header>

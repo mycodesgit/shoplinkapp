@@ -106,14 +106,25 @@
                             </div>
                             
                             <div class="fixed bottom-0 left-0 right-0 flex gap-2 p-4 bg-white z-40">
-                                <button class="add-cart-btn flex-1">
-                                    <i class="fas fa-shopping-cart text-sm"></i>
-                                    <span class="hidden sm:inline">Add Cart</span>
-                                </button>
-                                <button class="buy-now-btn flex-1">
-                                    <i class="fas fa-shopping-bag text-sm"></i>
-                                    <span class="hidden sm:inline">Buy Now</span>
-                                </button>
+                                @if(Auth::guard('customer')->check())
+                                    <button class="add-cart-btn flex-1">
+                                        <i class="fas fa-shopping-cart text-sm"></i>
+                                        <span class="hidden sm:inline">Add Cart</span>
+                                    </button>
+                                    <button class="buy-now-btn flex-1">
+                                        <i class="fas fa-shopping-bag text-sm"></i>
+                                        <span class="hidden sm:inline">Buy Now</span>
+                                    </button>
+                                @else
+                                    <button class="add-cart-btn flex-1" onclick="redirectToLogin()">
+                                        <i class="fas fa-shopping-cart text-sm"></i>
+                                        <span class="hidden sm:inline">Add Cart</span>
+                                    </button>
+                                    <button class="buy-now-btn flex-1" onclick="redirectToLogin()">
+                                        <i class="fas fa-shopping-bag text-sm"></i>
+                                        <span class="hidden sm:inline">Buy Now</span>
+                                    </button>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -123,6 +134,13 @@
             </div>
         </div>
     </main>
+    
+    <script>
+        function redirectToLogin() {
+            const currentUrl = window.location.href;
+            window.location.href = "{{ route('shop.login') }}?redirect=" + encodeURIComponent(currentUrl);
+        }
+    </script>
 @endsection
 
 @push('scripts')

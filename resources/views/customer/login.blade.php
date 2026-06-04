@@ -250,7 +250,15 @@
     </div>
     
     <div class="auth-container w-full max-w-md mx-auto p-8">
-        
+        <!-- Back Button -->
+        <div class="mb-4 sm:mb-5 md:mb-2">
+            <a href="{{ route('dashboard.index') }}" 
+            class="back-btn group flex items-center gap-2 text-gray-600 hover:text-indigo-600 transition-colors duration-200">
+                <i class="fas fa-arrow-left text-sm sm:text-base"></i>
+                <span class="text-sm sm:text-base font-medium">Back</span>
+            </a>
+        </div>
+
         <!-- Logo -->
         <div class="text-center mb-6">
             <div class="inline-flex items-center justify-center">

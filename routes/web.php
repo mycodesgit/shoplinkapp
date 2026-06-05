@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Controllers\Controller;
+
 use App\Http\Controllers\LoginController;
 
 use App\Http\Controllers\DashboardController;
@@ -36,6 +38,7 @@ use App\Http\Controllers\ShopProfileController;
 Route::group(['middleware'=>['guest']],function(){
     Route::get('/',[ShopDashboardController::class,'index'])->name('dashboard.index');
     Route::get('/shop/items',[ShopDashboardController::class,'store'])->name('dashboard.items');
+    Route::get('/item/info/{id}',[ShopItemInfoController::class,'index'])->name('itemdetails.index');
     Route::get('/about',[ShopDashboardController::class,'about'])->name('dashboard.about');
     
     Route::get('/shop/login',[ShopLoginController::class,'index'])->name('shop.login');
@@ -49,15 +52,26 @@ Route::group(['middleware'=>['guest']],function(){
 });
 
 Route::group(['middleware'=>['customer_auth']],function(){
+    Route::get('/cart/realtime-count', [Controller::class, 'getCartCountJson'])->name('cart.realtime.count');
+
     Route::get('/dashboard/customer/view',[ShopDashboardController::class,'index'])->name('dashboard.auth.index');
     Route::get('/shop/items/customer/view',[ShopDashboardController::class,'store'])->name('dashboard.auth.items');
     
     Route::get('/item/info/view/{id}',[ShopItemInfoController::class,'index'])->name('itemdetails.auth.index');
     
-    Route::get('/cart/list',[ShopCartController::class,'index'])->name('cart.auth.index');
+    Route::prefix('cart')->group(function () {
+        Route::get('/list',[ShopCartController::class,'index'])->name('cart.auth.index');
+        Route::post('/add', [ShopCartController::class, 'addToCart'])->name('cart.add');
+        Route::post('/update', [ShopCartController::class, 'update'])->name('cart.update');
+        Route::post('/remove', [ShopCartController::class, 'remove'])->name('cart.remove');
+        Route::post('/clear', [ShopCartController::class, 'clearCart'])->name('cart.clear');
+        Route::get('/items', [ShopCartController::class, 'getCartItems'])->name('cart.items');
+        Route::get('/checkout', [ShopCartController::class, 'checkout'])->name('cart.checkout');
+    });
     
     Route::get('/profile/account',[ShopProfileController::class,'index'])->name('profile.auth.account');
-    Route::get('/about',[ShopDashboardController::class,'about'])->name('dashboard.auth.about');
+    Route::get('/about/app',[ShopDashboardController::class,'about'])->name('dashboard.auth.about');
+    Route::post('/logout/customer',[DashboardController::class,'logout'])->name('logout.customer');
 });
 
 Route::group(['middleware'=>['login_auth']],function(){

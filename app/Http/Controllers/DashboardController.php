@@ -7,17 +7,29 @@ use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
+    use \App\Traits\CartTrait;
+
     public function index()
     {
-        return view('admin.home.dashboard');
+        $cartCount = $this->getCartCount();
+
+        return view('admin.home.dashboard', compact('cartCount'));
     }
 
     public function logout(Request $request)
     {
-        Auth::logout();
-        $request->session()->invalidate(); 
-        $request->session()->regenerateToken();
+        if (\Auth::guard('web')->check()) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            return redirect()->route('getLogin')->with('success', 'You have been Successfully Logged Out');
 
-        return redirect()->route('getLogin')->with('success', 'You have been Successfully Logged Out');
+        } elseif (\Auth::guard('customer')->check()) {
+            Auth::guard('customer')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            return redirect()->route('dashboard.index')->with('success', 'You have been Successfully Logged Out');
+        }
+
     }
 }

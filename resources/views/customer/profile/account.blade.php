@@ -88,9 +88,12 @@
 
                 <!-- Subscribe Buttons -->
                 <div class="flex gap-3 mb-8">
-                    <button class="flex-1 bg-blue-100 text-gray-800 py-3 rounded-xl font-semibold text-sm">
-                        LOGOUT
-                    </button>
+                    <form action="{{ route('logout.customer') }}" method="POST" class="w-full">
+                        @csrf
+                        <button type="submit" class="flex-1 bg-blue-100 text-gray-800 py-3 rounded-xl font-semibold text-sm text-center w-full">
+                            LOGOUT
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>

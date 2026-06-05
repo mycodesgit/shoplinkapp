@@ -12,9 +12,17 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Str;
 
 use App\Models\Customer;
+use App\Models\Cart;
 
 class ShopLoginController extends Controller
 {
+    protected function authenticated(Request $request, $user)
+    {
+        // You can also merge on the server side if you store guest cart in session
+        // But since you don't use sessions, this is handled in JavaScript
+        
+        return redirect()->intended();
+    }
     public function index()
     {
         return view('customer.login');

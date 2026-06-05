@@ -11,8 +11,8 @@
                     <div class="w-24 h-24 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full mx-auto mb-3 flex items-center justify-center">
                         <i class="fas fa-user-circle text-6xl text-gray-500"></i>
                     </div>
-                    <h2 class="text-xl font-bold text-gray-900">Md Salim Hossan</h2>
-                    <p class="text-gray-500 text-sm">Imran59415@gmail.com</p>
+                    <h2 class="text-xl font-bold text-gray-900">{{ Auth::guard('customer')->user()->fname }} {{ Auth::guard('customer')->user()->lname }}</h2>
+                    <p class="text-gray-500 text-sm">{{ Auth::guard('customer')->user()->email }}</p>
                 </div>
 
                 <!-- Premium Banner -->
@@ -20,7 +20,7 @@
                     <div class="flex items-start gap-3">
                         <i class="fas fa-gift text-2xl"></i>
                         <div class="flex-1">
-                            <p class="text-sm font-semibold mb-1">🎉 Md salim, join Runna Premium</p>
+                            <p class="text-sm font-semibold mb-1">🎉 {{ Auth::guard('customer')->user()->fname }}, join Runna Premium</p>
                             <p class="text-xs opacity-90">Subscribe to unlock the rest of your weeks and reach your full potential</p>
                         </div>
                     </div>
@@ -31,7 +31,7 @@
                     <!-- Member Since -->
                     <div class="flex justify-between items-center py-2">
                         <span class="text-gray-500 text-sm">Member Since</span>
-                        <span class="text-gray-900 text-sm font-medium">January 2025</span>
+                        <span class="text-gray-900 text-sm font-medium">{{ Auth::guard('customer')->user()->created_at->format('F d, Y') }}</span>
                     </div>
                     
                     <!-- My Orders Button -->
@@ -105,8 +105,8 @@
                         <div class="w-24 h-24 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full mx-auto mb-3 flex items-center justify-center">
                             <i class="fas fa-user-circle text-6xl text-gray-500"></i>
                         </div>
-                        <h2 class="text-xl font-bold text-gray-900">Md Salim Hossan</h2>
-                        <p class="text-gray-500 text-sm">Imran59415@gmail.com</p>
+                        <h2 class="text-xl font-bold text-gray-900">{{ Auth::guard('customer')->user()->fname }} {{ Auth::guard('customer')->user()->lname }}</h2>
+                        <p class="text-gray-500 text-sm">{{ Auth::guard('customer')->user()->email }}</p>
                     </div>
                     
                     <!-- Premium Banner -->
@@ -202,14 +202,14 @@
                         <div class="w-24 h-24 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full mx-auto mb-3 flex items-center justify-center">
                             <i class="fas fa-user-circle text-6xl text-gray-500"></i>
                         </div>
-                        <h2 class="text-xl font-bold text-gray-900">Md Salim Hossan</h2>
-                        <p class="text-gray-500 text-sm">Imran59415@gmail.com</p>
+                        <h2 class="text-xl font-bold text-gray-900">{{ Auth::guard('customer')->user()->fname }} {{ Auth::guard('customer')->user()->lname }}</h2>
+                        <p class="text-gray-500 text-sm">{{ Auth::guard('customer')->user()->email }}</p>
                     </div>
                     
                     <div class="bg-white rounded-2xl p-4 space-y-4">
                         <div class="flex justify-between items-center">
                             <span class="text-gray-500 text-sm">Member Since</span>
-                            <span class="text-gray-900 text-sm font-medium">January 2025</span>
+                            <span class="text-gray-900 text-sm font-medium">{{ Auth::guard('customer')->user()->created_at->format('F d, Y') }}</span>
                         </div>
                         <a href="orders.html" class="flex items-center justify-between py-2">
                             <span class="text-gray-900 font-medium">My Orders</span>
@@ -227,7 +227,7 @@
                         <div class="flex items-start gap-3">
                             <i class="fas fa-gift text-2xl"></i>
                             <div class="flex-1">
-                                <p class="text-sm font-semibold mb-1">🎉 Md salim, join Runna Premium</p>
+                                <p class="text-sm font-semibold mb-1">🎉 {{ Auth::guard('customer')->user()->fname }}, join Runna Premium</p>
                                 <p class="text-xs opacity-90">Subscribe to unlock the rest of your weeks and reach your full potential</p>
                             </div>
                         </div>

@@ -34,6 +34,8 @@ class Customer extends Authenticatable
         'address',
         'avatar',
         'remember_token',
+        'created_at',
+        'updated_at',
     ];
 
     protected $hidden = [

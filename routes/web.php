@@ -35,22 +35,29 @@ use App\Http\Controllers\ShopProfileController;
 
 Route::group(['middleware'=>['guest']],function(){
     Route::get('/',[ShopDashboardController::class,'index'])->name('dashboard.index');
-    Route::get('/about',[ShopDashboardController::class,'about'])->name('dashboard.about');
     Route::get('/shop/items',[ShopDashboardController::class,'store'])->name('dashboard.items');
-
-    Route::get('/item/info/{id}',[ShopItemInfoController::class,'index'])->name('itemdetails.index');
-
-    Route::get('/cart/list',[ShopCartController::class,'index'])->name('cart.index');
-
-    Route::get('/profile/account',[ShopProfileController::class,'index'])->name('profile.account');
+    Route::get('/about',[ShopDashboardController::class,'about'])->name('dashboard.about');
     
     Route::get('/shop/login',[ShopLoginController::class,'index'])->name('shop.login');
-    Route::post('/shop/login',[ShopLoginController::class,'login'])->name('shop.login.post');
+    Route::post('/shop/login/check',[ShopLoginController::class,'customerlogin'])->name('shop.login.post');
+
     Route::get('/shop/register',[ShopRegisterController::class,'index'])->name('shop.register');
     Route::post('/shop/register/create',[ShopRegisterController::class,'create'])->name('shop.register.create');
     
     Route::get('/erroradmin',[LoginController::class,'getLogin'])->name('getLogin');
     Route::post('/login',[LoginController::class,'postLogin'])->name('postLogin');
+});
+
+Route::group(['middleware'=>['customer_auth']],function(){
+    Route::get('/dashboard/customer/view',[ShopDashboardController::class,'index'])->name('dashboard.auth.index');
+    Route::get('/shop/items/customer/view',[ShopDashboardController::class,'store'])->name('dashboard.auth.items');
+    
+    Route::get('/item/info/view/{id}',[ShopItemInfoController::class,'index'])->name('itemdetails.auth.index');
+    
+    Route::get('/cart/list',[ShopCartController::class,'index'])->name('cart.auth.index');
+    
+    Route::get('/profile/account',[ShopProfileController::class,'index'])->name('profile.auth.account');
+    Route::get('/about',[ShopDashboardController::class,'about'])->name('dashboard.auth.about');
 });
 
 Route::group(['middleware'=>['login_auth']],function(){

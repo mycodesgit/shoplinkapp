@@ -269,7 +269,9 @@
         </div>
         
         <!-- Form -->
-        <form action="#" method="POST" class="space-y-4">
+        <form action="{{ route('shop.login.post') }}" method="POST" class="space-y-4">
+            @csrf
+
             <div class="relative">
                 <input type="email" name="email" class="input-field" placeholder="E-mail ID" required>
                 <i class="fas fa-envelope input-icon"></i>

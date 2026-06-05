@@ -31,7 +31,11 @@
 
             @forelse ($products->take(8) as $item)
                 <div class="product-card group card-item">
-                    <a href="{{ route('itemdetails.index', $item->id) }}">
+                    @if(Auth::guard('customer')->check())
+                        <a href="{{ route('itemdetails.auth.index', $item->id) }}">
+                    @else
+                        <a href="{{ route('itemdetails.index', $item->id) }}">
+                    @endif
                         <div class="relative">
                             @if ($item->prdcttag === 'Popular')
                                 <div class="discount-badge popular rounded-pill text-xs spantag">

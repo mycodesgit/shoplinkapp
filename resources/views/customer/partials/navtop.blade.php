@@ -1,11 +1,11 @@
 @php
     $curr_route = request()->route()->getName();
 
-    $dashActive = in_array($curr_route, ['dashboard.index']) ? 'text-black' : 'text-gray-500';
-    $aboutActive = in_array($curr_route, ['dashboard.about']) ? 'text-black' : 'text-gray-500';
-    $itemsActive = in_array($curr_route, ['dashboard.items', 'itemdetails.index']) ? 'text-black' : 'text-gray-500';
-    $cartActive = in_array($curr_route, ['cart.index']) ? 'text-black' : 'text-gray-500';
-    $profileActive = in_array($curr_route, ['profile.account']) ? 'text-black' : 'text-gray-500';
+    $dashActive = in_array($curr_route, ['dashboard.index', 'dashboard.auth.index']) ? 'text-black' : 'text-gray-500';
+    $aboutActive = in_array($curr_route, ['dashboard.about', 'dashboard.auth.about']) ? 'text-black' : 'text-gray-500';
+    $itemsActive = in_array($curr_route, ['dashboard.items', 'dashboard.auth.items', 'itemdetails.index', 'itemdetails.auth.index']) ? 'text-black' : 'text-gray-500';
+    $cartActive = in_array($curr_route, ['cart.index', 'cart.auth.index']) ? 'text-black' : 'text-gray-500';
+    $profileActive = in_array($curr_route, ['profile.account', 'profile.auth.account']) ? 'text-black' : 'text-gray-500';
 @endphp
 
 <header class="sticky top-0 z-30 bg-white border-b border-gray-100">
@@ -17,13 +17,15 @@
             </div>
             
             <div class="hidden md:flex items-center gap-8 text-gray-700 font-medium">
-                <a href="{{ route('dashboard.index') }}" class="{{ $dashActive }}">Home</a>
-                <a href="{{ route('dashboard.items') }}" class="{{ $itemsActive }}">Shop</a>
                 @if(Auth::guard('customer')->check())
+                    <a href="{{ route('dashboard.auth.index') }}" class="{{ $dashActive }}">Home</a>
+                    <a href="{{ route('dashboard.auth.items') }}" class="{{ $itemsActive }}">Shop</a>
                     <a href="wishlist.html" class="hover:text-gray-600">Wishlist</a>
-                    <a href="{{ route('cart.index') }}" class="{{ $cartActive }}">Cart</a>
-                    <a href="{{ route('profile.account') }}" class="{{ $profileActive }}">Profile</a>
+                    <a href="{{ route('cart.auth.index') }}" class="{{ $cartActive }}">Cart</a>
+                    <a href="{{ route('profile.auth.account') }}" class="{{ $profileActive }}">Profile</a>
                 @else
+                    <a href="{{ route('dashboard.index') }}" class="{{ $dashActive }}">Home</a>
+                    <a href="{{ route('dashboard.items') }}" class="{{ $itemsActive }}">Shop</a>
                     <a href="{{ route('dashboard.about') }}" class="{{ $aboutActive }}">About</a>
                 @endif
             </div>
@@ -31,7 +33,7 @@
             @if(Auth::guard('customer')->check())
                 <div class="flex items-center gap-4">
                     <span class="text-gray-700 text-sm">Hello, {{ Auth::guard('customer')->user()->fname }}</span>
-                    <a href="{{ route('cart.index') }}" class="relative">
+                    <a href="{{ route('cart.auth.index') }}" class="relative">
                         <i class="fas fa-shopping-bag text-gray-700 text-lg"></i>
                         <span id="cartCount" class="absolute -top-2 -right-3 bg-orange-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">0</span>
                     </a>

@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('products', function (Blueprint $table) {
             $table->id();
             $table->foreignId('catid')->constrained('category')->onDelete('cascade');
-            $table->integer('subcatid')->index();
+            $table->integer('subcatid');
             $table->string('prdctname');
             $table->text('prdctdesc')->nullable();
             $table->string('prdctsku')->unique();

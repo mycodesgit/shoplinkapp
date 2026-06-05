@@ -22,7 +22,7 @@
                 </div>
                 <h3 class="text-lg font-semibold text-gray-900 mb-2">Your cart is empty</h3>
                 <p class="text-gray-500 mb-6">Looks like you haven't added anything to your cart yet</p>
-                <a href="/shop" class="inline-flex items-center gap-2 bg-black text-white px-6 py-3 rounded-full font-semibold hover:bg-gray-800 transition-all duration-200">
+                <a href="{{ route('dashboard.auth.items') }}" class="inline-flex items-center gap-2 bg-black text-white px-6 py-3 rounded-full font-semibold hover:bg-gray-800 transition-all duration-200">
                     <i class="fas fa-arrow-left text-sm"></i>
                     Continue Shopping
                 </a>
@@ -172,7 +172,7 @@
                             Proceed to Checkout →
                         </a>
                         
-                        <a href="/shop" class="block text-center text-sm text-gray-500 hover:text-black transition-colors mt-4">
+                        <a href="{{ route('dashboard.auth.items') }}" class="block text-center text-sm text-gray-500 hover:text-black transition-colors mt-4">
                             ← Continue Shopping
                         </a>
                     </div>
@@ -208,14 +208,20 @@
             }, 3000);
         }
         
-        // Custom confirmation dialog
+        // Custom confirmation dialog with blur background
         function showConfirmDialog(message, onConfirm) {
             const overlay = document.createElement('div');
-            overlay.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center';
+            overlay.className = 'fixed inset-0 z-50 flex items-center justify-center';
+            
+            // Create backdrop with blur effect
             overlay.style.animation = 'fadeIn 0.2s ease-out';
+            overlay.style.background = 'rgba(0, 0, 0, 0.4)';
+            overlay.style.backdropFilter = 'blur(8px)';
+            overlay.style.WebkitBackdropFilter = 'blur(8px)'; // For Safari support
             
             const modal = document.createElement('div');
             modal.className = 'bg-white rounded-2xl p-6 max-w-sm w-full mx-4 transform transition-all';
+            modal.style.animation = 'scaleIn 0.2s ease-out';
             modal.innerHTML = `
                 <div class="text-center">
                     <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -233,17 +239,25 @@
             overlay.appendChild(modal);
             document.body.appendChild(overlay);
             
+            // Prevent body scroll when modal is open
+            document.body.style.overflow = 'hidden';
+            
             modal.querySelector('.cancel-btn').addEventListener('click', () => {
+                document.body.style.overflow = '';
                 overlay.remove();
             });
             
             modal.querySelector('.confirm-btn').addEventListener('click', () => {
+                document.body.style.overflow = '';
                 overlay.remove();
                 onConfirm();
             });
             
             overlay.addEventListener('click', (e) => {
-                if (e.target === overlay) overlay.remove();
+                if (e.target === overlay) {
+                    document.body.style.overflow = '';
+                    overlay.remove();
+                }
             });
         }
         
@@ -581,6 +595,31 @@
             }
             to {
                 opacity: 1;
+            }
+        }
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        /* Optional: For a more subtle blur effect on different browsers */
+        @supports (backdrop-filter: blur(8px)) {
+            .modal-overlay {
+                background: rgba(0, 0, 0, 0.3);
+                backdrop-filter: blur(8px);
+            }
+        }
+        
+        /* Fallback for browsers that don't support backdrop-filter */
+        @supports not (backdrop-filter: blur(8px)) {
+            .modal-overlay {
+                background: rgba(0, 0, 0, 0.7);
             }
         }
         

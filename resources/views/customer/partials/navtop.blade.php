@@ -12,7 +12,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-14 md:h-16">
             <div class="flex items-center gap-2">
-                <img src="{{ asset('uilibs/images/logonobg.png') }}" alt="ShopLink Logo" class="h-25 w-auto">
+                <img src="{{ asset('uilibs/images/logonobg.webp') }}" alt="ShopLink Logo" class="h-25 w-auto">
                 {{-- <span class="font-bold text-xl md:text-2xl tracking-tight">SHOPLINK</span> --}}
             </div>
             

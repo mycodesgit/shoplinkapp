@@ -262,7 +262,7 @@
         <!-- Logo -->
         <div class="text-center mb-6">
             <div class="inline-flex items-center justify-center">
-                <img src="{{ asset('uilibs/images/logonobg.png') }}" alt="ShopLink Logo" class="h-35 w-auto">
+                <img src="{{ asset('uilibs/images/logonobg.webp') }}" alt="ShopLink Logo" class="h-35 w-auto">
             </div>
             <h4 class="text-md font-bold text-gray-800">Sign in to enjoy</h4>
             <p class="text-gray-500 text-sm">to start shopping</p>

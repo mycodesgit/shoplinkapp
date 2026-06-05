@@ -15,6 +15,7 @@ use App\Http\Controllers\BannerController;
 
 
 use App\Http\Controllers\ShopLoginController;
+use App\Http\Controllers\ShopRegisterController;
 
 use App\Http\Controllers\ShopDashboardController;
 use App\Http\Controllers\ShopItemInfoController;
@@ -45,6 +46,8 @@ Route::group(['middleware'=>['guest']],function(){
     
     Route::get('/shop/login',[ShopLoginController::class,'index'])->name('shop.login');
     Route::post('/shop/login',[ShopLoginController::class,'login'])->name('shop.login.post');
+    Route::get('/shop/register',[ShopRegisterController::class,'index'])->name('shop.register');
+    Route::post('/shop/register/create',[ShopRegisterController::class,'create'])->name('shop.register.create');
     
     Route::get('/erroradmin',[LoginController::class,'getLogin'])->name('getLogin');
     Route::post('/login',[LoginController::class,'postLogin'])->name('postLogin');

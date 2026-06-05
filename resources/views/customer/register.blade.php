@@ -252,7 +252,7 @@
     <div class="auth-container w-full max-w-md mx-auto p-8">
         <!-- Back Button -->
         <div class="mb-4 sm:mb-5 md:mb-2">
-            <a href="{{ route('dashboard.index') }}" 
+            <a href="{{ route('shop.login') }}" 
             class="back-btn group flex items-center gap-2 text-gray-600 hover:text-indigo-600 transition-colors duration-200">
                 <i class="fas fa-arrow-left text-sm sm:text-base"></i>
                 <span class="text-sm sm:text-base font-medium">Back</span>
@@ -264,66 +264,77 @@
             <div class="inline-flex items-center justify-center">
                 <img src="{{ asset('uilibs/images/logonobg.png') }}" alt="ShopLink Logo" class="h-35 w-auto">
             </div>
-            <h4 class="text-md font-bold text-gray-800">Sign in to enjoy</h4>
-            <p class="text-gray-500 text-sm">to start shopping</p>
+            <h4 class="text-md font-bold text-gray-800">Create your account</h4>
+            <p class="text-gray-500 text-sm">to start shopping with ShopLink</p>
         </div>
         
         <!-- Form -->
-        <form action="#" method="POST" class="space-y-4">
+        <form action="{{ route('shop.register.create') }}" method="POST" class="space-y-4" id="addUser">
+            @csrf
             <div class="relative">
-                <input type="email" name="email" class="input-field" placeholder="E-mail ID" required>
+                <input type="text" name="fname" class="input-field" placeholder="First Name" required>
+                <i class="fas fa-user input-icon"></i>
+            </div>
+
+            <div class="relative">
+                <input type="text" name="mname" class="input-field" placeholder="Middle Name" required>
+                <i class="fas fa-user input-icon"></i>
+            </div>
+
+            <div class="relative">
+                <input type="text" name="lname" class="input-field" placeholder="Last Name" required>
+                <i class="fas fa-user input-icon"></i>
+            </div>
+
+            <div class="relative">
+                <input type="email" name="email" class="input-field" placeholder="E-mail" required>
                 <i class="fas fa-envelope input-icon"></i>
             </div>
             
             <div class="relative">
-                <input type="password" name="password" class="input-field" placeholder="Password" required>
+                <input type="password" name="password" class="input-field" id="password" placeholder="Password" required>
                 <i class="fas fa-lock input-icon"></i>
             </div>
             
             <div class="flex items-center justify-between">
                 <label class="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" class="hidden" id="remember">
+                    <input type="checkbox" class="hidden" id="show-password">
                     <span class="checkbox-custom inline-block"></span>
-                    <span class="text-sm text-gray-600">Remember me</span>
+                    <span class="text-sm text-gray-600">Show password</span>
                 </label>
-                <a href="#" class="text-sm text-indigo-600 font-medium">Forget Password?</a>
             </div>
             
             <button type="submit" class="login-btn w-full py-3 rounded-2xl text-white font-semibold text-base shadow-md mt-4">
-                Login
+                Register
             </button>
         </form>
-        
-        <!-- Divider -->
-        <div class="relative my-6">
-            <div class="absolute inset-0 flex items-center">
-                <div class="w-full border-t border-gray-200"></div>
-            </div>
-            <div class="relative flex justify-center text-sm">
-                <span class="px-4 bg-white text-gray-400">Or</span>
-            </div>
-        </div>
-        
-        <!-- Social Login (Commented - kept as requested) -->
-        {{-- <div class="grid grid-cols-2 gap-3">
-            <button class="social-btn flex items-center justify-center gap-2 py-2.5 rounded-xl bg-white">
-                <i class="fab fa-google text-red-500"></i>
-                <span class="text-sm font-medium text-gray-700">Google</span>
-            </button>
-            <button class="social-btn flex items-center justify-center gap-2 py-2.5 rounded-xl bg-white">
-                <i class="fab fa-apple text-black"></i>
-                <span class="text-sm font-medium text-gray-700">Apple</span>
-            </button>
-        </div> --}}
-        
-        <!-- Register Link -->
-        <div class="text-center mt-6">
-            <p class="text-sm text-gray-600">
-                Don't have an account?
-                <a href="{{ route('shop.register') }}" class="text-indigo-600 font-semibold ml-1">Register →</a>
-            </p>
-        </div>
     </div>
+
+    <div id="toast" class="fixed top-20 md:top-6 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-5 py-2.5 rounded-full shadow-lg z-50 transition-all duration-300 opacity-0 pointer-events-none text-sm whitespace-nowrap">
+        <i class="fas fa-check-circle text-green-400 mr-2"></i>
+        <span id="toastMessage">Account created successfully!</span>
+    </div>
+
+    <!-- jQuery -->
+    <script src="{{ asset('uilibs/plugins/jquery/jquery.min.js') }}"></script>
     
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var passwordInput = document.getElementById('password');
+            var showPassword = document.getElementById('show-password');
+
+            if (passwordInput && showPassword) {
+                showPassword.addEventListener('change', function () {
+                    passwordInput.type = this.checked ? 'text' : 'password';
+                });
+            }
+        });
+    </script>
+    
+    <script>
+        var userCreateRoute = "";
+    </script>
+    @include('script.registerjs')
+
 </body>
 </html>

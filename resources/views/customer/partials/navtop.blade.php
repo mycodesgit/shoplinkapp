@@ -2,6 +2,7 @@
     $curr_route = request()->route()->getName();
 
     $dashActive = in_array($curr_route, ['dashboard.index']) ? 'text-black' : 'text-gray-500';
+    $aboutActive = in_array($curr_route, ['dashboard.about']) ? 'text-black' : 'text-gray-500';
     $itemsActive = in_array($curr_route, ['dashboard.items', 'itemdetails.index']) ? 'text-black' : 'text-gray-500';
     $cartActive = in_array($curr_route, ['cart.index']) ? 'text-black' : 'text-gray-500';
     $profileActive = in_array($curr_route, ['profile.account']) ? 'text-black' : 'text-gray-500';
@@ -23,7 +24,7 @@
                     <a href="{{ route('cart.index') }}" class="{{ $cartActive }}">Cart</a>
                     <a href="{{ route('profile.account') }}" class="{{ $profileActive }}">Profile</a>
                 @else
-                    
+                    <a href="{{ route('dashboard.about') }}" class="{{ $aboutActive }}">About</a>
                 @endif
             </div>
 

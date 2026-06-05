@@ -33,10 +33,12 @@ class Customer extends Authenticatable
         'zcode',
         'address',
         'avatar',
+        'remember_token',
     ];
 
     protected $hidden = [
         'password',
+        'remember_token',
     ];
 
     public function hasRole($role)

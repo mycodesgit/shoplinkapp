@@ -94,7 +94,7 @@
                 @foreach($categories as $category)
                     <div class="category-tab cursor-pointer px-2 py-3 text-sm font-medium transition-colors duration-200 text-gray-500 hover:text-gray-700 whitespace-nowrap" 
                         data-category="{{ strtolower($category->catname) }}">
-                        {{ $category->catname }}
+                        {{ $category->subcategory }}
                     </div>
                 @endforeach
             </div>

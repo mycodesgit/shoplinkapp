@@ -27,7 +27,7 @@
                     <div class="marquee-track flex gap-3 md:gap-4 animate-marquee">
                         @foreach($categories as $index => $category)
                             <button class="category-chip flex-shrink-0 px-4 md:px-6 py-2 md:py-2.5 rounded-full text-sm md:text-base font-medium {{ $index === 0 ? 'bg-gray-100 text-gray-800' : 'bg-gray-100 text-gray-800 hover:bg-gray-200' }} transition-all duration-200 hover:scale-105" data-category="{{ $category->catname }}">
-                                <i class="{{ $category->caticon }} mr-1.5 text-xs"></i> {{ $category->catname }}
+                                <i class="{{ $category->caticon }} mr-1.5 text-xs"></i> {{ $category->subcategory }}
                             </button>
                         @endforeach
                     </div>

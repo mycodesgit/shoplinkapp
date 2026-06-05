@@ -25,6 +25,7 @@ return new class extends Migration
             $table->string('prdctslug')->unique();
             $table->string('prdctvariation');
             $table->string('prdcttag');
+            $table->foreignId('postedBy')->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });
     }

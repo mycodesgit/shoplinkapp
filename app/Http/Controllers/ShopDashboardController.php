@@ -30,8 +30,9 @@ class ShopDashboardController extends Controller
     public function store()
     {
         $products = Product::all();
+        $categories = Category::all();
 
-        return view('customer.shop.items', compact('products'));
+        return view('customer.shop.items', compact('products', 'categories'));
     }
 
     public function about()

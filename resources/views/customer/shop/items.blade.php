@@ -83,14 +83,20 @@
             </div>
         </div>
 
-        <!-- Category Tabs -->
-        <div class="overflow-x-auto mb-8 pb-2">
+        <!-- Category Tabs - Mobile Scrollable -->
+        <div class="overflow-x-auto overflow-y-hidden mb-8 pb-2 scrollbar-hide [-webkit-overflow-scrolling:touch]">
             <div class="flex gap-6 min-w-max border-b border-gray-200">
-                <div class="category-tab active" data-category="all">Popular</div>
-                <div class="category-tab" data-category="menswear">Menswear</div>
-                <div class="category-tab" data-category="womenwear">Womenwear</div>
-                <div class="category-tab" data-category="accessories">Accessories</div>
-                <div class="category-tab" data-category="electronics">Electronics</div>
+                <div class="category-tab active cursor-pointer px-2 py-3 text-sm font-medium transition-colors duration-200 whitespace-nowrap" 
+                    data-category="all">
+                    All
+                </div>
+                
+                @foreach($categories as $category)
+                    <div class="category-tab cursor-pointer px-2 py-3 text-sm font-medium transition-colors duration-200 text-gray-500 hover:text-gray-700 whitespace-nowrap" 
+                        data-category="{{ strtolower($category->catname) }}">
+                        {{ $category->catname }}
+                    </div>
+                @endforeach
             </div>
         </div>
 
@@ -731,5 +737,7 @@
             animation: pulse 2s infinite;
             box-shadow: 0 0 8px rgba(74, 222, 128, 0.6);
         }
+
+        
     </style>
 @endsection

@@ -8,56 +8,47 @@ use Illuminate\Database\Eloquent\Model;
 class Cart extends Model
 {
     use HasFactory;
-
-    protected $table = 'carts';
-
+    
     protected $fillable = [
         'product_id',
+        'variation_id',
         'customer_id',
         'quantity',
-        'price',
-        'options'
+        'price'
     ];
-
+    
     protected $casts = [
-        'options' => 'array',
-        'price' => 'decimal:2'
+        'price' => 'decimal:2',
+        'quantity' => 'integer'
     ];
-
-    // Relationship with Product
+    
     public function product()
     {
-        return $this->belongsTo(Product::class, 'product_id');
+        return $this->belongsTo(Product::class);
     }
-
-    // Relationship with Customer
+    
+    public function variation()
+    {
+        return $this->belongsTo(ProductVariation::class, 'variation_id');
+    }
+    
     public function customer()
     {
-        return $this->belongsTo(Customer::class, 'customer_id');
+        return $this->belongsTo(Customer::class);
     }
-
-    // Accessor for formatted price
-    public function getFormattedPriceAttribute()
-    {
-        return '₱' . number_format($this->price, 2);
-    }
-
-    // Accessor for subtotal
+    
     public function getSubtotalAttribute()
     {
         return $this->price * $this->quantity;
     }
-
-    // Accessor for formatted subtotal
+    
+    public function getFormattedPriceAttribute()
+    {
+        return '₱' . number_format($this->price, 2);
+    }
+    
     public function getFormattedSubtotalAttribute()
     {
         return '₱' . number_format($this->price * $this->quantity, 2);
-    }
-
-    // Get size from options
-    public function getSizeAttribute()
-    {
-        $options = is_array($this->options) ? $this->options : json_decode($this->options, true);
-        return $options['size'] ?? 'M';
     }
 }

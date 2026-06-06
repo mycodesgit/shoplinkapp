@@ -20,9 +20,9 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('password');
             $table->string('role')->default('Customer');
-            $table->string('gender');
-            $table->string('bday');
-            $table->string('mobileno');
+            $table->string('gender')->nullable();
+            $table->string('bday')->nullable();
+            $table->string('mobileno')->nullable();
             $table->string('hnum')->nullable();
             $table->string('brgy')->nullable();
             $table->string('city')->nullable();
@@ -30,7 +30,7 @@ return new class extends Migration
             $table->string('region')->nullable();
             $table->string('zcode')->nullable();
             $table->text('address')->nullable();
-            $table->string('avatar');
+            $table->string('avatar')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

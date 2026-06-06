@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 use App\Models\Product;
+use App\Models\ProductVariation;
 use App\Models\Cart;
 
 class ShopCartController extends Controller
@@ -24,7 +25,7 @@ class ShopCartController extends Controller
 
         $customerId = Auth::guard('customer')->check() ? Auth::guard('customer')->id() : null;
         
-        $cartItems = Cart::with('product')
+        $cartItems = Cart::with('product', 'variation')
             ->where('customer_id', $customerId)
             ->get();
 
@@ -51,60 +52,66 @@ class ShopCartController extends Controller
 
             $request->validate([
                 'product_id' => 'required|exists:products,id',
+                'variation_id' => 'required|exists:product_variations,id',
                 'quantity' => 'required|integer|min:1|max:999',
-                'size' => 'nullable|string|max:10'
+                'price' => 'required|numeric|min:0'
             ]);
 
-            $productId = $request->product_id;
+            $variationId = $request->variation_id;
             $quantity = $request->quantity;
-            $size = $request->size ?? 'M';
-            $product = Product::findOrFail($productId);
             $customerId = Auth::guard('customer')->id();
             
-            // Get all cart items for this product and customer
-            $cartItems = Cart::where('product_id', $productId)
-                ->where('customer_id', $customerId)
-                ->get();
+            // Get the variation to check stock
+            $variation = ProductVariation::findOrFail($variationId);
             
-            $existingCartItem = null;
-            
-            // Loop through items to find matching size
-            foreach ($cartItems as $item) {
-                $options = json_decode($item->options, true);
-                if (isset($options['size']) && $options['size'] === $size) {
-                    $existingCartItem = $item;
-                    break;
-                }
+            // Check if enough stock
+            if ($variation->variant_stock < $quantity) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Not enough stock available. Only ' . $variation->variant_stock . ' left.'
+                ], 400);
             }
-
+            
+            // Check if same variation already exists in cart
+            $existingCartItem = Cart::where('variation_id', $variationId)
+                ->where('customer_id', $customerId)
+                ->first();
+            
             if ($existingCartItem) {
-                $existingCartItem->quantity += $quantity;
+                $newQuantity = $existingCartItem->quantity + $quantity;
+                if ($variation->variant_stock < $newQuantity) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Cannot add more. Only ' . $variation->variant_stock . ' items available.'
+                    ], 400);
+                }
+                
+                $existingCartItem->quantity = $newQuantity;
                 $existingCartItem->save();
                 $message = 'Cart updated successfully!';
             } else {
                 Cart::create([
-                    'product_id' => $productId,
+                    'product_id' => $request->product_id,
+                    'variation_id' => $variationId,
                     'customer_id' => $customerId,
                     'quantity' => $quantity,
-                    'price' => $product->prdctprice,
-                    'options' => json_encode(['size' => $size])
+                    'price' => $request->price
                 ]);
                 $message = 'Product added to cart successfully!';
             }
-
-            $cartCount = Cart::where('customer_id', $customerId)->count();
-
+            
+            $cartCount = Cart::where('customer_id', $customerId)->sum('quantity');
+            
             return response()->json([
                 'success' => true,
                 'message' => $message,
                 'cart_count' => $cartCount
             ]);
-
+            
         } catch (\Exception $e) {
-            // \Log::error('Add to cart error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to add product to cart'
+                'message' => 'Failed to add product to cart: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -123,7 +130,7 @@ class ShopCartController extends Controller
         // Recalculate totals
         $customerId = Auth::guard('customer')->check() ? Auth::guard('customer')->id() : null;
         
-        $cartItems = Cart::with('product')
+        $cartItems = Cart::with('product', 'variation')
             ->where('customer_id', $customerId)
             ->get();
         

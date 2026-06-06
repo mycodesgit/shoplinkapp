@@ -43,9 +43,33 @@
                         @php
                             $itemTotal = $item->price * $item->quantity;
                             
-                            // Handle image array - get first image
+                            // Initialize image path variable
                             $imagePath = null;
-                            if ($item->product->prdctimage) {
+                            
+                            // PRIORITY 1: Check if variation has its own image
+                            if ($item->variation && $item->variation->variant_image && $item->variation->variant_image !== 'null' && $item->variation->variant_image !== '') {
+                                $variantImage = $item->variation->variant_image;
+                                
+                                // Check if image exists in product-variations folder
+                                if (strpos($variantImage, 'product-variations/') !== false) {
+                                    $imagePath = asset('storage/' . $variantImage);
+                                } 
+                                // Check if image exists in storage/product-variations
+                                else if (strpos($variantImage, 'storage/product-variations/') !== false) {
+                                    $imagePath = asset($variantImage);
+                                }
+                                // If it's just the filename without path
+                                else if (!strpos($variantImage, '/')) {
+                                    $imagePath = asset('storage/product-variations/' . $variantImage);
+                                }
+                                // Default for other formats
+                                else {
+                                    $imagePath = asset('storage/' . $variantImage);
+                                }
+                            }
+                            
+                            // PRIORITY 2: If no variation image, use product's main image
+                            if (!$imagePath && $item->product && $item->product->prdctimage) {
                                 $images = $item->product->prdctimage;
                                 if (is_string($images)) {
                                     $images = json_decode($images, true);
@@ -53,16 +77,35 @@
                                 
                                 if (is_array($images) && count($images) > 0) {
                                     $firstImage = $images[0];
+                                    
+                                    // Check if image is in products folder
                                     if (strpos($firstImage, 'products/') !== false) {
                                         $imagePath = asset('storage/' . $firstImage);
-                                    } else {
+                                    } 
+                                    // Check if image is in storage/products
+                                    else if (strpos($firstImage, 'storage/products/') !== false) {
+                                        $imagePath = asset($firstImage);
+                                    }
+                                    // If it's just the filename without path
+                                    else if (!strpos($firstImage, '/')) {
                                         $imagePath = asset('storage/products/' . $firstImage);
+                                    }
+                                    // Default for other formats
+                                    else {
+                                        $imagePath = asset('storage/' . $firstImage);
                                     }
                                 }
                             }
                             
+                            // PRIORITY 3: Fallback placeholder image
                             if (!$imagePath) {
                                 $imagePath = 'https://images.unsplash.com/photo-1534030347209-467a5b0ad3e6?w=120&h=120&fit=crop';
+                            }
+                            
+                            // Get variation display text
+                            $variationDisplay = '';
+                            if ($item->variation) {
+                                $variationDisplay = $item->variation->variation_name . ': ' . $item->variation->variation_value;
                             }
                         @endphp
                         
@@ -71,15 +114,17 @@
                             <div class="block md:hidden">
                                 <div class="flex gap-4">
                                     <img src="{{ $imagePath }}" 
-                                         class="w-24 h-24 rounded-lg object-cover" 
-                                         alt="{{ $item->product->name ?? 'Product' }}">
+                                        class="w-24 h-24 rounded-lg object-cover" 
+                                        alt="{{ $item->product->prdctname ?? 'Product' }}">
                                     <div class="flex-1">
-                                        <h3 class="font-semibold text-gray-900">{{ $item->product->name ?? 'Product' }}</h3>
-                                        <p class="text-sm text-gray-500 mt-1">Size: {{ $item->size ?? 'M' }}</p>
-                                        <p class="text-black font-bold mt-2">${{ number_format($item->price, 2) }}</p>
+                                        <h3 class="font-semibold text-gray-900">{{ $item->product->prdctname ?? 'Product' }}</h3>
+                                        @if($variationDisplay)
+                                            <p class="text-sm text-gray-500 mt-1">{{ $variationDisplay }}</p>
+                                        @endif
+                                        <p class="text-black font-bold mt-2">₱{{ number_format($item->price, 2) }}</p>
                                     </div>
                                     <div class="text-right">
-                                        <p class="font-bold text-gray-900 item-total" data-id="{{ $item->id }}">${{ number_format($itemTotal, 2) }}</p>
+                                        <p class="font-bold text-gray-900 item-total" data-id="{{ $item->id }}">₱{{ number_format($itemTotal, 2) }}</p>
                                     </div>
                                 </div>
                                 <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
@@ -96,8 +141,8 @@
                                             <i class="fas fa-plus text-xs"></i>
                                         </button>
                                     </div>
-                                    <button class="cart-remove text-red-500 text-sm hover:text-red-700 transition-colors flex items-center gap-1" data-id="{{ $item->id }}" data-name="{{ $item->product->name ?? 'Product' }}">
-                                        <i class="fas fa-trash-alt text-xs"></i> Remove
+                                    <button class="cart-remove text-red-500 text-sm hover:text-red-700 transition-colors flex items-center gap-1" data-id="{{ $item->id }}" data-name="{{ $item->product->prdctname ?? 'Product' }}">
+                                        <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
                             </div>
@@ -106,15 +151,17 @@
                             <div class="hidden md:flex md:items-center md:gap-4">
                                 <div class="flex-shrink-0 w-24">
                                     <img src="{{ $imagePath }}" 
-                                         class="w-20 h-20 rounded-lg object-cover" 
-                                         alt="{{ $item->product->name ?? 'Product' }}">
+                                        class="w-20 h-20 rounded-lg object-cover" 
+                                        alt="{{ $item->product->prdctname ?? 'Product' }}">
                                 </div>
                                 <div class="flex-1">
-                                    <h3 class="font-semibold text-gray-900">{{ $item->product->name ?? 'Product' }}</h3>
-                                    <p class="text-sm text-gray-500">Size: {{ $item->size ?? 'M' }}</p>
+                                    <h3 class="font-semibold text-gray-900">{{ $item->product->prdctname ?? 'Product' }}</h3>
+                                    @if($variationDisplay)
+                                        <p class="text-sm text-gray-500">{{ $variationDisplay }}</p>
+                                    @endif
                                 </div>
                                 <div class="w-24 text-center">
-                                    <p class="font-semibold text-gray-900">${{ number_format($item->price, 2) }}</p>
+                                    <p class="font-semibold text-gray-900">₱{{ number_format($item->price, 2) }}</p>
                                 </div>
                                 <div class="w-32">
                                     <div class="flex items-center gap-3">
@@ -132,11 +179,11 @@
                                     </div>
                                 </div>
                                 <div class="w-24 text-right">
-                                    <p class="font-bold text-gray-900 item-totaldesktop" data-id="{{ $item->id }}">${{ number_format($itemTotal, 2) }}</p>
+                                    <p class="font-bold text-gray-900 item-totaldesktop" data-id="{{ $item->id }}">₱{{ number_format($itemTotal, 2) }}</p>
                                 </div>
                                 <div class="w-12 text-right">
-                                    <button class="cart-remove text-red-500 hover:text-red-700 transition-colors" data-id="{{ $item->id }}" data-name="{{ $item->product->name ?? 'Product' }}">
-                                        <i class="fas fa-trash-alt"></i>
+                                    <button class="cart-remove text-red-500 hover:text-red-700 transition-colors" data-id="{{ $item->id }}" data-name="{{ $item->product->prdctname ?? 'Product' }}">
+                                        <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
                             </div>
@@ -152,7 +199,7 @@
                         <div class="space-y-3">
                             <div class="flex justify-between text-gray-600">
                                 <span>Subtotal</span>
-                                <span class="font-medium subtotal-amount">${{ number_format($subtotal, 2) }}</span>
+                                <span class="font-medium subtotal-amount">₱{{ number_format($subtotal, 2) }}</span>
                             </div>
                             <div class="flex justify-between text-gray-600">
                                 <span>Shipping</span>
@@ -160,11 +207,11 @@
                             </div>
                             <div class="flex justify-between text-gray-600 border-b border-gray-200 pb-3">
                                 <span>Tax (12% VAT)</span>
-                                <span class="font-medium tax-amount">${{ number_format($tax, 2) }}</span>
+                                <span class="font-medium tax-amount">₱{{ number_format($tax, 2) }}</span>
                             </div>
                             <div class="flex justify-between font-bold text-lg text-gray-900 pt-2">
                                 <span>Total</span>
-                                <span class="total-amount">${{ number_format($total, 2) }}</span>
+                                <span class="total-amount">₱{{ number_format($total, 2) }}</span>
                             </div>
                         </div>
                         

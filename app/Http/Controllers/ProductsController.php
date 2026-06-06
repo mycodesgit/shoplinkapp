@@ -10,6 +10,7 @@ use Carbon\Carbon;
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductVariation;
 
 class ProductsController extends Controller
 {
@@ -23,55 +24,84 @@ class ProductsController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'catid'  => 'required|integer',
-            'subcatid'  => 'required|integer',
+            'catid'       => 'required|integer',
+            'subcatid'    => 'required|integer',
             'prdctname'   => 'required|string|max:255',
-            'prdctdesc'   => 'required|string',
-            'prdctsku'   => 'required|string|max:100',
-            'prdctprice'  => 'required|numeric',
-            'prdctstock'  => 'required|integer',
-            'prdctimage.*'  => 'required|image|mimes:jpg,jpeg,png,gif|max:2048',
+            'prdctdesc'   => 'nullable|string',
+            'prdcttag'    => 'required|string',
+            'prdctimage.*' => 'required|image|mimes:jpg,jpeg,png,gif|max:2048',
+            
+            // Variations validation
+            'variations' => 'required|array|min:1',
+            'variations.*.name' => 'required|string',
+            'variations.*.value' => 'required|string',
+            'variations.*.sku' => 'required|string|distinct',
+            'variations.*.price' => 'required|numeric|min:0',
+            'variations.*.stock' => 'required|integer|min:0',
         ]);
 
         try {
-            $paths = [];
-
-            foreach ($request->file('prdctimage') as $image) {
-                $paths[] = $image->store('products', 'public');
+            // Store main product images
+            $productImages = [];
+            if ($request->hasFile('prdctimage')) {
+                foreach ($request->file('prdctimage') as $image) {
+                    $productImages[] = $image->store('products', 'public');
+                }
             }
 
-            Product::create([
+            // Create the product (NO price, stock, sku here)
+            $product = Product::create([
                 'catid'       => $request->catid,
                 'subcatid'    => $request->subcatid,
                 'prdctname'   => $request->prdctname,
                 'prdctdesc'   => $request->prdctdesc,
-                'prdctsku'   => $request->prdctsku,
-                'prdctprice'  => $request->prdctprice,
-                'prdctstock'  => $request->prdctstock,
-                'prdctimage'  => json_encode($paths),
-                'prdctvariation' => $request->prdctvariation,
-                'prdcttag' => $request->prdcttag,
+                'prdctimage'  => json_encode($productImages),
+                'prdcttag'    => $request->prdcttag,
+                'postedBy'    => auth()->id(),
             ]);
+
+            // Create variations (ALL pricing, stock, sku info goes here)
+            foreach ($request->variations as $variation) {
+                // Handle variation image if uploaded
+                $variationImagePath = null;
+                if (isset($variation['image']) && $variation['image'] instanceof \Illuminate\Http\UploadedFile) {
+                    $variationImagePath = $variation['image']->store('product-variations', 'public');
+                }
+                
+                ProductVariation::create([
+                    'variant_product_id' => $product->id,
+                    'variation_name' => $variation['name'],
+                    'variation_value' => $variation['value'],
+                    'variant_sku' => $variation['sku'],
+                    'variant_price' => $variation['price'],
+                    'variant_stock' => $variation['stock'],
+                    'variant_image' => $variationImagePath,
+                ]);
+            }
 
             return response()->json([
                 'success' => true,
                 'message' => 'Product uploaded successfully!',
+                'product_id' => $product->id,
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'error' => true,
                 'message' => 'Upload failed: ' . $e->getMessage(),
-            ]);
+            ], 500);
         }
     }
 
     public function show()
     {
-        $data = Product::join('category', 'products.catid', '=', 'category.id')
-                ->where('pstatus', '!=', '3')
-                ->select('products.*', 'category.catname')
-                ->get();
+        $data = Product::with('variations')  // Use eager loading
+            ->join('category', 'products.catid', '=', 'category.id')
+            ->select(
+                'products.*',
+                'category.catname'
+            )
+            ->get();
                 
         return response()->json(['data' => $data]);
     }

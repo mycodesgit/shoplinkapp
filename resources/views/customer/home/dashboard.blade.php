@@ -88,7 +88,7 @@
                             </div>
                             
                             <div class="flex items-center gap-2 mb-1">
-                                <span class="text-xl font-bold text-gray-900">₱{{ number_format($item->prdctprice, 2) }}</span>
+                                <span class="text-xl font-bold text-gray-900">₱{{ number_format($item->variations->min('variant_price'), 2) }}</span>
                                 <span class="text-sm text-gray-400 line-through hidden sm:inline">₱200.00</span>
                             </div>
                             

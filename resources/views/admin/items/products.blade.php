@@ -155,7 +155,7 @@
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <label for="productCat">Category :</label>
-                                    <select name="catid" class="form-control" id="productCat">
+                                    <select name="catid" class="form-control" id="productCat" required>
                                         <option disabled selected> --Select Category-- </option>
                                         @foreach ($categories as $item)
                                             <option value="{{ $item->id }}">{{ $item->catname }} - {{ $item->subcategory }}</option>
@@ -165,7 +165,7 @@
 
                                 <div class="col-md-6">
                                     <label for="productSubCat">Sub Category :</label>
-                                    <select name="subcatid" class="form-control" id="productSubCat">
+                                    <select name="subcatid" class="form-control" id="productSubCat" required>
                                         <option disabled selected> --Select Sub Category-- </option>
                                         <option value="1">Men</option>
                                         <option value="2">Women</option>
@@ -181,7 +181,7 @@
                                 <div class="col-md-12">
                                     <label for="productName">Product Name :</label>
                                     <input type="text" class="form-control" id="productName" name="prdctname"
-                                        placeholder="Enter Product name">
+                                        placeholder="Enter Product name" required>
                                 </div>
                             </div>
                         </div>
@@ -196,41 +196,60 @@
                             </div>
                         </div>
 
-                        <div class="form-group mt-3">
-                            <div class="row g-3">
-                                <div class="col-md-4">
-                                    <label for="productSku">Product SKU :</label>
-                                    <input type="text" class="form-control" id="productSku" name="prdctsku"
-                                        placeholder="Enter Product SKU">
-                                </div>
-                                <div class="col-md-4">
-                                    <label for="productPrice">Product Price :</label>
-                                    <input type="number" class="form-control" id="productPrice" name="prdctprice"
-                                        placeholder="Enter Product price">
-                                </div>
-                                <div class="col-md-4">
-                                    <label for="productStock">Product Stock :</label>
-                                    <input type="number" class="form-control" id="productStock" name="prdctstock"
-                                        placeholder="Enter Product stock">
-                                </div>
-                            </div>
-                        </div>
+                        <!-- REMOVED: Product SKU, Price, Stock - These go in variations now -->
                         
                         <div class="form-group mt-3">
                             <div class="row g-3">
-                                <div class="col-md-4">
-                                    <label for="productVariation">Product Variation :</label>
-                                    <input type="text" class="form-control" id="productVariation" name="prdctvariation"
-                                        placeholder="Enter Product variation">
-                                </div>
-                                <div class="col-md-4">
+                                <div class="col-md-12">
                                     <label for="productTag">Product Tag :</label>
-                                        <select name="prdcttag" id="productTagSelect" class="form-control">
-                                            <option value="">Select a tag</option>
-                                            <option value="Popular">Popular</option>
-                                            <option value="New Arrival">New Arrival</option>
-                                            <option value="Sale">Sale</option>
-                                        </select>
+                                    <select name="prdcttag" id="productTagSelect" class="form-control" required>
+                                        <option value="">Select a tag</option>
+                                        <option value="Popular">Popular</option>
+                                        <option value="New Arrival">New Arrival</option>
+                                        <option value="Sale">Sale</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- PRODUCT VARIATIONS SECTION (ADD THIS) -->
+                        <div class="form-group mt-3">
+                            <div class="row g-3">
+                                <div class="col-md-12">
+                                    <label><strong>Product Variations :</strong> <small class="text-muted">(At least one variation required)</small></label>
+                                    <div id="variations-container">
+                                        <div class="variation-row border rounded p-3 mb-3">
+                                            <div class="row g-2">
+                                                <div class="col-md-2">
+                                                    <input type="text" class="form-control" name="variations[0][name]" 
+                                                        placeholder="Type (e.g., Color)" required>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <input type="text" class="form-control" name="variations[0][value]" 
+                                                        placeholder="Value (e.g., Black)" required>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <input type="text" class="form-control" name="variations[0][sku]" 
+                                                        placeholder="SKU" required>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <input type="number" class="form-control" name="variations[0][price]" 
+                                                        placeholder="Price" step="0.01" required>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <input type="number" class="form-control" name="variations[0][stock]" 
+                                                        placeholder="Stock" required>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <input type="file" class="form-control" name="variations[0][image]" 
+                                                        accept="image/*">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-primary" onclick="addVariation()">
+                                        + Add Another Variation
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -242,11 +261,10 @@
                                         <label for="file-input" style="text-align: left !important">Product Image :</label>
                                         <div id="upload-area" class="upload-area">
                                             Drag & Drop files here<br>or<br><strong>Click to Upload</strong>
-                                            <input type="file" name="prdctimage[]" id="file-input" accept="image/*" multiple>
+                                            <input type="file" name="prdctimage[]" id="file-input" accept="image/*" multiple required>
                                         </div>
                                         <div id="preview" class="preview"></div>
-                                        <button class="btn btn-default btn-clearfiles" id="clear-btn">Clear
-                                            Files</button>
+                                        <button class="btn btn-default btn-clearfiles" id="clear-btn">Clear Files</button>
                                     </div>
                                 </div>
                             </div>
@@ -257,6 +275,58 @@
                         <button type="submit" class="btn btn-success">Save</button>
                     </div>
                 </form>
+
+                <script>
+                let variationIndex = 1;
+
+                function addVariation() {
+                    let html = `
+                        <div class="variation-row border rounded p-3 mb-3">
+                            <div class="row g-2">
+                                <div class="col-md-2">
+                                    <input type="text" class="form-control" name="variations[${variationIndex}][name]" 
+                                        placeholder="Type (e.g., Color)" required>
+                                </div>
+                                <div class="col-md-2">
+                                    <input type="text" class="form-control" name="variations[${variationIndex}][value]" 
+                                        placeholder="Value (e.g., Black)" required>
+                                </div>
+                                <div class="col-md-2">
+                                    <input type="text" class="form-control" name="variations[${variationIndex}][sku]" 
+                                        placeholder="SKU" required>
+                                </div>
+                                <div class="col-md-2">
+                                    <input type="number" class="form-control" name="variations[${variationIndex}][price]" 
+                                        placeholder="Price" step="0.01" required>
+                                </div>
+                                <div class="col-md-2">
+                                    <input type="number" class="form-control" name="variations[${variationIndex}][stock]" 
+                                        placeholder="Stock" required>
+                                </div>
+                                <div class="col-md-2">
+                                    <input type="file" class="form-control" name="variations[${variationIndex}][image]" 
+                                        accept="image/*">
+                                    <button type="button" class="btn btn-danger btn-sm mt-2" 
+                                        onclick="this.closest('.variation-row').remove()">Remove</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    document.getElementById('variations-container').insertAdjacentHTML('beforeend', html);
+                    variationIndex++;
+                }
+                </script>
+
+                <style>
+                .variation-row {
+                    background-color: #f9f9f9;
+                    transition: all 0.3s ease;
+                }
+                .variation-row:hover {
+                    background-color: #f0f0f0;
+                    border-color: #007bff !important;
+                }
+                </style>
             </div>
         </div>
     </div>

@@ -14,6 +14,7 @@ use Carbon\Carbon;
 use App\Models\WelcomeBanner;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductVariation;
 
 class ShopDashboardController extends Controller
 {
@@ -21,14 +22,14 @@ class ShopDashboardController extends Controller
     {
         $banner = WelcomeBanner::where('welcomestatus', 'Active')->first();
         $categories = Category::where('pcstatus', '=', 1)->orderBy('subcategory', 'ASC')->get();
-        $products = Product::all();
+        $products = Product::with('variations')->get();
 
         return view('customer.home.dashboard', compact('banner', 'categories', 'products'));
     }
 
     public function store()
     {
-        $products = Product::all();
+        $products = Product::with('variations')->get();
         $categories = Category::where('pcstatus', '=', 1)->orderBy('subcategory', 'ASC')->get();
 
         return view('customer.shop.items', compact('products', 'categories'));

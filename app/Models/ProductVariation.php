@@ -44,6 +44,14 @@ class ProductVariation extends Model
     }
 
     /**
+     * Get the order items for this variation.
+     */
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class, 'variation_id');
+    }
+
+    /**
      * Check if variation is in stock
      */
     public function inStock()
@@ -103,7 +111,7 @@ class ProductVariation extends Model
      */
     public function getFormattedPriceAttribute()
     {
-        return '$' . number_format($this->variant_price, 2);
+        return '₱' . number_format($this->variant_price, 2);
     }
 
     /**
@@ -112,5 +120,36 @@ class ProductVariation extends Model
     public function getEffectivePriceAttribute()
     {
         return $this->variant_price ?? $this->product->prdctprice;
+    }
+
+    // Get ordered quantity for this variation
+    public function getOrderedQuantityAttribute()
+    {
+        return $this->orderItems()
+            ->whereHas('order', function($query) {
+                $query->whereNotIn('status', ['cancelled', 'delivered']);
+            })
+            ->sum('quantity');
+    }
+
+    // Get available stock for this variation
+    public function getAvailableStockAttribute()
+    {
+        $orderedQuantity = $this->ordered_quantity;
+        return $this->variant_stock - $orderedQuantity;
+    }
+
+    // Get stock status for this variation
+    public function getStockStatusAttribute()
+    {
+        $available = $this->available_stock;
+        
+        if ($available <= 0) {
+            return 'Out of Stock';
+        } elseif ($available <= 10) {
+            return "Only {$available} left!";
+        } else {
+            return "In Stock";
+        }
     }
 }

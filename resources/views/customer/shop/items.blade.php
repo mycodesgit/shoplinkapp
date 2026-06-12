@@ -107,6 +107,31 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5" id="productsGrid">
             @forelse ($products->take(8) as $item)
                 <div class="product-card group card-item" data-product-id="{{ $item->id }}">
+                    @php
+                        $images = json_decode($item->prdctimage, true);
+                        $firstImage = $images[0] ?? null;
+                        $minPrice = $item->variations->min('variant_price');
+                        $maxPrice = $item->variations->max('variant_price');
+                        $hasMultiplePrices = $minPrice != $maxPrice;
+                        
+                        // Get unique variation types (colors, sizes, etc.)
+                        $variationTypes = $item->variations->groupBy('variation_name');
+                        $colors = isset($variationTypes['Color']) ? $variationTypes['Color'] : collect();
+
+                        // Calculate if product has any available stock
+                        $hasAvailableStock = false;
+                        foreach($item->variations as $variation) {
+                            if ($variation->available_stock > 0) {
+                                $hasAvailableStock = true;
+                                break;
+                            }
+                        }
+                    @endphp
+                    @if(!$hasAvailableStock)
+                        <div class="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/50 rounded-lg flex items-center justify-center z-10">
+                            <span class="text-white font-bold px-4 py-1.5 bg-red-600 rounded-full text-sm shadow-lg backdrop-blur-sm">Out of Stock</span>
+                        </div>
+                    @endif
                     <div class="relative">
                         @if ($item->prdcttag === 'Popular')
                             <div class="discount-badge popular rounded-pill text-xs spantag">
@@ -122,18 +147,6 @@
                             </div>
                         @endif
 
-                        @php
-                            $images = json_decode($item->prdctimage, true);
-                            $firstImage = $images[0] ?? null;
-                            $minPrice = $item->variations->min('variant_price');
-                            $maxPrice = $item->variations->max('variant_price');
-                            $hasMultiplePrices = $minPrice != $maxPrice;
-                            
-                            // Get unique variation types (colors, sizes, etc.)
-                            $variationTypes = $item->variations->groupBy('variation_name');
-                            $colors = isset($variationTypes['Color']) ? $variationTypes['Color'] : collect();
-                        @endphp
-                        
                         <div class="image-container">
                             @if(Auth::guard('customer')->check())
                                 <a href="{{ route('itemdetails.auth.index', $item->id) }}">
@@ -194,11 +207,11 @@
                         
                         <div class="flex gap-2">
                             @if(Auth::guard('customer')->check())
-                                <button class="add-cart-btn flex-1" onclick="openModal({{ json_encode($item) }})">
+                                <button class="add-cart-btn flex-1" onclick="openModal({{ json_encode($item) }})" {{ !$hasAvailableStock ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : '' }}>
                                     <i class="fas fa-shopping-cart text-sm"></i>
                                     Add Cart
                                 </button>
-                                <button class="buy-now-btn flex-1" onclick="buyNow({{ $item->id }})">
+                                <button class="buy-now-btn flex-1" onclick="buyNow({{ $item->id }})" {{ !$hasAvailableStock ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : '' }}>
                                     Buy Now
                                 </button>
                             @else
@@ -242,9 +255,9 @@
             currentProductVariations = product.variations || [];
             currentQuantity = 1;
             
-            // Get the first in-stock variation as default
+            // Get the first IN-STOCK variation as default (using available_stock)
             if (currentProductVariations.length > 0) {
-                const inStockVariation = currentProductVariations.find(v => v.variant_stock > 0);
+                const inStockVariation = currentProductVariations.find(v => (v.available_stock || v.variant_stock) > 0);
                 currentVariation = inStockVariation || currentProductVariations[0];
                 selectedVariationId = currentVariation.id;
             }
@@ -271,6 +284,9 @@
             setTimeout(() => {
                 if (currentVariation) {
                     updateProductImageForVariation(currentVariation);
+                    // Update stock display with available stock
+                    const availableStock = currentVariation.available_stock || currentVariation.variant_stock;
+                    updateStockDisplay(availableStock);
                 }
             }, 100);
         }
@@ -337,7 +353,19 @@
                 
                 variations.forEach(variation => {
                     const isSelected = currentVariation && currentVariation.id === variation.id;
-                    const isOutOfStock = variation.variant_stock <= 0;
+                    // Use available_stock instead of variant_stock
+                    const availableStock = variation.available_stock !== undefined ? variation.available_stock : variation.variant_stock;
+                    const isOutOfStock = availableStock <= 0;
+                    
+                    // Get stock text for tooltip
+                    let stockText = '';
+                    if (availableStock <= 0) {
+                        stockText = 'Out of Stock';
+                    } else if (availableStock <= 10) {
+                        stockText = `Only ${availableStock} left!`;
+                    } else {
+                        stockText = `${availableStock} in stock`;
+                    }
                     
                     html += `
                         <button 
@@ -345,13 +373,15 @@
                             data-variation-name="${variation.variation_name}"
                             data-variation-value="${variation.variation_value}"
                             data-variation-price="${variation.variant_price}"
-                            data-variation-stock="${variation.variant_stock}"
+                            data-variation-stock="${availableStock}"
+                            data-original-stock="${variation.variant_stock}"
                             data-variation-image="${variation.variant_image || ''}"
                             class="variation-option-btn ${isSelected ? 'active selected' : ''}"
                             ${isOutOfStock ? 'disabled' : ''}
+                            title="${stockText}"
                         >
                             ${variation.variation_value}
-                            ${isOutOfStock ? ' (Out of Stock)' : ''}
+                            ${isOutOfStock ? ' ❌' : (availableStock <= 10 ? ' ⚠️' : '')}
                         </button>
                     `;
                 });
@@ -379,10 +409,21 @@
                         
                         // Update price and stock
                         updatePriceAndTotal();
-                        updateStockDisplay(selectedVariation.variant_stock);
+                        // Use available_stock for stock display
+                        const availableStock = selectedVariation.available_stock !== undefined 
+                            ? selectedVariation.available_stock 
+                            : selectedVariation.variant_stock;
+                        updateStockDisplay(availableStock);
                         
                         // CHANGE IMAGE BASED ON SELECTED VARIATION
                         updateProductImageForVariation(selectedVariation);
+                        
+                        // Reset quantity if it exceeds available stock
+                        if (currentQuantity > availableStock && availableStock > 0) {
+                            currentQuantity = availableStock;
+                            document.getElementById('modalQuantity').innerText = currentQuantity;
+                            updatePriceAndTotal();
+                        }
                     }
                 });
             });
@@ -526,8 +567,18 @@
                 return;
             }
             
-            if (currentVariation.variant_stock <= 0) {
+            // Use available_stock instead of variant_stock
+            const availableStock = currentVariation.available_stock !== undefined 
+                ? currentVariation.available_stock 
+                : currentVariation.variant_stock;
+            
+            if (availableStock <= 0) {
                 showToast('This variation is out of stock', 'error');
+                return;
+            }
+            
+            if (currentQuantity > availableStock) {
+                showToast(`Only ${availableStock} items available in stock`, 'error');
                 return;
             }
             
@@ -922,67 +973,42 @@
             box-shadow: 0 0 8px rgba(74, 222, 128, 0.6);
         }
         
-        /* Variant Button Styles */
         .variation-option-btn {
-            background: transparent;
-            border: 2px solid #ffc107;
-            color: #ffc107;
-            padding: 8px 20px;
+            padding: 8px 16px;
+            border: 1px solid #e5e7eb;
             border-radius: 8px;
-            font-weight: 500;
-            font-size: 14px;
-            transition: all 0.3s ease;
+            background: white;
             cursor: pointer;
-            min-height: 40px;
+            transition: all 0.2s;
         }
-        
-        .variation-option-btn:hover:not(:disabled) {
-            background: #ffc107;
+
+        .variation-option-btn:hover:not([disabled]) {
+            border-color: #000;
+            background: #f9fafb;
             color: #000;
-            border-color: #ffc107;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
         }
-        
-        .variation-option-btn.active,
-        .variation-option-btn.selected {
-            background: #ffc107;
-            color: #000;
-            border-color: #ffc107;
-            transform: scale(1.05);
+
+        .variation-option-btn.active {
+            background: #000;
+            color: white;
+            border-color: #000;
         }
-        
-        .variation-option-btn:disabled {
-            opacity: 0.4;
+
+        .variation-option-btn[disabled] {
+            opacity: 0.5;
             cursor: not-allowed;
-            transform: none;
+            background: #f3f4f6;
+            text-decoration: line-through;
         }
-        
-        .variation-option-btn:active {
-            transform: scale(0.95);
-        }
-        
-        .variation-option-btn:focus {
-            outline: none;
-            box-shadow: none;
-        }
-        
-        .variation-group {
-            margin-bottom: 20px;
-        }
-        
-        .variation-group label {
-            display: block;
-            font-size: 14px;
-            font-weight: 500;
-            color: #374151;
-            margin-bottom: 8px;
-        }
-        
-        .variation-buttons-container {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
+
+        /* Stock warning badge */
+        .stock-warning {
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 12px;
+            background: #fef3c7;
+            color: #d97706;
+            margin-left: 8px;
         }
         
         @media (max-width: 640px) {

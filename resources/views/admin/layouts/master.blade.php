@@ -357,7 +357,7 @@
     <!-- Validation JS -->
     <script src="{{ asset('uilibs/plugins/jquery-validation/jquery.validate.min.js') }}"></script>
     <script src="{{ asset('uilibs/plugins/jquery-validation/additional-methods.min.js') }}"></script>
-    <script src="{{ asset('js/basic/contextmenucoas.js') }}"></script>
+    {{-- <script src="{{ asset('js/basic/contextmenucoas.js') }}"></script> --}}
 
     <script>
         $(function () {

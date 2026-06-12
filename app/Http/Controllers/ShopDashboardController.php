@@ -29,7 +29,22 @@ class ShopDashboardController extends Controller
 
     public function store()
     {
-        $products = Product::with('variations')->get();
+        // Get products with variations and calculate available stock
+        $products = Product::with(['variations' => function($query) {
+            $query->with(['orderItems' => function($q) {
+                $q->whereHas('order', function($q2) {
+                    $q2->whereNotIn('status', ['cancelled', 'delivered']);
+                });
+            }]);
+        }])->get();
+        
+        // Calculate available stock for each variation
+        foreach ($products as $product) {
+            foreach ($product->variations as $variation) {
+                $orderedQuantity = $variation->orderItems->sum('quantity');
+                $variation->available_stock = $variation->variant_stock - $orderedQuantity;
+            }
+        }
         $categories = Category::where('pcstatus', '=', 1)->orderBy('subcategory', 'ASC')->get();
 
         return view('customer.shop.items', compact('products', 'categories'));

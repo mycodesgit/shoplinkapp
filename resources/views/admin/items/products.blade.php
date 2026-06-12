@@ -121,7 +121,8 @@
                                             <tr>
                                                 <th>Item/Product</th>
                                                 <th>Price</th>
-                                                <th>Stock</th>
+                                                <th>SKU</th>
+                                                <th>Stocks</th>
                                                 <th>Category</th>
                                                 <th>Sub Category</th>
                                                 <th>Image</th>
@@ -436,6 +437,34 @@
                         <button type="submit" class="btn btn-primary">Save changes</button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Preview Modal - Place this somewhere in your blade file -->
+    <div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="ti ti-photo"></i> 
+                        <span id="modalProductTitle">Product Image</span>
+                    </h5>
+                    <h5 class="modal-title" id="modalProductTitle">Edit Product Info</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img id="modalPreviewImage" src="" alt="Product Image" style="max-height: 70vh; object-fit: contain;">
+                </div>
+                <div class="modal-footer">
+                    <div class="me-auto">
+                        <small class="text-muted" id="modalVariationInfo"></small>
+                    </div>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    {{-- <button type="button" class="btn btn-primary" id="modalDownloadBtn">
+                        <i class="ti ti-download"></i> Download
+                    </button> --}}
+                </div>
             </div>
         </div>
     </div>

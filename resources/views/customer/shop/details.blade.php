@@ -123,48 +123,45 @@
                 
                 <p class="text-gray-600 mb-6 leading-relaxed">{{ $product->prdctdesc }}</p>
                 
-                <!-- Color Selection -->
+                <!-- Dynamic Variations -->
                 @php
-                    $colors = $product->variations->where('variation_name', 'Color')->unique('variation_value');
-                    $sizes = $product->variations->where('variation_name', 'Size')->unique('variation_value');
+                    // Group variations by type
+                    $variationGroups = $product->variations->groupBy('variation_name');
                 @endphp
-                
-                @if($colors->count() > 0)
+
+                @foreach($variationGroups as $groupName => $variations)
                 <div class="mb-5">
-                    <p class="font-semibold mb-2">Select Color</p>
-                    <div class="flex gap-3 flex-wrap" id="colorContainer">
-                        @foreach($colors as $color)
+                    <p class="font-semibold mb-2">Select {{ $groupName }}</p>
+                    <div class="flex gap-3 flex-wrap variation-group" data-group="{{ $groupName }}">
+                        @foreach($variations as $variation)
+                            @php
+                                $availableStock = $variation->available_stock ?? $variation->variant_stock;
+                                $isOutOfStock = $availableStock <= 0;
+                                $isLowStock = $availableStock > 0 && $availableStock <= 10;
+                                $stockText = $isOutOfStock ? 'Out of Stock' : ($isLowStock ? "Only {$availableStock} left" : "{$availableStock} in stock");
+                            @endphp
                             <button 
-                                class="color-option px-4 py-2 rounded-full border-2 transition-all {{ $loop->first ? 'border-indigo-600 bg-indigo-50' : 'border-gray-300 hover:border-indigo-300' }}"
-                                data-color="{{ $color->variation_value }}"
-                                data-price="{{ $color->variant_price }}"
-                                data-stock="{{ $color->variant_stock }}"
-                                data-variation-id="{{ $color->id }}">
-                                {{ $color->variation_value }}
+                                class="variation-option-btn {{ $loop->first && !$isOutOfStock ? 'active' : '' }}"
+                                data-variation-id="{{ $variation->id }}"
+                                data-variation-name="{{ $variation->variation_name }}"
+                                data-variation-value="{{ $variation->variation_value }}"
+                                data-price="{{ $variation->variant_price }}"
+                                data-available-stock="{{ $availableStock }}"
+                                data-physical-stock="{{ $variation->variant_stock }}"
+                                data-variation-image="{{ $variation->variant_image ?? '' }}"
+                                {{ $isOutOfStock ? 'disabled' : '' }}
+                                title="{{ $stockText }}">
+                                {{ $variation->variation_value }}
+                                @if($isLowStock)
+                                    <span class="stock-warning">⚠️ {{ $availableStock }}</span>
+                                @elseif($isOutOfStock)
+                                    <span class="stock-warning">❌</span>
+                                @endif
                             </button>
                         @endforeach
                     </div>
                 </div>
-                @endif
-                
-                <!-- Size Selection -->
-                @if($sizes->count() > 0)
-                <div class="mb-5">
-                    <p class="font-semibold mb-2">Select Size</p>
-                    <div class="flex gap-3 flex-wrap" id="sizeContainer">
-                        @foreach($sizes as $size)
-                            <button 
-                                class="size-option w-12 h-12 rounded-full border-2 transition-all {{ $loop->first ? 'border-indigo-600 bg-indigo-50' : 'border-gray-300 hover:border-indigo-300' }}"
-                                data-size="{{ $size->variation_value }}"
-                                data-price="{{ $size->variant_price }}"
-                                data-stock="{{ $size->variant_stock }}"
-                                data-variation-id="{{ $size->id }}">
-                                {{ $size->variation_value }}
-                            </button>
-                        @endforeach
-                    </div>
-                </div>
-                @endif
+                @endforeach
                 
                 <!-- Stock Status -->
                 <div class="mb-4">
@@ -224,8 +221,8 @@
             return asset('storage/' . $img);
         }, is_array($images) ? $images : ($images ? [$images] : [])));
         
-        // All variations for price/stock lookup
-        const allVariations = @json($product->variations);
+        // All variations for price/stock lookup (with available stock) - Pre-formatted from controller
+        const allVariations = @json($variationsArray);
         
         // Current state
         let currentQuantity = 1;
@@ -235,6 +232,67 @@
         function redirectToLogin() {
             const currentUrl = window.location.href;
             window.location.href = "{{ route('shop.login') }}?redirect=" + encodeURIComponent(currentUrl);
+        }
+        
+        // Function to update UI when variation is selected
+        function updateVariationSelection(variationId) {
+            const variation = allVariations.find(v => v.id === variationId);
+            if (!variation) return;
+            
+            currentVariation = variation;
+            const availableStock = variation.available_stock;
+            
+            // Update price display
+            document.getElementById('currentPrice').innerText = '₱' + parseFloat(variation.variant_price).toFixed(2);
+            
+            // Update stock status
+            const stockElement = document.getElementById('stockStatus');
+            const addBtn = document.getElementById('addToCartBtn');
+            const buyBtn = document.getElementById('buyNowBtn');
+            
+            if (availableStock <= 0) {
+                stockElement.innerHTML = '<span class="text-red-600"><i class="fas fa-times-circle"></i> Out of Stock</span>';
+                if (addBtn) addBtn.disabled = true;
+                if (buyBtn) buyBtn.disabled = true;
+            } else if (availableStock <= 10) {
+                stockElement.innerHTML = `<span class="text-orange-600"><i class="fas fa-exclamation-triangle"></i> Low Stock! Only ${availableStock} left</span>`;
+                if (addBtn) addBtn.disabled = false;
+                if (buyBtn) buyBtn.disabled = false;
+            } else {
+                stockElement.innerHTML = `<span class="text-green-600"><i class="fas fa-check-circle"></i> In Stock (${availableStock} available)</span>`;
+                if (addBtn) addBtn.disabled = false;
+                if (buyBtn) buyBtn.disabled = false;
+            }
+            
+            // Update selected variation info
+            const infoElement = document.getElementById('selectedVariationInfo');
+            if (infoElement) {
+                infoElement.innerHTML = `<i class="fas fa-check-circle text-green-600"></i> Selected: <strong>${variation.variation_value}</strong> - ₱${parseFloat(variation.variant_price).toFixed(2)}`;
+            }
+            
+            // Reset quantity if it exceeds available stock
+            if (currentQuantity > availableStock && availableStock > 0) {
+                currentQuantity = availableStock;
+                document.getElementById('quantity').innerText = currentQuantity;
+            } else if (availableStock <= 0) {
+                currentQuantity = 0;
+                document.getElementById('quantity').innerText = 0;
+            }
+            
+            // Update main image if variation has its own image
+            if (variation.variant_image) {
+                let imgPath = variation.variant_image;
+                if (!imgPath.startsWith('http') && !imgPath.startsWith('/storage')) {
+                    imgPath = '/storage/' + imgPath;
+                }
+                document.getElementById('mainImage').src = imgPath;
+            } else {
+                // Find corresponding thumbnail image
+                const thumbnail = document.querySelector(`#thumbnailContainer .thumbnail[data-variation-id="${variationId}"]`);
+                if (thumbnail) {
+                    document.getElementById('mainImage').src = thumbnail.src;
+                }
+            }
         }
         
         // Function to display ALL variation thumbnails
@@ -287,67 +345,17 @@
                     img.classList.remove('border-gray-200');
                     img.classList.add('border-indigo-500', 'ring-2', 'ring-indigo-200');
                     
-                    // Update variation details based on clicked thumbnail
+                    // Update variation details
                     const variationId = parseInt(img.dataset.variationId);
-                    const variationName = img.dataset.variationName;
-                    const price = parseFloat(img.dataset.price);
-                    const stock = parseInt(img.dataset.stock);
+                    updateVariationSelection(variationId);
                     
-                    // Find the full variation data
-                    currentVariation = allVariations.find(v => v.id === variationId);
-                    currentImageData = {
-                        variation_id: variationId,
-                        variation_name: variationName,
-                        price: price,
-                        stock: stock,
-                        image: img.dataset.image
-                    };
-                    
-                    // Update price display
-                    if (price > 0) {
-                        document.getElementById('currentPrice').innerText = '₱' + price.toFixed(2);
-                    }
-                    
-                    // Update stock status
-                    const stockElement = document.getElementById('stockStatus');
-                    if (stock > 0) {
-                        stockElement.innerHTML = '<span class="text-green-600"><i class="fas fa-check-circle"></i> In Stock (' + stock + ' available)</span>';
-                        document.getElementById('addToCartBtn').disabled = false;
-                        document.getElementById('buyNowBtn').disabled = false;
-                        
-                        // Update max quantity
-                        if (currentQuantity > stock) {
-                            currentQuantity = stock;
-                            document.getElementById('quantity').innerText = currentQuantity;
+                    // Also update active state on variation buttons
+                    document.querySelectorAll('.variation-option-btn').forEach(btn => {
+                        btn.classList.remove('active');
+                        if (parseInt(btn.dataset.variationId) === variationId) {
+                            btn.classList.add('active');
                         }
-                    } else {
-                        stockElement.innerHTML = '<span class="text-red-600"><i class="fas fa-times-circle"></i> Out of Stock</span>';
-                        document.getElementById('addToCartBtn').disabled = true;
-                        document.getElementById('buyNowBtn').disabled = true;
-                    }
-                    
-                    // Update selected variation info
-                    const infoElement = document.getElementById('selectedVariationInfo');
-                    if (variationName) {
-                        infoElement.innerHTML = '<i class="fas fa-check-circle text-green-600"></i> Selected: <strong>' + variationName + '</strong> - ₱' + price.toFixed(2);
-                    } else {
-                        infoElement.innerHTML = '<i class="fas fa-info-circle"></i> Variation selected';
-                    }
-                    
-                    // Auto-select the corresponding color button if available
-                    if (variationName) {
-                        document.querySelectorAll('.color-option').forEach(btn => {
-                            if (btn.dataset.color === variationName) {
-                                // Trigger color selection
-                                document.querySelectorAll('.color-option').forEach(b => {
-                                    b.classList.remove('border-indigo-600', 'bg-indigo-50');
-                                    b.classList.add('border-gray-300');
-                                });
-                                btn.classList.remove('border-gray-300');
-                                btn.classList.add('border-indigo-600', 'bg-indigo-50');
-                            }
-                        });
-                    }
+                    });
                 });
                 
                 container.appendChild(thumb);
@@ -387,172 +395,168 @@
             }
         }
         
-        // Handle color selection
-        document.querySelectorAll('.color-option').forEach(btn => {
-            btn.addEventListener('click', function() {
-                // Update active state
-                document.querySelectorAll('.color-option').forEach(b => {
-                    b.classList.remove('border-indigo-600', 'bg-indigo-50');
-                    b.classList.add('border-gray-300');
-                });
-                this.classList.remove('border-gray-300');
-                this.classList.add('border-indigo-600', 'bg-indigo-50');
-                
-                const selectedColor = this.dataset.color;
-                const price = parseFloat(this.dataset.price);
-                const stock = parseInt(this.dataset.stock);
-                const variationId = parseInt(this.dataset.variationId);
-                
-                // Find and click the corresponding thumbnail
-                const thumbnails = document.querySelectorAll('#thumbnailContainer .thumbnail');
-                for (let thumb of thumbnails) {
-                    if (thumb.dataset.variationName === selectedColor) {
-                        thumb.parentElement.click();
-                        break;
+        // Initialize variation button listeners
+        function initVariationButtons() {
+            document.querySelectorAll('.variation-option-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    if (this.disabled) return;
+                    
+                    const variationId = parseInt(this.dataset.variationId);
+                    
+                    // Update active state on buttons in the same group
+                    const parentGroup = this.closest('.variation-group');
+                    if (parentGroup) {
+                        parentGroup.querySelectorAll('.variation-option-btn').forEach(b => {
+                            b.classList.remove('active');
+                        });
                     }
-                }
-                
-                // Update current variation
-                currentVariation = allVariations.find(v => v.id === variationId);
-                
-                // Update price and stock
-                if (price) {
-                    document.getElementById('currentPrice').innerText = '₱' + price.toFixed(2);
-                }
-                
-                const stockElement = document.getElementById('stockStatus');
-                if (stock > 0) {
-                    stockElement.innerHTML = '<span class="text-green-600"><i class="fas fa-check-circle"></i> In Stock (' + stock + ' available)</span>';
-                } else {
-                    stockElement.innerHTML = '<span class="text-red-600"><i class="fas fa-times-circle"></i> Out of Stock</span>';
-                }
-            });
-        });
-        
-        // Handle size selection
-        document.querySelectorAll('.size-option').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.size-option').forEach(b => {
-                    b.classList.remove('border-indigo-600', 'bg-indigo-50');
-                    b.classList.add('border-gray-300');
-                });
-                this.classList.remove('border-gray-300');
-                this.classList.add('border-indigo-600', 'bg-indigo-50');
-                
-                const selectedSize = this.dataset.size;
-                const price = parseFloat(this.dataset.price);
-                const stock = parseInt(this.dataset.stock);
-                const variationId = parseInt(this.dataset.variationId);
-                
-                // Find and click the corresponding thumbnail
-                const thumbnails = document.querySelectorAll('#thumbnailContainer .thumbnail');
-                for (let thumb of thumbnails) {
-                    if (thumb.dataset.variationName === selectedSize) {
-                        thumb.parentElement.click();
-                        break;
+                    this.classList.add('active');
+                    
+                    // Update variation selection
+                    updateVariationSelection(variationId);
+                    
+                    // Find and highlight corresponding thumbnail
+                    const thumbnail = document.querySelector(`#thumbnailContainer .thumbnail[data-variation-id="${variationId}"]`);
+                    if (thumbnail) {
+                        document.querySelectorAll('#thumbnailContainer .thumbnail').forEach(t => {
+                            t.classList.remove('border-indigo-500', 'ring-2', 'ring-indigo-200');
+                            t.classList.add('border-gray-200');
+                        });
+                        thumbnail.classList.remove('border-gray-200');
+                        thumbnail.classList.add('border-indigo-500', 'ring-2', 'ring-indigo-200');
+                        
+                        // Update main image
+                        document.getElementById('mainImage').src = thumbnail.src;
                     }
-                }
-                
-                currentVariation = allVariations.find(v => v.id === variationId);
-                
-                if (price) {
-                    document.getElementById('currentPrice').innerText = '₱' + price.toFixed(2);
-                }
-                
-                const stockElement = document.getElementById('stockStatus');
-                if (stock > 0) {
-                    stockElement.innerHTML = '<span class="text-green-600"><i class="fas fa-check-circle"></i> In Stock (' + stock + ' available)</span>';
-                } else {
-                    stockElement.innerHTML = '<span class="text-red-600"><i class="fas fa-times-circle"></i> Out of Stock</span>';
-                }
+                });
             });
-        });
+        }
         
         // Quantity controls
         const quantitySpan = document.getElementById('quantity');
         const decBtn = document.getElementById('decBtn');
         const incBtn = document.getElementById('incBtn');
         
-        decBtn.addEventListener('click', () => {
-            if (currentQuantity > 1) {
-                currentQuantity--;
-                quantitySpan.innerText = currentQuantity;
-            }
-        });
+        if (decBtn) {
+            decBtn.addEventListener('click', () => {
+                if (currentQuantity > 1) {
+                    currentQuantity--;
+                    quantitySpan.innerText = currentQuantity;
+                }
+            });
+        }
         
-        incBtn.addEventListener('click', () => {
-            let maxStock = currentVariation ? currentVariation.variant_stock : (currentImageData ? currentImageData.stock : 999);
-            if (currentQuantity < maxStock) {
-                currentQuantity++;
-                quantitySpan.innerText = currentQuantity;
-            } else {
-                showToast('Maximum available stock reached');
-            }
-        });
+        if (incBtn) {
+            incBtn.addEventListener('click', () => {
+                let maxStock = currentVariation ? currentVariation.available_stock : 999;
+                if (currentQuantity < maxStock) {
+                    currentQuantity++;
+                    quantitySpan.innerText = currentQuantity;
+                } else if (maxStock > 0) {
+                    showToast(`Only ${maxStock} items available in stock`);
+                }
+            });
+        }
         
         // Add to Cart
-        document.getElementById('addToCartBtn').addEventListener('click', function() {
-            if (!currentVariation && !currentImageData) {
-                showToast('Please select a variation by clicking on an image');
-                return;
-            }
-            
-            const variationToUse = currentVariation || currentImageData;
-            
-            const cartData = {
-                variation_id: variationToUse.id || variationToUse.variation_id,
-                product_id: {{ $product->id }},
-                quantity: currentQuantity,
-                price: variationToUse.variant_price,
-                variation_name: variationToUse.variation_name || variationToUse.variation_value
-            };
-            
-            fetch('{{ route("cart.add") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify(cartData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showToast('Added to cart successfully!');
-                } else {
-                    showToast(data.message || 'Failed to add to cart');
+        const addToCartBtn = document.getElementById('addToCartBtn');
+        if (addToCartBtn) {
+            addToCartBtn.addEventListener('click', function() {
+                if (!currentVariation) {
+                    showToast('Please select a variation');
+                    return;
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showToast('Error adding to cart');
+                
+                if (currentVariation.available_stock <= 0) {
+                    showToast('This variation is out of stock');
+                    return;
+                }
+                
+                if (currentQuantity > currentVariation.available_stock) {
+                    showToast(`Only ${currentVariation.available_stock} items available`);
+                    return;
+                }
+                
+                const addBtn = this;
+                const originalHtml = addBtn.innerHTML;
+                addBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+                addBtn.disabled = true;
+                
+                const cartData = {
+                    variation_id: currentVariation.id,
+                    product_id: {{ $product->id }},
+                    quantity: currentQuantity,
+                    price: currentVariation.variant_price,
+                    variation_name: currentVariation.variation_name,
+                    variation_value: currentVariation.variation_value
+                };
+                
+                fetch('{{ route("cart.add") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify(cartData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('Added to cart successfully!');
+                    } else {
+                        showToast(data.message || 'Failed to add to cart');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('Error adding to cart');
+                })
+                .finally(() => {
+                    addBtn.innerHTML = originalHtml;
+                    addBtn.disabled = false;
+                });
             });
-        });
+        }
         
         // Buy Now
-        document.getElementById('buyNowBtn').addEventListener('click', function() {
-            if (!currentVariation && !currentImageData) {
-                showToast('Please select a variation by clicking on an image');
-                return;
-            }
-            
-            const variationToUse = currentVariation || currentImageData;
-            
-            const buyData = {
-                variation_id: variationToUse.id || variationToUse.variation_id,
-                product_id: {{ $product->id }},
-                quantity: currentQuantity,
-                variation_name: variationToUse.variation_name || variationToUse.variation_value
-            };
-            
-            sessionStorage.setItem('buyNowData', JSON.stringify(buyData));
-            window.location.href = '#';
-        });
+        const buyNowBtn = document.getElementById('buyNowBtn');
+        if (buyNowBtn) {
+            buyNowBtn.addEventListener('click', function() {
+                if (!currentVariation) {
+                    showToast('Please select a variation');
+                    return;
+                }
+                
+                if (currentVariation.available_stock <= 0) {
+                    showToast('This variation is out of stock');
+                    return;
+                }
+                
+                if (currentQuantity > currentVariation.available_stock) {
+                    showToast(`Only ${currentVariation.available_stock} items available`);
+                    return;
+                }
+                
+                const buyData = {
+                    variation_id: currentVariation.id,
+                    product_id: {{ $product->id }},
+                    quantity: currentQuantity,
+                    variation_name: currentVariation.variation_name,
+                    variation_value: currentVariation.variation_value,
+                    price: currentVariation.variant_price
+                };
+                
+                sessionStorage.setItem('buyNowData', JSON.stringify(buyData));
+                window.location.href = '#';
+            });
+        }
         
         // Toast notification
         function showToast(message) {
             const toast = document.getElementById('toast');
             const toastMessage = document.getElementById('toastMessage');
+            if (!toast || !toastMessage) return;
+            
             toastMessage.innerText = message;
             toast.classList.remove('opacity-0', 'pointer-events-none');
             toast.classList.add('opacity-100');
@@ -567,6 +571,13 @@
         function init() {
             console.log('All variation images:', allVariationImages);
             displayAllThumbnails();
+            initVariationButtons();
+            
+            // Set initial variation from first active button
+            const firstActiveBtn = document.querySelector('.variation-option-btn.active');
+            if (firstActiveBtn && !firstActiveBtn.disabled) {
+                updateVariationSelection(parseInt(firstActiveBtn.dataset.variationId));
+            }
         }
         
         // Start the app
@@ -601,6 +612,62 @@
         
         .thumbnail {
             transition: all 0.2s ease;
+        }
+        
+        /* Variation button styles */
+        .variation-option-btn {
+            padding: 8px 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+            font-weight: 500;
+            position: relative;
+        }
+        
+        .variation-option-btn:hover:not([disabled]) {
+            border-color: #000;
+            background: #f9fafb;
+            color: #000;
+            transform: translateY(-1px);
+        }
+        
+        .variation-option-btn.active {
+            background: #000;
+            color: white;
+            border-color: #000;
+        }
+        
+        .variation-option-btn.active .stock-warning {
+            background: rgba(255,255,255,0.2);
+            color: #fef3c7;
+        }
+        
+        .variation-option-btn[disabled] {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #f3f4f6;
+            text-decoration: line-through;
+        }
+        
+        /* Stock warning badge */
+        .stock-warning {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 12px;
+            background: #fef3c7;
+            color: #d97706;
+            margin-left: 6px;
+            display: inline-block;
+        }
+        
+        /* Add to Cart button disabled state */
+        .add-cart-btn:disabled,
+        .buy-now-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
     </style>
 @endsection

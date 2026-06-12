@@ -30,6 +30,18 @@ class Product extends Model
         return $this->hasMany(ProductVariation::class, 'variant_product_id');
     }
 
+    public function orderItems()
+    {
+        return $this->hasManyThrough(
+            OrderItem::class,
+            ProductVariation::class,
+            'variant_product_id', // Foreign key on product_variations table
+            'variation_id', // Foreign key on order_items table
+            'id', // Local key on products table
+            'id' // Local key on product_variations table
+        );
+    }
+
     // Optional: Add relationship to category
     public function category()
     {
@@ -67,4 +79,46 @@ class Product extends Model
     {
         return $this->variations->pluck('variant_sku');
     }
+
+    // Get available stock (total stock minus ordered quantities)
+public function getAvailableStockAttribute()
+{
+    $totalStock = $this->variations->sum('variant_stock');
+    
+    $orderedQuantity = OrderItem::whereIn('variation_id', $this->variations->pluck('id'))
+        ->whereHas('order', function($query) {
+            $query->whereNotIn('status', ['cancelled', 'delivered']);
+        })
+        ->sum('quantity');
+    
+    return $totalStock - $orderedQuantity;
+}
+
+// Get stock status with warning
+public function getStockStatusAttribute()
+{
+    $available = $this->available_stock;
+    
+    if ($available <= 0) {
+        return 'Out of Stock';
+    } elseif ($available <= 10) {
+        return "Only {$available} left!";
+    } else {
+        return "{$available} in stock";
+    }
+}
+
+// Get stock badge class
+public function getStockBadgeClassAttribute()
+{
+    $available = $this->available_stock;
+    
+    if ($available <= 0) {
+        return 'danger';
+    } elseif ($available <= 10) {
+        return 'warning';
+    } else {
+        return 'success';
+    }
+}
 }

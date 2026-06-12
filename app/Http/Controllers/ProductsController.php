@@ -95,15 +95,89 @@ class ProductsController extends Controller
 
     public function show()
     {
-        $data = Product::with('variations')  // Use eager loading
-            ->join('category', 'products.catid', '=', 'category.id')
-            ->select(
-                'products.*',
-                'category.catname'
-            )
-            ->get();
-                
-        return response()->json(['data' => $data]);
+        try {
+            // Get all products with their variations
+            $products = Product::with(['variations', 'category'])
+                ->join('category', 'products.catid', '=', 'category.id')
+                ->select(
+                    'products.*',
+                    'category.catname'
+                )
+                ->get();
+            
+            // Transform to show each variation as a separate row
+            $data = [];
+            
+            foreach ($products as $product) {
+                // If product has variations, create a row for each variation
+                if ($product->variations->count() > 0) {
+                    foreach ($product->variations as $variation) {
+                        // Calculate available stock for this variation
+                        $orderedQuantity = \App\Models\OrderItem::where('variation_id', $variation->id)
+                            ->whereHas('order', function($query) {
+                                $query->whereNotIn('status', ['cancelled', 'delivered']);
+                            })
+                            ->sum('quantity');
+                        
+                        $availableStock = $variation->variant_stock - $orderedQuantity;
+                        
+                        // Determine which image to use (variation image > product image)
+                        $imageToUse = $variation->variant_image ?? $product->prdctimage;
+                        
+                        $data[] = [
+                            'id' => $product->id,
+                            'variation_id' => $variation->id,
+                            'prdctname' => $product->prdctname . ' - ' . $variation->variation_name . ': ' . $variation->variation_value,
+                            'prdctdesc' => $product->prdctdesc,
+                            'prdctimage' => $product->prdctimage,
+                            'variant_image' => $variation->variant_image, // Add variation image
+                            'display_image' => $imageToUse, // Image to display (priority to variation image)
+                            'catid' => $product->catid,
+                            'subcatid' => $product->subcatid,
+                            'catname' => $product->catname,
+                            'variant_price' => $variation->variant_price,
+                            'variant_sku' => $variation->variant_sku,
+                            'variant_stock' => $variation->variant_stock,
+                            'available_stock' => $availableStock,
+                            'variation_name' => $variation->variation_name,
+                            'variation_value' => $variation->variation_value,
+                            'product_name' => $product->prdctname,
+                        ];
+                    }
+                } else {
+                    // If no variations, create a single row for the product
+                    $data[] = [
+                        'id' => $product->id,
+                        'variation_id' => null,
+                        'prdctname' => $product->prdctname,
+                        'prdctdesc' => $product->prdctdesc,
+                        'prdctimage' => $product->prdctimage,
+                        'variant_image' => null,
+                        'display_image' => $product->prdctimage,
+                        'catid' => $product->catid,
+                        'subcatid' => $product->subcatid,
+                        'catname' => $product->catname,
+                        'variant_price' => $product->variations->min('variant_price') ?? 0,
+                        'variant_sku' => 'N/A',
+                        'variant_stock' => 0,
+                        'available_stock' => 0,
+                        'variation_name' => null,
+                        'variation_value' => null,
+                        'product_name' => $product->prdctname,
+                    ];
+                }
+            }
+            
+            return response()->json(['data' => $data]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Product show error: ' . $e->getMessage());
+            
+            return response()->json([
+                'error' => 'Failed to fetch products',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function update(Request $request) 

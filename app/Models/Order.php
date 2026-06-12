@@ -93,6 +93,16 @@ class Order extends Model
         return $this->hasMany(OrderItem::class, 'order_id');
     }
 
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
+
+    public function variations()
+    {
+        return $this->hasMany(ProductVariation::class, 'variant_id');
+    }
+
     // Helper Methods
     public function getFormattedSubtotalAttribute()
     {

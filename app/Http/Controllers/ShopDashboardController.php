@@ -22,7 +22,23 @@ class ShopDashboardController extends Controller
     {
         $banner = WelcomeBanner::where('welcomestatus', 'Active')->first();
         $categories = Category::where('pcstatus', '=', 1)->orderBy('subcategory', 'ASC')->get();
-        $products = Product::with('variations')->get();
+        $products = Product::with(['variations' => function($query) {
+            $query->with(['orderItems' => function($q) {
+                $q->whereHas('order', function($q2) {
+                    $q2->whereNotIn('status', ['cancelled', 'delivered']);
+                });
+            }]);
+        }])->get();
+        
+        // Calculate available stock for each variation
+        foreach ($products as $product) {
+            $product->encrypted_id = Crypt::encryptString($product->id);
+            foreach ($product->variations as $variation) {
+                $orderedQuantity = $variation->orderItems->sum('quantity');
+                $variation->available_stock = $variation->variant_stock - $orderedQuantity;
+                $variation->encrypted_id = Crypt::encryptString($variation->id);
+            }
+        }
 
         return view('customer.home.dashboard', compact('banner', 'categories', 'products'));
     }

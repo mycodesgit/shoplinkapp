@@ -106,7 +106,7 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5" id="productsGrid">
             @forelse ($products->take(8) as $item)
-                <div class="product-card group card-item" data-product-id="{{ $item->id }}">
+                <div class="product-card group card-item" data-product-id="{{ $item->encrypted_id }}">
                     @php
                         $images = json_decode($item->prdctimage, true);
                         $firstImage = $images[0] ?? null;
@@ -151,7 +151,7 @@
                             @if(Auth::guard('customer')->check())
                                 <a href="{{ route('itemdetails.auth.index', $item->encrypted_id) }}">
                             @else
-                                <a href="{{ route('itemdetails.index', $item->id) }}">
+                                <a href="{{ route('itemdetails.index', $item->encrypted_id) }}">
                             @endif
                                 <img src="{{ $firstImage ? asset('storage/' . $firstImage) : asset('storage/products/default.png') }}" class="product-image" alt="{{ $item->prdctname }}">
                             </a>
@@ -159,7 +159,7 @@
                     </div>
                     <div class="p-4 pt-0">
                         <div class="flex justify-between items-start mb-1">
-                            <h3 class="font-semibold text-gray-900 text-base cursor-pointer" onclick="window.location.href='{{ Auth::guard('customer')->check() ? route('itemdetails.auth.index', $item->id) : route('itemdetails.index', $item->id) }}'">
+                            <h3 class="font-semibold text-gray-900 text-base cursor-pointer" onclick="window.location.href='{{ Auth::guard('customer')->check() ? route('itemdetails.auth.index', $item->encrypted_id) : route('itemdetails.index', $item->encrypted_id) }}'">
                                 {{ strlen($item->prdctname) > 25 ? substr($item->prdctname, 0, 25) . '...' : $item->prdctname }}
                             </h3>
                             <div class="flex items-center gap-1">
@@ -211,7 +211,7 @@
                                     <i class="fas fa-shopping-cart text-sm"></i>
                                     Add Cart
                                 </button>
-                                <button class="buy-now-btn flex-1" onclick="buyNow({{ $item->id }})" {{ !$hasAvailableStock ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : '' }}>
+                                <button class="buy-now-btn flex-1" onclick="buyNow({{ $item->encrypted_id }})" {{ !$hasAvailableStock ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : '' }}>
                                     Buy Now
                                 </button>
                             @else

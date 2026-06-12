@@ -2,20 +2,17 @@
 
 @section('content')
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 md:pb-10 page-fade">
-        <!-- Page Title -->
         <div class="mb-6">
             <h1 class="text-xl md:text-2xl font-bold text-gray-900">Shopping Cart</h1>
-            <p class="text-sm text-gray-500 mt-1">Review and manage your items</p>
+            <p class="text-sm text-gray-500 mt-1">Select items to checkout</p>
         </div>
 
-        <!-- Toast Notification -->
         <div id="toast" class="fixed top-20 md:top-6 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-5 py-2.5 rounded-full shadow-lg z-50 transition-all duration-300 opacity-0 pointer-events-none text-sm whitespace-nowrap">
             <i class="fas" id="toastIcon"></i>
             <span id="toastMessage"></span>
         </div>
 
         @if($cartItems->isEmpty())
-            <!-- Empty Cart State -->
             <div class="text-center py-12 md:py-20 bg-white rounded-2xl shadow-sm border border-gray-100">
                 <div class="inline-flex items-center justify-center w-20 h-20 bg-gray-100 rounded-full mb-4">
                     <i class="fas fa-shopping-cart text-3xl text-gray-400"></i>
@@ -29,21 +26,30 @@
             </div>
         @else
             <div class="flex flex-col lg:flex-row gap-6">
-                <!-- Cart Items Section -->
                 <div class="flex-1 space-y-3">
-                    <!-- Desktop Table Header -->
-                    <div class="hidden md:grid md:grid-cols-5 gap-4 px-4 py-2 text-sm text-gray-500 border-b border-gray-200">
+                    <div class="bg-white rounded-2xl border border-gray-200 p-5 shadow-xs">
+                        <label class="flex items-center gap-3 cursor-pointer">
+                            <input type="checkbox" id="selectAll" class="w-5 h-5 rounded border-gray-300 text-black focus:ring-black">
+                            <span class="font-medium text-gray-700">Select All Items</span>
+                            <span class="text-sm text-gray-500" id="selectedCount">(0 items selected)</span>
+                        </label>
+                    </div>
+
+                    <div class="hidden md:grid md:grid-cols-6 gap-4 px-4 py-2 text-sm text-gray-500 border-b border-gray-200">
+                        <div class="w-12">Select</div>
                         <div class="col-span-2">Product</div>
                         <div class="text-center">Price</div>
                         <div class="text-center">Quantity</div>
                         <div class="text-right">Total</div>
                     </div>
 
-                    @foreach($cartItems as $index => $item)
+                    @foreach($cartItems as $item)
                         @php
                             $itemTotal = $item->price * $item->quantity;
+                            $itemPrice = $item->price;
+                            $itemQuantity = $item->quantity;
+                            $itemId = $item->id;
                             
-                            // Initialize image path variable
                             $imagePath = null;
                             
                             // PRIORITY 1: Check if variation has its own image
@@ -109,80 +115,78 @@
                             }
                         @endphp
                         
-                        <div class="cart-item bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200" data-id="{{ $item->id }}">
+                        <div class="cart-item bg-white rounded-2xl border border-gray-200 p-5 shadow-xs hover:shadow-md transition-all duration-200" data-id="{{ $itemId }}" data-price="{{ $itemPrice }}" data-quantity="{{ $itemQuantity }}">
                             <!-- Mobile Layout -->
                             <div class="block md:hidden">
-                                <div class="flex gap-4">
-                                    <img src="{{ $imagePath }}" 
-                                        class="w-24 h-24 rounded-lg object-cover" 
-                                        alt="{{ $item->product->prdctname ?? 'Product' }}">
-                                    <div class="flex-1">
-                                        <h3 class="font-semibold text-gray-900">{{ $item->product->prdctname ?? 'Product' }}</h3>
-                                        @if($variationDisplay)
-                                            <p class="text-sm text-gray-500 mt-1">{{ $variationDisplay }}</p>
-                                        @endif
-                                        <p class="text-black font-bold mt-2">₱{{ number_format($item->price, 2) }}</p>
+                                <!-- Top row: Checkbox + Image + Product Name -->
+                                <div class="flex gap-3">
+                                    <div class="flex items-start">
+                                        <input type="checkbox" class="item-checkbox w-5 h-5 rounded border-gray-300 mt-2" data-id="{{ $itemId }}">
                                     </div>
-                                    <div class="text-right">
-                                        <p class="font-bold text-gray-900 item-total" data-id="{{ $item->id }}">₱{{ number_format($itemTotal, 2) }}</p>
+                                    <img src="{{ $imagePath }}" class="w-20 h-20 rounded-lg object-cover" alt="{{ $item->product->prdctname ?? 'Product' }}">
+                                    <div class="flex-1">
+                                        <h3 class="font-semibold text-gray-900 text-base">
+                                            {{ Str::limit($item->product->prdctname ?? 'Product', 12) }}
+                                        </h3>
+                                        <p class="text-gray-600 text-sm mt-1">₱{{ number_format($itemPrice, 2) }}</p>
                                     </div>
                                 </div>
+                                
+                                <!-- Bottom row: Quantity controls + Item Total + Remove -->
                                 <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
                                     <div class="flex items-center gap-3">
                                         <button class="cart-dec w-8 h-8 rounded-full border border-gray-300 bg-white hover:bg-gray-50 active:scale-95 transition-all duration-150 flex items-center justify-center text-gray-600" 
-                                                data-id="{{ $item->id }}" 
-                                                aria-label="Decrease quantity">
+                                                data-id="{{ $itemId }}">
                                             <i class="fas fa-minus text-xs"></i>
                                         </button>
-                                        <span class="w-8 text-center font-medium quantity-display" data-id="{{ $item->id }}">{{ $item->quantity }}</span>
+                                        <span class="w-8 text-center font-medium quantity-display text-gray-800">{{ $itemQuantity }}</span>
                                         <button class="cart-inc w-8 h-8 rounded-full border border-gray-300 bg-white hover:bg-gray-50 active:scale-95 transition-all duration-150 flex items-center justify-center text-gray-600" 
-                                                data-id="{{ $item->id }}" 
-                                                aria-label="Increase quantity">
+                                                data-id="{{ $itemId }}">
                                             <i class="fas fa-plus text-xs"></i>
                                         </button>
                                     </div>
-                                    <button class="cart-remove text-red-500 text-sm hover:text-red-700 transition-colors flex items-center gap-1" data-id="{{ $item->id }}" data-name="{{ $item->product->prdctname ?? 'Product' }}">
+                                    
+                                    <!-- Item Total - Prominently displayed here -->
+                                    <div class="text-right">
+                                        <p class="font-bold text-gray-900 text-lg item-total-mobile">₱{{ number_format($itemTotal, 2) }}</p>
+                                    </div>
+                                    
+                                    <button class="cart-remove text-red-500 text-sm hover:text-red-700 transition-colors" data-id="{{ $itemId }}" data-name="{{ $item->product->prdctname ?? 'Product' }}">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
                             </div>
                             
-                            <!-- Desktop/Tablet Layout -->
+                            <!-- Desktop Layout -->
                             <div class="hidden md:flex md:items-center md:gap-4">
+                                <div class="w-12">
+                                    <input type="checkbox" class="item-checkbox-desktop w-5 h-5 rounded border-gray-300" data-id="{{ $itemId }}">
+                                </div>
                                 <div class="flex-shrink-0 w-24">
-                                    <img src="{{ $imagePath }}" 
-                                        class="w-20 h-20 rounded-lg object-cover" 
-                                        alt="{{ $item->product->prdctname ?? 'Product' }}">
+                                    <img src="{{ $imagePath }}" class="w-20 h-20 rounded-lg object-cover" alt="{{ $item->product->prdctname ?? 'Product' }}">
                                 </div>
                                 <div class="flex-1">
                                     <h3 class="font-semibold text-gray-900">{{ $item->product->prdctname ?? 'Product' }}</h3>
-                                    @if($variationDisplay)
-                                        <p class="text-sm text-gray-500">{{ $variationDisplay }}</p>
-                                    @endif
                                 </div>
                                 <div class="w-24 text-center">
-                                    <p class="font-semibold text-gray-900">₱{{ number_format($item->price, 2) }}</p>
+                                    <p class="font-semibold text-gray-900">₱{{ number_format($itemPrice, 2) }}</p>
                                 </div>
                                 <div class="w-32">
                                     <div class="flex items-center gap-3">
-                                        <button class="cart-decdesktop w-8 h-8 rounded-full border border-gray-300 bg-white hover:bg-gray-50 active:scale-95 transition-all duration-150 flex items-center justify-center text-gray-600" 
-                                                data-id="{{ $item->id }}" 
-                                                aria-label="Decrease quantity">
+                                        <button class="cart-decdesktop w-8 h-8 rounded-full border border-gray-300 bg-white hover:bg-gray-50 flex items-center justify-center" data-id="{{ $itemId }}">
                                             <i class="fas fa-minus text-xs"></i>
                                         </button>
-                                        <span class="w-8 text-center font-medium quantity-displaydesktop" data-id="{{ $item->id }}">{{ $item->quantity }}</span>
-                                        <button class="cart-incdesktop w-8 h-8 rounded-full border border-gray-300 bg-white hover:bg-gray-50 active:scale-95 transition-all duration-150 flex items-center justify-center text-gray-600" 
-                                                data-id="{{ $item->id }}" 
-                                                aria-label="Increase quantity">
+                                        <span class="w-8 text-center font-medium quantity-display-desktop">{{ $itemQuantity }}</span>
+                                        <button class="cart-incdesktop w-8 h-8 rounded-full border border-gray-300 bg-white hover:bg-gray-50 flex items-center justify-center" data-id="{{ $itemId }}">
                                             <i class="fas fa-plus text-xs"></i>
                                         </button>
                                     </div>
                                 </div>
                                 <div class="w-24 text-right">
-                                    <p class="font-bold text-gray-900 item-totaldesktop" data-id="{{ $item->id }}">₱{{ number_format($itemTotal, 2) }}</p>
+                                    <p class="font-bold text-gray-900 item-total-desktop">₱{{ number_format($itemTotal, 2) }}</p>
                                 </div>
                                 <div class="w-12 text-right">
-                                    <button class="cart-remove text-red-500 hover:text-red-700 transition-colors" data-id="{{ $item->id }}" data-name="{{ $item->product->prdctname ?? 'Product' }}">
+                                    <button class="cart-remove text-red-500 hover:text-red-700" data-id="{{ $itemId }}" data-name="{{ $item->product->prdctname ?? 'Product' }}">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
@@ -193,13 +197,13 @@
                 
                 <!-- Order Summary Sidebar -->
                 <div class="lg:w-96">
-                    <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100 sticky top-6">
+                    <div class="bg-white rounded-2xl border border-gray-200 p-5 shadow-xs sticky top-6">
                         <h3 class="font-bold text-lg text-gray-900 mb-4">Order Summary</h3>
                         
                         <div class="space-y-3">
                             <div class="flex justify-between text-gray-600">
-                                <span>Subtotal</span>
-                                <span class="font-medium subtotal-amount">₱{{ number_format($subtotal, 2) }}</span>
+                                <span>Selected Subtotal</span>
+                                <span class="font-medium selected-subtotal">₱0.00</span>
                             </div>
                             <div class="flex justify-between text-gray-600">
                                 <span>Shipping</span>
@@ -207,17 +211,21 @@
                             </div>
                             <div class="flex justify-between text-gray-600 border-b border-gray-200 pb-3">
                                 <span>Tax (12% VAT)</span>
-                                <span class="font-medium tax-amount">₱{{ number_format($tax, 2) }}</span>
+                                <span class="font-medium selected-tax">₱0.00</span>
                             </div>
                             <div class="flex justify-between font-bold text-lg text-gray-900 pt-2">
-                                <span>Total</span>
-                                <span class="total-amount">₱{{ number_format($total, 2) }}</span>
+                                <span>Selected Total</span>
+                                <span class="selected-total">₱0.00</span>
                             </div>
                         </div>
                         
-                        <a href="#" class="block w-full bg-black text-white text-center py-3 rounded-full mt-6 font-semibold hover:bg-gray-800 transition-all duration-200 transform hover:scale-[1.02]">
-                            Proceed to Checkout →
-                        </a>
+                        <form id="checkoutForm" action="{{ route('cart.checkout') }}" method="get">
+                            @csrf
+                            <input type="hidden" name="selected_items" id="selectedItemsInput">
+                            <button type="submit" id="checkoutBtn" class="w-full bg-black text-white text-center py-3 rounded-full mt-6 font-semibold hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed">
+                                Proceed to Checkout →
+                            </button>
+                        </form>
                         
                         <a href="{{ route('dashboard.auth.items') }}" class="block text-center text-sm text-gray-500 hover:text-black transition-colors mt-4">
                             ← Continue Shopping
@@ -229,46 +237,236 @@
     </main>
 
     <script>
-        // Show Toast Notification
         function showToast(message, type = 'success') {
             const toast = document.getElementById('toast');
             const toastIcon = document.getElementById('toastIcon');
             const toastMessage = document.getElementById('toastMessage');
-            
             if (!toast) return;
             
-            if (type === 'success') {
-                toastIcon.className = 'fas fa-check-circle text-green-400 mr-2';
-            } else if (type === 'error') {
-                toastIcon.className = 'fas fa-exclamation-circle text-red-400 mr-2';
-            } else if (type === 'info') {
-                toastIcon.className = 'fas fa-info-circle text-blue-400 mr-2';
-            }
-            
+            toastIcon.className = type === 'success' ? 'fas fa-check-circle text-green-400 mr-2' : 
+                                 (type === 'error' ? 'fas fa-exclamation-circle text-red-400 mr-2' : 'fas fa-info-circle text-blue-400 mr-2');
             toastMessage.innerText = message;
             toast.classList.remove('opacity-0', 'pointer-events-none');
             toast.classList.add('opacity-100');
-            
             setTimeout(() => {
                 toast.classList.remove('opacity-100');
                 toast.classList.add('opacity-0', 'pointer-events-none');
             }, 3000);
         }
         
-        // Custom confirmation dialog with blur background
+        // Update the order summary based on selected checkboxes
+        function updateOrderSummary() {
+            let subtotal = 0;
+            let selectedIds = [];
+            
+            // IMPORTANT: Use a Set to track unique cart IDs to prevent double counting
+            let processedIds = new Set();
+            
+            // Only process ONE set of checkboxes (prefer desktop, fallback to mobile)
+            let checkboxes = document.querySelectorAll('.item-checkbox-desktop:checked');
+            
+            // If no desktop checkboxes found, use mobile
+            if (checkboxes.length === 0) {
+                checkboxes = document.querySelectorAll('.item-checkbox:checked');
+            }
+            
+            checkboxes.forEach(checkbox => {
+                const cartId = checkbox.getAttribute('data-id');
+                
+                // Skip if already processed
+                if (processedIds.has(cartId)) return;
+                processedIds.add(cartId);
+                
+                const cartItem = document.querySelector(`.cart-item[data-id="${cartId}"]`);
+                
+                if (cartItem) {
+                    const price = parseFloat(cartItem.getAttribute('data-price'));
+                    const quantity = parseInt(cartItem.getAttribute('data-quantity'));
+                    
+                    if (!isNaN(price) && !isNaN(quantity)) {
+                        const itemTotal = price * quantity;  // This is correct: price × quantity
+                        subtotal += itemTotal;
+                        selectedIds.push(cartId);
+                        
+                        console.log(`Item ${cartId}: ${price} × ${quantity} = ${itemTotal}`); // Debug
+                    }
+                }
+            });
+            
+            const tax = subtotal * 0.12;
+            const total = subtotal + tax;
+            
+            document.querySelector('.selected-subtotal').innerText = `₱${subtotal.toFixed(2)}`;
+            document.querySelector('.selected-tax').innerText = `₱${tax.toFixed(2)}`;
+            document.querySelector('.selected-total').innerText = `₱${total.toFixed(2)}`;
+            document.getElementById('selectedCount').innerText = `(${selectedIds.length} item${selectedIds.length !== 1 ? 's' : ''} selected)`;
+            document.getElementById('selectedItemsInput').value = JSON.stringify(selectedIds);
+            document.getElementById('checkoutBtn').disabled = selectedIds.length === 0;
+        }
+        
+        // Sync checkboxes between mobile and desktop
+        function syncCheckboxes(cartId, isChecked) {
+            const mobileCb = document.querySelector(`.item-checkbox[data-id="${cartId}"]`);
+            const desktopCb = document.querySelector(`.item-checkbox-desktop[data-id="${cartId}"]`);
+            
+            // Only update if they are different to prevent infinite loops
+            if (mobileCb && mobileCb.checked !== isChecked) {
+                mobileCb.checked = isChecked;
+            }
+            if (desktopCb && desktopCb.checked !== isChecked) {
+                desktopCb.checked = isChecked;
+            }
+        }
+        
+        // Update UI for a specific cart item
+        function updateItemUI(cartId, price, quantity) {
+            const cartItem = document.querySelector(`.cart-item[data-id="${cartId}"]`);
+            if (!cartItem) return;
+            
+            // Update data attributes
+            cartItem.setAttribute('data-price', price);
+            cartItem.setAttribute('data-quantity', quantity);
+            
+            // Update quantity displays
+            const qtyMobile = cartItem.querySelector('.quantity-display');
+            const qtyDesktop = cartItem.querySelector('.quantity-display-desktop');
+            if (qtyMobile) qtyMobile.innerText = quantity;
+            if (qtyDesktop) qtyDesktop.innerText = quantity;
+            
+            // Update item total displays
+            const totalMobile = cartItem.querySelector('.item-total-mobile');
+            const totalDesktop = cartItem.querySelector('.item-total-desktop');
+            const itemTotal = price * quantity;
+            if (totalMobile) totalMobile.innerText = `₱${itemTotal.toFixed(2)}`;
+            if (totalDesktop) totalDesktop.innerText = `₱${itemTotal.toFixed(2)}`;
+            
+            // Update checkboxes' data attributes
+            const mobileCb = document.querySelector(`.item-checkbox[data-id="${cartId}"]`);
+            const desktopCb = document.querySelector(`.item-checkbox-desktop[data-id="${cartId}"]`);
+            if (mobileCb) {
+                mobileCb.setAttribute('data-price', price);
+                mobileCb.setAttribute('data-quantity', quantity);
+            }
+            if (desktopCb) {
+                desktopCb.setAttribute('data-price', price);
+                desktopCb.setAttribute('data-quantity', quantity);
+            }
+        }
+        
+        // Update quantity via AJAX
+        async function updateQuantity(cartId, newQuantity, button) {
+            if (button.disabled) return;
+            button.disabled = true;
+            
+            // Store current selection state
+            const wasSelected = document.querySelector(`.item-checkbox[data-id="${cartId}"]`)?.checked || 
+                                document.querySelector(`.item-checkbox-desktop[data-id="${cartId}"]`)?.checked;
+            
+            try {
+                const response = await fetch("{{ route('cart.update') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ cart_id: cartId, quantity: newQuantity })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Update UI with server data
+                    updateItemUI(cartId, data.price, data.quantity);
+                    
+                    // Restore selection if it was selected
+                    if (wasSelected) {
+                        syncCheckboxes(cartId, true);
+                    }
+                    
+                    // Update order summary
+                    updateOrderSummary();
+                    showToast('Cart updated!', 'success');
+                } else {
+                    showToast(data.message || 'Update failed', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Network error. Please try again.', 'error');
+            } finally {
+                button.disabled = false;
+            }
+        }
+        
+        // Remove item from cart
+        async function removeItem(cartId, button) {
+            const cartItem = document.querySelector(`.cart-item[data-id="${cartId}"]`);
+            if (!cartItem) return;
+            
+            cartItem.style.transition = 'all 0.3s ease';
+            cartItem.style.opacity = '0';
+            cartItem.style.transform = 'translateX(-20px)';
+            
+            try {
+                const response = await fetch("{{ route('cart.remove') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ cart_id: cartId })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    setTimeout(() => {
+                        cartItem.remove();
+                        updateOrderSummary();
+                        
+                        // Update select all state
+                        const allCheckboxes = document.querySelectorAll('.item-checkbox, .item-checkbox-desktop');
+                        const selectAll = document.getElementById('selectAll');
+                        if (selectAll && allCheckboxes.length > 0) {
+                            const checkedBoxes = document.querySelectorAll('.item-checkbox:checked, .item-checkbox-desktop:checked');
+                            selectAll.checked = allCheckboxes.length === checkedBoxes.length;
+                        } else if (selectAll) {
+                            selectAll.checked = false;
+                        }
+                        
+                        // Update cart count badges
+                        const cartCount = document.getElementById('cartCount');
+                        const mobileBadge = document.getElementById('mobileCartBadge');
+                        if (cartCount) cartCount.innerText = data.cart_count;
+                        if (mobileBadge) mobileBadge.innerText = data.cart_count;
+                        
+                        showToast('Item removed from cart', 'success');
+                        
+                        if (data.cart_count === 0) {
+                            setTimeout(() => location.reload(), 1000);
+                        }
+                    }, 300);
+                } else {
+                    cartItem.style.opacity = '1';
+                    cartItem.style.transform = 'translateX(0)';
+                    showToast(data.message || 'Failed to remove item', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                cartItem.style.opacity = '1';
+                cartItem.style.transform = 'translateX(0)';
+                showToast('Error removing item', 'error');
+            }
+        }
+        
+        // Confirm dialog for removal
         function showConfirmDialog(message, onConfirm) {
             const overlay = document.createElement('div');
-            overlay.className = 'fixed inset-0 z-50 flex items-center justify-center';
-            
-            // Create backdrop with blur effect
-            overlay.style.animation = 'fadeIn 0.2s ease-out';
-            overlay.style.background = 'rgba(0, 0, 0, 0.4)';
-            overlay.style.backdropFilter = 'blur(8px)';
-            overlay.style.WebkitBackdropFilter = 'blur(8px)'; // For Safari support
+            overlay.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm';
             
             const modal = document.createElement('div');
             modal.className = 'bg-white rounded-2xl p-6 max-w-sm w-full mx-4 transform transition-all';
-            modal.style.animation = 'scaleIn 0.2s ease-out';
             modal.innerHTML = `
                 <div class="text-center">
                     <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -277,425 +475,116 @@
                     <h3 class="text-lg font-semibold text-gray-900 mb-2">Remove Item</h3>
                     <p class="text-gray-600 mb-6">${message}</p>
                     <div class="flex gap-3">
-                        <button class="flex-1 px-4 py-2 border border-gray-300 rounded-full text-gray-700 hover:bg-gray-50 transition-colors cancel-btn">Cancel</button>
-                        <button class="flex-1 px-4 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors confirm-btn">Remove</button>
+                        <button class="flex-1 px-4 py-2 border border-gray-300 rounded-full text-gray-700 hover:bg-gray-50 cancel-btn">Cancel</button>
+                        <button class="flex-1 px-4 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 confirm-btn">Remove</button>
                     </div>
                 </div>
             `;
             
             overlay.appendChild(modal);
             document.body.appendChild(overlay);
-            
-            // Prevent body scroll when modal is open
             document.body.style.overflow = 'hidden';
             
-            modal.querySelector('.cancel-btn').addEventListener('click', () => {
+            modal.querySelector('.cancel-btn').onclick = () => {
                 document.body.style.overflow = '';
                 overlay.remove();
-            });
-            
-            modal.querySelector('.confirm-btn').addEventListener('click', () => {
+            };
+            modal.querySelector('.confirm-btn').onclick = () => {
                 document.body.style.overflow = '';
                 overlay.remove();
                 onConfirm();
-            });
-            
-            overlay.addEventListener('click', (e) => {
+            };
+            overlay.onclick = (e) => {
                 if (e.target === overlay) {
                     document.body.style.overflow = '';
                     overlay.remove();
                 }
-            });
+            };
         }
         
-        // Update cart quantity instantly (REAL-TIME)
-        function updateQuantity(cartId, action, button) {
-            // Prevent multiple rapid clicks
-            if (button.disabled) return;
-            
-            // Find the parent cart item
-            const cartItem = button.closest('.cart-item');
-            if (!cartItem) return;
-            
-            // Find quantity display and item total elements
-            const quantitySpan = cartItem.querySelector(`.quantity-display[data-id="${cartId}"]`);
-            const quantitySpanDesktop = cartItem.querySelector(`.quantity-displaydesktop[data-id="${cartId}"]`);
-            const itemTotalSpan = cartItem.querySelector(`.item-total[data-id="${cartId}"]`);
-            const itemTotalSpanDesktop = cartItem.querySelector(`.item-totaldesktop[data-id="${cartId}"]`);
-            
-            if (!quantitySpan && !quantitySpanDesktop) return;
-            
-            // Get current quantity
-            let currentQty = parseInt(quantitySpan ? quantitySpan.innerText : quantitySpanDesktop.innerText);
-            let newQty = currentQty;
-            
-            // Determine new quantity based on action
-            if (action === 'increment') {
-                newQty = currentQty + 1;
-            } else if (action === 'decrement') {
-                newQty = currentQty - 1;
-            }
-            
-            // If quantity becomes 0, ask for confirmation to remove
-            if (newQty < 1) {
-                const removeBtn = cartItem.querySelector(`.cart-remove[data-id="${cartId}"]`);
-                const productName = removeBtn ? removeBtn.getAttribute('data-name') : 'item';
-                showConfirmDialog(`Remove "${productName}" from your cart?`, () => {
-                    removeItem(cartId);
-                });
-                return;
-            }
-            
-            // === REAL-TIME UI UPDATE (Immediate visual feedback) ===
-            // Add visual feedback to button
-            button.style.transform = 'scale(0.95)';
-            setTimeout(() => {
-                button.style.transform = '';
-            }, 150);
-            
-            // Update quantity display instantly
-            if (quantitySpan) {
-                quantitySpan.innerText = newQty;
-            }
-            if (quantitySpanDesktop) {
-                quantitySpanDesktop.innerText = newQty;
-            }
-            
-            // Add highlight effect to quantity
-            if (quantitySpan) {
-                quantitySpan.style.transform = 'scale(1.2)';
-                setTimeout(() => {
-                    quantitySpan.style.transform = '';
-                }, 200);
-            }
-            if (quantitySpanDesktop) {
-                quantitySpanDesktop.style.transform = 'scale(1.2)';
-                setTimeout(() => {
-                    quantitySpanDesktop.style.transform = '';
-                }, 200);
-            }
-            
-            // Calculate and update item total instantly
-            if (itemTotalSpan) {
-                // Get price per item
-                let pricePerItem = parseFloat(itemTotalSpan.getAttribute('data-price'));
-                if (isNaN(pricePerItem)) {
-                    // Calculate from current total and quantity
-                    const currentTotal = parseFloat(itemTotalSpan.innerText.replace('$', '').replace(',', ''));
-                    pricePerItem = currentTotal / currentQty;
-                    itemTotalSpan.setAttribute('data-price', pricePerItem);
-                }
-                
-                const newItemTotal = pricePerItem * newQty;
-                itemTotalSpan.innerText = `$${newItemTotal.toFixed(2)}`;
-            }
-            
-            if (itemTotalSpanDesktop) {
-                // Get price per item
-                let pricePerItem = parseFloat(itemTotalSpanDesktop.getAttribute('data-price'));
-                if (isNaN(pricePerItem)) {
-                    // Calculate from current total and quantity
-                    const currentTotal = parseFloat(itemTotalSpanDesktop.innerText.replace('$', '').replace(',', ''));
-                    pricePerItem = currentTotal / currentQty;
-                    itemTotalSpanDesktop.setAttribute('data-price', pricePerItem);
-                }
-                
-                const newItemTotal = pricePerItem * newQty;
-                itemTotalSpanDesktop.innerText = `$${newItemTotal.toFixed(2)}`;
-            }
-            
-            // Update all totals instantly (subtotal, tax, total)
-            updateTotalsInstantly();
-            
-            // Disable button to prevent spam
-            button.disabled = true;
-            
-            // Send update to server in background
-            fetch("{{ route('cart.update') }}", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({
-                    cart_id: cartId,
-                    quantity: newQty
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Sync with server data to ensure accuracy
-                    if (quantitySpan) {
-                        quantitySpan.innerText = data.quantity;
-                    }
-                    
-                    if (itemTotalSpan) {
-                        itemTotalSpan.innerText = `$${data.item_total.toFixed(2)}`;
-                        // Store price per item for future calculations
-                        itemTotalSpan.setAttribute('data-price', data.item_total / data.quantity);
-                    }
-                    
-                    // Update summary with server data
-                    const subtotalEl = document.querySelector('.subtotal-amount');
-                    const taxEl = document.querySelector('.tax-amount');
-                    const totalEl = document.querySelector('.total-amount');
-                    
-                    if (subtotalEl) subtotalEl.innerText = `$${data.subtotal.toFixed(2)}`;
-                    if (taxEl) taxEl.innerText = `$${data.tax.toFixed(2)}`;
-                    if (totalEl) totalEl.innerText = `$${data.total.toFixed(2)}`;
-                    
-                    // Update cart count badges
-                    const cartCount = document.getElementById('cartCount');
-                    const mobileBadge = document.getElementById('mobileCartBadge');
-                    if (cartCount) cartCount.innerText = data.cart_count;
-                    if (mobileBadge) mobileBadge.innerText = data.cart_count;
-                    
-                    showToast('Cart updated!', 'success');
-                } else {
-                    // Revert UI if server update failed
-                    quantitySpan.innerText = currentQty;
-                    if (itemTotalSpan) {
-                        const revertTotal = pricePerItem * currentQty;
-                        itemTotalSpan.innerText = `$${revertTotal.toFixed(2)}`;
-                    }
-                    updateTotalsInstantly();
-                    showToast(data.message || 'Update failed', 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                // Revert UI on error
-                quantitySpan.innerText = currentQty;
-                if (itemTotalSpan) {
-                    const revertTotal = pricePerItem * currentQty;
-                    itemTotalSpan.innerText = `$${revertTotal.toFixed(2)}`;
-                }
-                updateTotalsInstantly();
-                showToast('Network error. Please try again.', 'error');
-            })
-            .finally(() => {
-                // Re-enable button after 400ms
-                setTimeout(() => {
-                    button.disabled = false;
-                }, 400);
-            });
-        }
-        
-        // Update subtotal, tax, and total instantly based on current item totals
-        function updateTotalsInstantly() {
-            let subtotal = 0;
-            
-            // Sum all item totals
-            document.querySelectorAll('.item-total').forEach(itemTotal => {
-                const totalText = itemTotal.innerText.replace('$', '').replace(',', '');
-                const total = parseFloat(totalText);
-                if (!isNaN(total)) {
-                    subtotal += total;
-                }
-            });
-            
-            document.querySelectorAll('.item-totaldesktop').forEach(itemTotal => {
-                const totalText = itemTotal.innerText.replace('$', '').replace(',', '');
-                const total = parseFloat(totalText);
-                if (!isNaN(total)) {
-                    subtotal += total;
-                }
-            });
-            
-            // Calculate tax (12%) and total
-            const tax = subtotal * 0.12;
-            const total = subtotal + tax;
-            
-            // Update the summary section
-            const subtotalEl = document.querySelector('.subtotal-amount');
-            const taxEl = document.querySelector('.tax-amount');
-            const totalEl = document.querySelector('.total-amount');
-            
-            if (subtotalEl) subtotalEl.innerText = `$${subtotal.toFixed(2)}`;
-            if (taxEl) taxEl.innerText = `$${tax.toFixed(2)}`;
-            if (totalEl) totalEl.innerText = `$${total.toFixed(2)}`;
-        }
-        
-        // Remove item from cart
-        function removeItem(cartId) {
-            const cartItem = document.querySelector(`.cart-item[data-id="${cartId}"]`);
-            if (!cartItem) return;
-            
-            // Add fade out animation
-            cartItem.style.transition = 'all 0.3s ease';
-            cartItem.style.opacity = '0';
-            cartItem.style.transform = 'translateX(-20px)';
-            
-            fetch("{{ route('cart.remove') }}", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({
-                    cart_id: cartId
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    setTimeout(() => {
-                        cartItem.remove();
-                        
-                        // Update totals
-                        const subtotalEl = document.querySelector('.subtotal-amount');
-                        const taxEl = document.querySelector('.tax-amount');
-                        const totalEl = document.querySelector('.total-amount');
-                        
-                        if (subtotalEl) subtotalEl.innerText = `$${data.subtotal.toFixed(2)}`;
-                        if (taxEl) taxEl.innerText = `$${data.tax.toFixed(2)}`;
-                        if (totalEl) totalEl.innerText = `$${data.total.toFixed(2)}`;
-                        
-                        // Update cart badges
-                        const cartCount = document.getElementById('cartCount');
-                        const mobileBadge = document.getElementById('mobileCartBadge');
-                        if (cartCount) cartCount.innerText = data.cart_count;
-                        if (mobileBadge) mobileBadge.innerText = data.cart_count;
-                        
-                        showToast('Item removed from cart', 'success');
-                        
-                        // Reload page if cart becomes empty
-                        if (data.cart_count === 0) {
-                            setTimeout(() => location.reload(), 1000);
-                        }
-                    }, 300);
-                } else {
-                    // Revert animation
-                    cartItem.style.opacity = '1';
-                    cartItem.style.transform = 'translateX(0)';
-                    showToast(data.message || 'Failed to remove item', 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                cartItem.style.opacity = '1';
-                cartItem.style.transform = 'translateX(0)';
-                showToast('Error removing item', 'error');
-            });
-        }
-        
-        // Initialize all event listeners when page loads
+        // Event Listeners
         document.addEventListener('DOMContentLoaded', function() {
-            // Store price per item for each cart item
-            document.querySelectorAll('.cart-item').forEach(item => {
-                const itemTotal = item.querySelector('.item-total');
-                const itemTotalDesktop = item.querySelector('.item-totaldesktop');
-                const quantitySpan = item.querySelector('.quantity-display');
-                const quantitySpanDesktop = item.querySelector('.quantity-displaydesktop');
-
-                if (itemTotal && quantitySpan) {
-                    const totalText = itemTotal.innerText.replace('$', '').replace(',', '');
-                    const total = parseFloat(totalText);
-                    const quantity = parseInt(quantitySpan.innerText);
+            // Select All
+            const selectAllCheckbox = document.getElementById('selectAll');
+            if (selectAllCheckbox) {
+                selectAllCheckbox.addEventListener('change', function() {
+                    const isChecked = this.checked;
+                    document.querySelectorAll('.item-checkbox, .item-checkbox-desktop').forEach(cb => {
+                        cb.checked = isChecked;
+                    });
+                    updateOrderSummary();
+                });
+            }
+            
+            // Individual checkboxes
+            document.querySelectorAll('.item-checkbox, .item-checkbox-desktop').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const cartId = this.getAttribute('data-id');
+                    syncCheckboxes(cartId, this.checked);
+                    updateOrderSummary();
                     
-                    if (!isNaN(total) && !isNaN(quantity) && quantity > 0) {
-                        const pricePerItem = total / quantity;
-                        itemTotal.setAttribute('data-price', pricePerItem);
+                    // Update select all state
+                    const allCheckboxes = document.querySelectorAll('.item-checkbox, .item-checkbox-desktop');
+                    const checkedBoxes = document.querySelectorAll('.item-checkbox:checked, .item-checkbox-desktop:checked');
+                    if (selectAllCheckbox) {
+                        selectAllCheckbox.checked = allCheckboxes.length === checkedBoxes.length && allCheckboxes.length > 0;
                     }
-                }
+                });
             });
             
-            // Handle decrement buttons (minus)
+            // Decrement buttons
             document.querySelectorAll('.cart-dec, .cart-decdesktop').forEach(btn => {
                 btn.addEventListener('click', function(e) {
                     e.preventDefault();
                     const cartId = this.getAttribute('data-id');
-                    updateQuantity(cartId, 'decrement', this);
+                    const cartItem = document.querySelector(`.cart-item[data-id="${cartId}"]`);
+                    if (cartItem) {
+                        let currentQty = parseInt(cartItem.getAttribute('data-quantity'));
+                        if (currentQty > 1) {
+                            updateQuantity(cartId, currentQty - 1, this);
+                        } else if (currentQty === 1) {
+                            const productName = this.closest('.cart-item')?.querySelector('.cart-remove')?.getAttribute('data-name') || 'item';
+                            showConfirmDialog(`Remove "${productName}" from your cart?`, () => {
+                                removeItem(cartId, this);
+                            });
+                        }
+                    }
                 });
             });
             
-            // Handle increment buttons (plus)
+            // Increment buttons
             document.querySelectorAll('.cart-inc, .cart-incdesktop').forEach(btn => {
                 btn.addEventListener('click', function(e) {
                     e.preventDefault();
                     const cartId = this.getAttribute('data-id');
-                    updateQuantity(cartId, 'increment', this);
+                    const cartItem = document.querySelector(`.cart-item[data-id="${cartId}"]`);
+                    if (cartItem) {
+                        let currentQty = parseInt(cartItem.getAttribute('data-quantity'));
+                        updateQuantity(cartId, currentQty + 1, this);
+                    }
                 });
             });
             
-            // Handle remove buttons
+            // Remove buttons
             document.querySelectorAll('.cart-remove').forEach(btn => {
                 btn.addEventListener('click', function(e) {
                     e.preventDefault();
                     const cartId = this.getAttribute('data-id');
                     const productName = this.getAttribute('data-name') || 'this item';
                     showConfirmDialog(`Are you sure you want to remove "${productName}" from your cart?`, () => {
-                        removeItem(cartId);
+                        removeItem(cartId, this);
                     });
                 });
             });
+            
+            // Initial summary calculation
+            updateOrderSummary();
         });
     </script>
 
     <style>
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
-        }
-        @keyframes scaleIn {
-            from {
-                opacity: 0;
-                transform: scale(0.95);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-        
-        /* Optional: For a more subtle blur effect on different browsers */
-        @supports (backdrop-filter: blur(8px)) {
-            .modal-overlay {
-                background: rgba(0, 0, 0, 0.3);
-                backdrop-filter: blur(8px);
-            }
-        }
-        
-        /* Fallback for browsers that don't support backdrop-filter */
-        @supports not (backdrop-filter: blur(8px)) {
-            .modal-overlay {
-                background: rgba(0, 0, 0, 0.7);
-            }
-        }
-        
-        button:disabled {
-            cursor: not-allowed;
-            opacity: 0.6;
-        }
-        
-        .quantity-display {
-            transition: transform 0.2s ease;
-            display: inline-block;
-        }
-        .quantity-displaydesktop {
-            transition: transform 0.2s ease;
-            display: inline-block;
-        }
-        
-        .cart-dec, .cart-inc {
-            transition: transform 0.1s ease;
-            cursor: pointer;
-        }
-
-        .cart-decdesktop, .cart-incdesktop {
-            transition: transform 0.1s ease;
-            cursor: pointer;
-        }
-        
-        .cart-dec:active, .cart-inc:active {
-            transform: scale(0.95);
-        }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+        .cart-dec, .cart-inc, .cart-decdesktop, .cart-incdesktop { cursor: pointer; transition: transform 0.1s; }
+        .cart-dec:active, .cart-inc:active, .cart-decdesktop:active, .cart-incdesktop:active { transform: scale(0.95); }
     </style>
 @endsection

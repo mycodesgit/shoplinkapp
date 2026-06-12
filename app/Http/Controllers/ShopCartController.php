@@ -144,12 +144,14 @@ class ShopCartController extends Controller
         
         return response()->json([
             'success' => true,
-            'quantity' => $cartItem->quantity, // Add this line
-            'item_total' => $itemTotal,
-            'subtotal' => $subtotal,
-            'tax' => $tax,
-            'total' => $total,
-            'cart_count' => $cartItems->count()
+            'cart_id' => $cartItem->id,
+            'price' => (float) $cartItem->price,        // ADD THIS - critical!
+            'quantity' => (int) $cartItem->quantity,
+            'item_total' => (float) $itemTotal,
+            'subtotal' => (float) $subtotal,
+            'tax' => (float) $tax,
+            'total' => (float) $total,
+            'cart_count' => (int) $cartItems->count()
         ]);
     }
 
@@ -308,6 +310,6 @@ class ShopCartController extends Controller
         $tax = $subtotal * 0.12;
         $total = $subtotal + $tax;
 
-        return view('customer.checkout.index', compact('cartItems', 'subtotal', 'tax', 'total'));
+        return view('customer.cart.checkout', compact('cartItems', 'subtotal', 'tax', 'total'));
     }
 }

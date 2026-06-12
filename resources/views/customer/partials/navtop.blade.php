@@ -5,6 +5,7 @@
     $aboutActive = in_array($curr_route, ['dashboard.about', 'dashboard.auth.about']) ? 'text-black' : 'text-gray-500';
     $itemsActive = in_array($curr_route, ['dashboard.items', 'dashboard.auth.items', 'itemdetails.index', 'itemdetails.auth.index']) ? 'text-black' : 'text-gray-500';
     $cartActive = in_array($curr_route, ['cart.index', 'cart.auth.index']) ? 'text-black' : 'text-gray-500';
+    $orderActive = in_array($curr_route, ['orders.auth.index']) ? 'text-black' : 'text-gray-500';
     $profileActive = in_array($curr_route, ['profile.account', 'profile.auth.account']) ? 'text-black' : 'text-gray-500';
 @endphp
 
@@ -20,7 +21,7 @@
                 @if(Auth::guard('customer')->check())
                     <a href="{{ route('dashboard.auth.index') }}" class="{{ $dashActive }}">Home</a>
                     <a href="{{ route('dashboard.auth.items') }}" class="{{ $itemsActive }}">Shop</a>
-                    <a href="wishlist.html" class="hover:text-gray-600">Wishlist</a>
+                    <a href="{{ route('orders.auth.index') }}" class="{{ $orderActive }}">Orders</a>
                     <a href="{{ route('cart.auth.index') }}" class="{{ $cartActive }}">Cart</a>
                     <a href="{{ route('profile.auth.account') }}" class="{{ $profileActive }}">Profile</a>
                 @else

@@ -5,6 +5,7 @@
     $aboutActive = in_array($curr_route, ['dashboard.about', 'dashboard.auth.about']) ? 'text-black' : 'text-gray-500';
     $itemsActive = in_array($curr_route, ['dashboard.items', 'dashboard.auth.items', 'itemdetails.index', 'itemdetails.auth.index']) ? 'text-black' : 'text-gray-500';
     $cartActive = in_array($curr_route, ['cart.index', 'cart.auth.index']) ? 'text-black' : 'text-gray-500';
+    $orderActive = in_array($curr_route, ['orders.auth.index']) ? 'text-black' : 'text-gray-500';
     $profileActive = in_array($curr_route, ['profile.account', 'profile.auth.account']) ? 'text-black' : 'text-gray-500';
 @endphp
 
@@ -21,9 +22,9 @@
                 <i class="fas fa-store text-xl"></i>
                 <span class="text-[10px] mt-0.5">Shop</span>
             </a>
-            <a href="wishlist.html" class="flex flex-col items-center py-1 px-3 text-gray-500">
-                <i class="far fa-heart text-xl"></i>
-                <span class="text-[10px] mt-0.5">Wishlist</span>
+            <a href="{{ route('orders.auth.index') }}" class="flex flex-col items-center py-1 px-3 {{ $orderActive }}">
+                <i class="fas fa-box text-xl"></i>
+                <span class="text-[10px] mt-0.5">Orders</span>
             </a>
             <a href="{{ route('cart.auth.index') }}" class="flex flex-col items-center py-1 px-3 {{ $cartActive }} relative">
                 <i class="fas fa-shopping-cart text-xl"></i>

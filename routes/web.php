@@ -22,6 +22,7 @@ use App\Http\Controllers\ShopRegisterController;
 use App\Http\Controllers\ShopDashboardController;
 use App\Http\Controllers\ShopItemInfoController;
 use App\Http\Controllers\ShopCartController;
+use App\Http\Controllers\ShopOrdersController;
 use App\Http\Controllers\ShopProfileController;
 
 /*
@@ -67,6 +68,10 @@ Route::group(['middleware'=>['customer_auth']],function(){
         Route::post('/clear', [ShopCartController::class, 'clearCart'])->name('cart.clear');
         Route::get('/items', [ShopCartController::class, 'getCartItems'])->name('cart.items');
         Route::get('/checkout', [ShopCartController::class, 'checkout'])->name('cart.checkout');
+    });
+
+    Route::prefix('track')->group(function () {
+        Route::get('/myorder',[ShopOrdersController::class,'index'])->name('orders.auth.index');
     });
     
     Route::get('/profile/account',[ShopProfileController::class,'index'])->name('profile.auth.account');

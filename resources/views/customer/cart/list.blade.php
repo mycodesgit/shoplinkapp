@@ -219,7 +219,7 @@
                             </div>
                         </div>
                         
-                        <form id="checkoutForm" action="{{ route('cart.checkout') }}" method="get">
+                        <form id="checkoutForm" action="{{ route('cart.checkout') }}" method="POST">
                             @csrf
                             <input type="hidden" name="selected_items" id="selectedItemsInput">
                             <button type="submit" id="checkoutBtn" class="w-full bg-black text-white text-center py-3 rounded-full mt-6 font-semibold hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed">

@@ -67,11 +67,15 @@ Route::group(['middleware'=>['customer_auth']],function(){
         Route::post('/remove', [ShopCartController::class, 'remove'])->name('cart.remove');
         Route::post('/clear', [ShopCartController::class, 'clearCart'])->name('cart.clear');
         Route::get('/items', [ShopCartController::class, 'getCartItems'])->name('cart.items');
-        Route::get('/checkout', [ShopCartController::class, 'checkout'])->name('cart.checkout');
+        Route::post('/checkout', [ShopCartController::class, 'checkout'])->name('cart.checkout');
     });
 
     Route::prefix('track')->group(function () {
         Route::get('/myorder',[ShopOrdersController::class,'index'])->name('orders.auth.index');
+        Route::post('/myorder/store',[ShopOrdersController::class,'placeOrder'])->name('placeOrder.auth.index');
+        Route::get('/myorder/show/{orderId}', [ShopOrdersController::class, 'show'])->name('myorder.show');
+        Route::post('myorder/show/cancel/{orderId}/cancel', [ShopOrdersController::class, 'cancel'])->name('myorder.cancel');
+        Route::post('/myorder/show/reorder{orderId}/reorder', [ShopOrdersController::class, 'reorder'])->name('myorder.reorder');
     });
     
     Route::get('/profile/account',[ShopProfileController::class,'index'])->name('profile.auth.account');

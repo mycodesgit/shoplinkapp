@@ -54,8 +54,9 @@ return new class extends Migration
             $table->integer('estimated_minutes')->nullable(); // 25-35 min display
             
             // Payment
-            $table->enum('payment_method', ['cash', 'card', 'gcash', 'paymaya'])->default('cash');
+            $table->enum('payment_method', ['cash', 'card', 'gcash', 'maya'])->default('cash');
             $table->enum('payment_status', ['pending', 'paid', 'failed', 'refunded'])->default('pending');
+            $table->json('payment_details')->nullable();
             $table->string('transaction_id')->nullable();
             
             // Additional info
@@ -68,6 +69,7 @@ return new class extends Migration
             $table->index('status');
             $table->index('order_number');
             $table->index('customer_id');
+            $table->index('payment_status');
         });
     }
 

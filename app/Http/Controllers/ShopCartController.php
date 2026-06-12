@@ -287,7 +287,7 @@ class ShopCartController extends Controller
     /**
      * Checkout - Prepare cart for checkout
      */
-    public function checkout()
+    public function checkout(Request $request)
     {
         $customerId = Auth::guard('customer')->check() ? Auth::guard('customer')->id() : null;
         
@@ -295,12 +295,28 @@ class ShopCartController extends Controller
             return redirect()->route('shop.login')->with('error', 'Please login to checkout');
         }
 
-        $cartItems = Cart::with('product')
+        // Get selected items from the request
+        $selectedItemIds = $request->input('selected_items');
+        
+        if (!$selectedItemIds) {
+            return redirect()->route('cart.auth.index')->with('error', 'No items selected for checkout');
+        }
+        
+        // Decode the JSON array of selected cart IDs
+        $selectedIds = json_decode($selectedItemIds, true);
+        
+        if (empty($selectedIds)) {
+            return redirect()->route('cart.auth.index')->with('error', 'No items selected for checkout');
+        }
+        
+        // Get only the selected cart items
+        $cartItems = Cart::with('product', 'variation')
             ->where('customer_id', $customerId)
+            ->whereIn('id', $selectedIds)
             ->get();
 
         if ($cartItems->isEmpty()) {
-            return redirect()->route('shop.index')->with('error', 'Your cart is empty');
+            return redirect()->route('cart.auth.index')->with('error', 'Selected items not found');
         }
 
         $subtotal = $cartItems->sum(function ($item) {

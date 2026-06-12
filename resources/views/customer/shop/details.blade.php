@@ -152,11 +152,6 @@
                                 {{ $isOutOfStock ? 'disabled' : '' }}
                                 title="{{ $stockText }}">
                                 {{ $variation->variation_value }}
-                                @if($isLowStock)
-                                    <span class="stock-warning">⚠️ {{ $availableStock }}</span>
-                                @elseif($isOutOfStock)
-                                    <span class="stock-warning">❌</span>
-                                @endif
                             </button>
                         @endforeach
                     </div>

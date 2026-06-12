@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 
@@ -16,6 +17,7 @@ class ShopItemInfoController extends Controller
 {
     public function index($id)
     {
+        $decryptedId = Crypt::decryptString($id);
         // Get product with variations and calculate available stock
         $product = Product::with(['variations' => function($query) {
             $query->with(['orderItems' => function($q) {
@@ -23,7 +25,7 @@ class ShopItemInfoController extends Controller
                     $q2->whereNotIn('status', ['cancelled', 'delivered']);
                 });
             }]);
-        }, 'category'])->findOrFail($id);
+        }, 'category'])->findOrFail($decryptedId);
         
         // Calculate available stock for each variation
         $variationsArray = [];

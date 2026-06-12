@@ -149,7 +149,7 @@
 
                         <div class="image-container">
                             @if(Auth::guard('customer')->check())
-                                <a href="{{ route('itemdetails.auth.index', $item->id) }}">
+                                <a href="{{ route('itemdetails.auth.index', $item->encrypted_id) }}">
                             @else
                                 <a href="{{ route('itemdetails.index', $item->id) }}">
                             @endif

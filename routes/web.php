@@ -58,7 +58,7 @@ Route::group(['middleware'=>['customer_auth']],function(){
     Route::get('/dashboard/customer/view',[ShopDashboardController::class,'index'])->name('dashboard.auth.index');
     Route::get('/shop/items/customer/view',[ShopDashboardController::class,'store'])->name('dashboard.auth.items');
     
-    Route::get('/item/info/view/{id}',[ShopItemInfoController::class,'index'])->name('itemdetails.auth.index');
+    Route::get('/shop/items/customer/info/view/{id}',[ShopItemInfoController::class,'index'])->name('itemdetails.auth.index');
     
     Route::prefix('cart')->group(function () {
         Route::get('/list',[ShopCartController::class,'index'])->name('cart.auth.index');

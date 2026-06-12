@@ -40,9 +40,11 @@ class ShopDashboardController extends Controller
         
         // Calculate available stock for each variation
         foreach ($products as $product) {
+            $product->encrypted_id = Crypt::encryptString($product->id);
             foreach ($product->variations as $variation) {
                 $orderedQuantity = $variation->orderItems->sum('quantity');
                 $variation->available_stock = $variation->variant_stock - $orderedQuantity;
+                $variation->encrypted_id = Crypt::encryptString($variation->id);
             }
         }
         $categories = Category::where('pcstatus', '=', 1)->orderBy('subcategory', 'ASC')->get();

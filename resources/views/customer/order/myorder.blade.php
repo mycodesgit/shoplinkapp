@@ -459,6 +459,17 @@
     </script>
 
     <style>
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        #pendingPanel{
+            animation: fadeIn 0.3s ease-out !important;
+        }
         .scrollbar-hide::-webkit-scrollbar {
             display: none;
         }

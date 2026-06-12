@@ -27,7 +27,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
-                            <input type="text" name="full_name" id="fullName" class="w-full px-4 py-2 border border-gray-200 rounded-2xl focus:outline-none focus:border-[#e5e7eb] focus:ring-2 focus:ring-[#e5e7eb]/40 transition-all duration-200" placeholder="John Doe" value="{{ Auth::guard('customer')->user()->fname ?? '' }}">
+                            <input type="text" name="full_name" id="fullName" class="w-full px-4 py-2 border border-gray-200 rounded-2xl focus:outline-none focus:border-[#e5e7eb] focus:ring-2 focus:ring-[#e5e7eb]/40 transition-all duration-200" placeholder="John Doe" value="{{ Auth::guard('customer')->user()->fname ?? '' }} {{ Auth::guard('customer')->user()->lname ?? '' }}">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>

@@ -9,12 +9,13 @@ use Carbon\Carbon;
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductVariation;
 
 class ShopItemInfoController extends Controller
 {
     public function index($id)
     {
-        $product = Product::findOrFail($id);
+        $product = Product::with('variations', 'category')->findOrFail($id);
         
         return view('customer.shop.details', compact('product'));
     }

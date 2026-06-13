@@ -27,7 +27,7 @@
         @else
             <div class="flex flex-col lg:flex-row gap-6">
                 <div class="flex-1 space-y-3">
-                    <div class="bg-white rounded-2xl border border-gray-200 p-5 shadow-xs">
+                    <div class="bg-white card-item rounded-2xl border border-gray-200 p-5 shadow-xs">
                         <label class="flex items-center gap-3 cursor-pointer">
                             <input type="checkbox" id="selectAll" class="w-5 h-5 rounded border-gray-300 text-black focus:ring-black">
                             <span class="font-medium text-gray-700">Select All Items</span>
@@ -35,7 +35,7 @@
                         </label>
                     </div>
 
-                    <div class="hidden md:grid md:grid-cols-6 gap-4 px-4 py-2 text-sm text-gray-500 border-b border-gray-200">
+                    <div class="hidden card-item md:grid md:grid-cols-6 gap-4 px-4 py-2 text-sm text-gray-500 border-b border-gray-200">
                         <div class="w-12">Select</div>
                         <div class="col-span-2">Product</div>
                         <div class="text-center">Price</div>
@@ -115,7 +115,7 @@
                             }
                         @endphp
                         
-                        <div class="cart-item bg-white rounded-2xl border border-gray-200 p-5 shadow-xs hover:shadow-md transition-all duration-200" data-id="{{ $itemId }}" data-price="{{ $itemPrice }}" data-quantity="{{ $itemQuantity }}">
+                        <div class="cart-item card-item bg-white rounded-2xl border border-gray-200 p-5 shadow-xs hover:shadow-md transition-all duration-200" data-id="{{ $itemId }}" data-price="{{ $itemPrice }}" data-quantity="{{ $itemQuantity }}">
                             <!-- Mobile Layout -->
                             <div class="block md:hidden">
                                 <!-- Top row: Checkbox + Image + Product Name -->
@@ -197,7 +197,7 @@
                 
                 <!-- Order Summary Sidebar -->
                 <div class="lg:w-96">
-                    <div class="bg-white rounded-2xl border border-gray-200 p-5 shadow-xs sticky top-6">
+                    <div class="bg-white animate-slide-right rounded-2xl border border-gray-200 p-5 shadow-xs sticky top-6">
                         <h3 class="font-bold text-lg text-gray-900 mb-4">Order Summary</h3>
                         
                         <div class="space-y-3">

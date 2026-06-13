@@ -18,7 +18,7 @@
             <!-- Checkout Form Section -->
             <div class="flex-1 space-y-5">
                 <!-- Delivery Information -->
-                <div class="bg-white rounded-2xl border border-gray-200 p-5 shadow-xs">
+                <div class="bg-white card-item rounded-2xl border border-gray-200 p-5 shadow-xs">
                     <h3 class="font-bold text-lg text-gray-900 mb-4 flex items-center gap-2">
                         <i class="fas fa-map-marker-alt text-gray-400"></i>
                         Delivery Information
@@ -41,7 +41,7 @@
                 </div>
 
                 <!-- Delivery Method -->
-                <div class="bg-white rounded-2xl border border-gray-200 p-5 shadow-xs">
+                <div class="bg-white card-item rounded-2xl border border-gray-200 p-5 shadow-xs">
                     <h3 class="font-bold text-lg text-gray-900 mb-4 flex items-center gap-2">
                         <i class="fas fa-truck text-gray-400"></i>
                         Delivery Method
@@ -76,7 +76,7 @@
                 </div>
 
                 <!-- Payment Method -->
-                <div class="bg-white rounded-2xl border border-gray-200 p-5 shadow-xs">
+                <div class="bg-white card-item rounded-2xl border border-gray-200 p-5 shadow-xs">
                     <h3 class="font-bold text-lg text-gray-900 mb-4 flex items-center gap-2">
                         <i class="fas fa-credit-card text-gray-400"></i>
                         Payment Method
@@ -121,7 +121,7 @@
                 </div>
 
                 <!-- Order Notes -->
-                <div class="bg-white rounded-2xl border border-gray-200 p-5 shadow-xs">
+                <div class="bg-white card-item rounded-2xl border border-gray-200 p-5 shadow-xs">
                     <h3 class="font-bold text-lg text-gray-900 mb-4 flex items-center gap-2">
                         <i class="fas fa-pen text-gray-400"></i>
                         Order Notes (Optional)
@@ -132,7 +132,7 @@
 
             <!-- Order Summary Sidebar -->
             <div class="lg:w-96">
-                <div class="bg-white rounded-2xl border border-gray-200 p-5 shadow-xs sticky top-6">
+                <div class="bg-white animate-slide-right rounded-2xl border border-gray-200 p-5 shadow-xs sticky top-6">
                     <h3 class="font-bold text-lg text-gray-900 mb-4">Order Summary</h3>
                     
                     <!-- Selected Items List -->

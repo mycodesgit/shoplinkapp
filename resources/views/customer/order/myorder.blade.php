@@ -16,7 +16,7 @@
 
         @if($orders->isEmpty())
             <!-- Empty Orders State -->
-            <div class="text-center py-12 md:py-20 bg-white rounded-2xl border border-gray-200">
+            <div class="text-center card-item py-12 md:py-20 bg-white rounded-2xl border border-gray-200">
                 <div class="inline-flex items-center justify-center w-20 h-20 bg-gray-100 rounded-full mb-4">
                     <i class="fas fa-shopping-bag text-3xl text-gray-400"></i>
                 </div>
@@ -132,7 +132,7 @@
                             }
                         @endphp
 
-                        <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200">
+                        <div class="bg-white card-item rounded-2xl border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200">
                             <div class="p-4 sm:p-5">
                                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                                     <div class="flex items-start gap-3">
@@ -186,38 +186,38 @@
                 @else
                     <div class="space-y-4">
                         @foreach($acceptedOrders as $order)
-                        <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200">
-                            <div class="p-4 sm:p-5">
-                                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                                    <div class="flex items-start gap-3">
-                                        <div class="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
-                                            <i class="fas fa-thumbs-up text-blue-600 text-xl"></i>
-                                        </div>
-                                        <div>
-                                            <h3 class="font-bold text-gray-800 text-base md:text-lg">{{ $order->order_number }}</h3>
-                                            <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500 mt-1">
-                                                <span><i class="far fa-calendar-alt mr-1"></i> {{ $order->created_at->format('M d, Y') }}</span>
-                                                <span><i class="fas fa- peso-sign mr-1"></i> ₱{{ number_format($order->total, 2) }}</span>
-                                                <span><i class="fas fa-box mr-1"></i> {{ $order->items->count() }} item(s)</span>
+                            <div class="bg-white card-item rounded-2xl border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200">
+                                <div class="p-4 sm:p-5">
+                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                        <div class="flex items-start gap-3">
+                                            <div class="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+                                                <i class="fas fa-thumbs-up text-blue-600 text-xl"></i>
+                                            </div>
+                                            <div>
+                                                <h3 class="font-bold text-gray-800 text-base md:text-lg">{{ $order->order_number }}</h3>
+                                                <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500 mt-1">
+                                                    <span><i class="far fa-calendar-alt mr-1"></i> {{ $order->created_at->format('M d, Y') }}</span>
+                                                    <span><i class="fas fa- peso-sign mr-1"></i> ₱{{ number_format($order->total, 2) }}</span>
+                                                    <span><i class="fas fa-box mr-1"></i> {{ $order->items->count() }} item(s)</span>
+                                                </div>
                                             </div>
                                         </div>
+                                        <div class="flex items-center gap-3">
+                                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                <i class="fas fa-check-circle mr-1 text-xs"></i> {{ ucfirst($order->status) }}
+                                            </span>
+                                            <button onclick="viewOrder({{ $order->id }})" class="text-blue-600 text-sm font-medium hover:text-blue-800 transition">Track <i class="fas fa-map-marker-alt ml-1 text-xs"></i></button>
+                                        </div>
                                     </div>
-                                    <div class="flex items-center gap-3">
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                            <i class="fas fa-check-circle mr-1 text-xs"></i> {{ ucfirst($order->status) }}
-                                        </span>
-                                        <button onclick="viewOrder({{ $order->id }})" class="text-blue-600 text-sm font-medium hover:text-blue-800 transition">Track <i class="fas fa-map-marker-alt ml-1 text-xs"></i></button>
-                                    </div>
-                                </div>
-                                <div class="mt-3 pt-3 border-t border-gray-100">
-                                    <div class="text-xs text-green-700">
-                                        <i class="fas fa-utensils mr-1"></i> 
-                                        @if($order->status === 'accepted') Order accepted, preparing soon
-                                        @else Chef is preparing your order @endif
+                                    <div class="mt-3 pt-3 border-t border-gray-100">
+                                        <div class="text-xs text-green-700">
+                                            <i class="fas fa-utensils mr-1"></i> 
+                                            @if($order->status === 'accepted') Order accepted, preparing soon
+                                            @else Chef is preparing your order @endif
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
                         @endforeach
                     </div>
                 @endif
@@ -234,7 +234,7 @@
                 @else
                     <div class="space-y-4">
                         @foreach($readyOrders as $order)
-                        <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200 {{ $order->delivery_method === 'pickup' ? 'border-l-4 border-l-green-500' : '' }}">
+                        <div class="bg-white card-item rounded-2xl border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200 {{ $order->delivery_method === 'pickup' ? 'border-l-4 border-l-green-500' : '' }}">
                             <div class="p-4 sm:p-5">
                                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                                     <div class="flex items-start gap-3">
@@ -298,7 +298,7 @@
                 @else
                     <div class="space-y-3">
                         @foreach($deliveredOrders as $order)
-                        <div class="bg-white rounded-2xl border border-gray-200 p-5 shadow-xs hover:shadow-md transition-all duration-200">
+                        <div class="bg-white card-item rounded-2xl border border-gray-200 p-5 shadow-xs hover:shadow-md transition-all duration-200">
                             <div class="flex flex-wrap items-center justify-between gap-3">
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">

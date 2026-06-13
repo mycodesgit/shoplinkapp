@@ -8,10 +8,10 @@
             <span id="toastMessage"></span>
         </div>
 
-        <!-- Modal Popup -->
-        <div id="productModal" class="fixed inset-0 z-50 hidden items-center justify-center p-3 sm:p-4 md:p-6" style="display: none;">
-            <!-- Modal Content - No visible scrollbar -->
-            <div class="bg-white rounded-2xl w-full max-w-2xl modal-responsive shadow-2xl relative max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+        <!-- Modal Popup - FULLY RESPONSIVE -->
+        <div id="productModal" class="fixed inset-0 z-50 hidden" style="display: none;">
+            <!-- Modal Content -->
+            <div class="bg-white rounded-2xl w-full modal-responsive shadow-2xl relative mx-auto" onclick="event.stopPropagation()">
                 <div class="sticky top-0 bg-white border-b border-gray-100 px-4 sm:px-5 py-3 sm:py-4 flex justify-between items-center rounded-t-2xl z-10">
                     <h3 class="font-semibold text-base sm:text-lg text-gray-900">Product Details</h3>
                     <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 transition w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100">
@@ -28,7 +28,7 @@
                         </div>
                         
                         <!-- Product Details Section -->
-                        <div class="flex-1">
+                        <div class="flex-1 mt-4 sm:mt-0">
                             <h4 id="modalProductName" class="font-semibold text-gray-900 text-lg sm:text-xl mb-2"></h4>
                             
                             <div class="flex items-center gap-2 mb-3">
@@ -249,13 +249,13 @@
             window.location.href = "{{ route('shop.login') }}?redirect=" + encodeURIComponent(currentUrl);
         }
 
-        // Updated openModal function
+        // Updated openModal function - FIXED for bottom of page
         function openModal(product) {
             currentProduct = product;
             currentProductVariations = product.variations || [];
             currentQuantity = 1;
             
-            // Get the first IN-STOCK variation as default (using available_stock)
+            // Get the first IN-STOCK variation as default
             if (currentProductVariations.length > 0) {
                 const inStockVariation = currentProductVariations.find(v => (v.available_stock || v.variant_stock) > 0);
                 currentVariation = inStockVariation || currentProductVariations[0];
@@ -275,18 +275,24 @@
             // Reset quantity display
             document.getElementById('modalQuantity').innerText = currentQuantity;
             
-            // Show modal with blur effect
+            // Show modal
             const modal = document.getElementById('productModal');
             modal.style.display = 'flex';
-            document.body.style.overflow = 'hidden';
             
-            // AFTER modal is shown, update image for selected variation (if exists)
+            // AFTER modal is shown, update image for selected variation
             setTimeout(() => {
                 if (currentVariation) {
                     updateProductImageForVariation(currentVariation);
-                    // Update stock display with available stock
                     const availableStock = currentVariation.available_stock || currentVariation.variant_stock;
                     updateStockDisplay(availableStock);
+                }
+                
+                // Scroll modal into view - this fixes the bottom of page issue
+                const modalContent = document.querySelector('.modal-responsive');
+                if (modalContent) {
+                    modalContent.scrollTop = 0;
+                    // Smooth scroll to modal
+                    modal.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }
             }, 100);
         }
@@ -323,7 +329,7 @@
             }
         }
 
-        // Build variation options with transparent outline buttons
+        // Build variation options
         function buildVariationOptions() {
             const container = document.getElementById('variationOptions');
             if (!container) return;
@@ -342,7 +348,7 @@
                 groupedVariations[variation.variation_name].push(variation);
             });
             
-            // Build HTML with transparent outline buttons
+            // Build HTML
             let html = '';
             for (const [type, variations] of Object.entries(groupedVariations)) {
                 html += `
@@ -353,11 +359,9 @@
                 
                 variations.forEach(variation => {
                     const isSelected = currentVariation && currentVariation.id === variation.id;
-                    // Use available_stock instead of variant_stock
                     const availableStock = variation.available_stock !== undefined ? variation.available_stock : variation.variant_stock;
                     const isOutOfStock = availableStock <= 0;
                     
-                    // Get stock text for tooltip
                     let stockText = '';
                     if (availableStock <= 0) {
                         stockText = 'Out of Stock';
@@ -401,24 +405,18 @@
                         currentVariation = selectedVariation;
                         selectedVariationId = variationId;
                         
-                        // Update active state
                         document.querySelectorAll('.variation-option-btn').forEach(btn => {
                             btn.classList.remove('active', 'selected');
                         });
                         this.classList.add('active', 'selected');
                         
-                        // Update price and stock
                         updatePriceAndTotal();
-                        // Use available_stock for stock display
                         const availableStock = selectedVariation.available_stock !== undefined 
                             ? selectedVariation.available_stock 
                             : selectedVariation.variant_stock;
                         updateStockDisplay(availableStock);
-                        
-                        // CHANGE IMAGE BASED ON SELECTED VARIATION
                         updateProductImageForVariation(selectedVariation);
                         
-                        // Reset quantity if it exceeds available stock
                         if (currentQuantity > availableStock && availableStock > 0) {
                             currentQuantity = availableStock;
                             document.getElementById('modalQuantity').innerText = currentQuantity;
@@ -429,15 +427,12 @@
             });
         }
 
-        // NEW FUNCTION: Update product image based on selected variation
+        // Update product image based on selected variation
         function updateProductImageForVariation(variation) {
             const imgElement = document.getElementById('modalProductImage');
-            
-            // Add loading effect
             imgElement.style.opacity = '0.5';
             imgElement.style.transform = 'scale(0.98)';
             
-            // Determine new image source
             let newImageSrc = '';
             
             if (variation.variant_image && variation.variant_image !== 'null' && variation.variant_image !== '') {
@@ -454,7 +449,6 @@
                 newImageSrc = getMainProductImage();
             }
             
-            // Load new image with transition
             const tempImage = new Image();
             tempImage.onload = function() {
                 imgElement.src = newImageSrc;
@@ -462,7 +456,6 @@
                 imgElement.style.transform = 'scale(1)';
             };
             tempImage.onerror = function() {
-                // Fallback to main product image if variant image fails to load
                 imgElement.src = getMainProductImage();
                 imgElement.style.opacity = '1';
                 imgElement.style.transform = 'scale(1)';
@@ -531,16 +524,21 @@
         function closeModal() {
             const modal = document.getElementById('productModal');
             modal.style.display = 'none';
-            document.body.style.overflow = '';
         }
 
         function incrementQuantity() {
-            if (currentVariation && currentQuantity < currentVariation.variant_stock) {
-                currentQuantity++;
-                document.getElementById('modalQuantity').innerText = currentQuantity;
-                updatePriceAndTotal();
-            } else if (currentVariation && currentQuantity >= currentVariation.variant_stock) {
-                showToast('Maximum stock reached', 'warning');
+            if (currentVariation) {
+                const availableStock = currentVariation.available_stock !== undefined 
+                    ? currentVariation.available_stock 
+                    : currentVariation.variant_stock;
+                    
+                if (currentQuantity < availableStock) {
+                    currentQuantity++;
+                    document.getElementById('modalQuantity').innerText = currentQuantity;
+                    updatePriceAndTotal();
+                } else if (currentQuantity >= availableStock) {
+                    showToast('Maximum stock reached', 'warning');
+                }
             } else {
                 currentQuantity++;
                 document.getElementById('modalQuantity').innerText = currentQuantity;
@@ -567,7 +565,6 @@
                 return;
             }
             
-            // Use available_stock instead of variant_stock
             const availableStock = currentVariation.available_stock !== undefined 
                 ? currentVariation.available_stock 
                 : currentVariation.variant_stock;
@@ -694,74 +691,188 @@
                 closeModal();
             }
         });
+
+        // Close modal when clicking on background overlay
+        document.getElementById('productModal')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
     </script>
 
     <style>
-        /* Add blur effect to whole body when modal is open */
-        body.modal-blur {
-            overflow: hidden !important;
-        }
+        /* Modal Styles - Fully Responsive with Scrolling */
         
-        body.modal-blur main {
-            filter: blur(8px);
-            -webkit-filter: blur(8px);
-            transition: filter 0.3s ease;
-            pointer-events: none;
-        }
-        
-        body.modal-blur header,
-        body.modal-blur footer,
-        body.modal-blur .navbar,
-        body.modal-blur .top-bar {
-            filter: blur(8px);
-            -webkit-filter: blur(8px);
-            transition: filter 0.3s ease;
-            pointer-events: none;
-        }
-        
+        /* Modal Container */
         #productModal {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.4) !important;
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
+            background: rgba(0, 0, 0, 0.6) !important;
             z-index: 9999;
             display: none;
-            overflow-y: hidden;
+            overflow-y: auto;
+            overflow-x: hidden;
             padding: 20px;
+            cursor: pointer;
         }
         
+        /* Modal Content - Responsive and Scrollable */
         .modal-responsive {
-            max-width: 90%;
+            max-width: 95%;
             width: 100%;
-            margin: 60px auto 40px auto;
+            margin: 20px auto;
             background: white;
             border-radius: 24px;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
             border: 1px solid rgba(0, 0, 0, 0.05);
-            animation: modalSlideDown 0.4s cubic-bezier(0.34, 1.2, 0.64, 1);
-            transform-origin: top;
-            scrollbar-width: none !important;
-            -ms-overflow-style: none !important;
-            overflow-y: auto !important;
-            max-height: 85vh;
+            animation: modalSlideDown 0.3s ease-out;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+            position: relative;
+            cursor: default;
         }
         
+        /* Custom scrollbar for modal */
         .modal-responsive::-webkit-scrollbar {
-            display: none !important;
+            width: 6px;
         }
         
+        .modal-responsive::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        .modal-responsive::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        
+        .modal-responsive::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        
+        /* Tablet and Desktop sizes */
+        @media (min-width: 640px) {
+            #productModal {
+                padding: 30px;
+            }
+            
+            .modal-responsive {
+                max-width: 85%;
+                max-height: calc(100vh - 60px);
+                margin: 30px auto;
+            }
+        }
+        
+        @media (min-width: 768px) {
+            .modal-responsive {
+                max-width: 700px;
+                max-height: calc(100vh - 80px);
+                margin: 40px auto;
+            }
+        }
+        
+        @media (min-width: 1024px) {
+            .modal-responsive {
+                max-width: 800px;
+                max-height: calc(100vh - 100px);
+                margin: 50px auto;
+            }
+        }
+        
+        /* Mobile specific adjustments */
+        @media (max-width: 640px) {
+            #productModal {
+                padding: 10px;
+                align-items: flex-start;
+            }
+            
+            .modal-responsive {
+                max-width: 98%;
+                border-radius: 20px;
+                max-height: calc(100vh - 20px);
+                margin: 10px auto;
+            }
+            
+            .modal-responsive .p-4 {
+                padding: 16px !important;
+            }
+            
+            .modal-responsive .sticky {
+                padding: 12px 16px !important;
+            }
+            
+            h3.font-semibold {
+                font-size: 1rem !important;
+            }
+            
+            #modalProductPrice {
+                font-size: 1.5rem !important;
+            }
+            
+            /* Better touch targets */
+            .quantity-btn,
+            .variation-option-btn,
+            .add-cart-btn,
+            .buy-now-btn,
+            button[onclick="closeModal()"] {
+                min-height: 44px;
+                touch-action: manipulation;
+            }
+            
+            .quantity-btn {
+                min-width: 44px;
+            }
+            
+            .add-cart-btn {
+                min-height: 48px;
+                font-size: 14px;
+            }
+        }
+        
+        /* Very small devices */
+        @media (max-width: 480px) {
+            .modal-responsive {
+                max-width: 99%;
+                border-radius: 16px;
+            }
+            
+            .modal-responsive .p-4 {
+                padding: 12px !important;
+            }
+        }
+        
+        /* Landscape orientation */
+        @media (max-width: 768px) and (orientation: landscape) {
+            .modal-responsive {
+                max-height: calc(100vh - 20px);
+            }
+            
+            .modal-responsive .flex-col.sm\:flex-row {
+                flex-direction: row !important;
+            }
+            
+            .modal-responsive .sm\:w-2\/5 {
+                width: 40% !important;
+            }
+            
+            .modal-responsive .flex-1 {
+                width: 60% !important;
+            }
+            
+            #modalProductImage {
+                max-height: 150px !important;
+            }
+        }
+        
+        /* Modal animations */
         @keyframes modalSlideDown {
             0% {
                 opacity: 0;
-                transform: translateY(-100px) scale(0.95);
-            }
-            60% {
-                opacity: 1;
-                transform: translateY(10px) scale(1.02);
+                transform: translateY(-30px) scale(0.95);
             }
             100% {
                 opacity: 1;
@@ -779,22 +890,41 @@
         }
         
         #productModal {
-            animation: fadeIn 0.3s ease-out;
+            animation: fadeIn 0.2s ease-out;
         }
         
+        /* Modal header sticky */
         .modal-responsive .sticky {
             background: white;
             border-radius: 24px 24px 0 0;
         }
         
+        /* Product image */
         #modalProductImage {
-            transition: transform 0.3s ease;
+            transition: all 0.3s ease-in-out;
+            width: 100%;
+            height: auto;
+            max-height: 200px;
+            object-fit: cover;
+        }
+        
+        @media (min-width: 640px) {
+            #modalProductImage {
+                max-height: 220px;
+            }
+        }
+        
+        @media (min-width: 768px) {
+            #modalProductImage {
+                max-height: 240px;
+            }
         }
         
         #modalProductImage:hover {
             transform: scale(1.02);
         }
         
+        /* Buttons styling */
         .add-cart-btn, .buy-now-btn {
             transition: all 0.2s ease;
             position: relative;
@@ -805,38 +935,7 @@
             transform: scale(0.97);
         }
         
-        .add-cart-btn::after, .buy-now-btn::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.5);
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-        
-        .add-cart-btn:active::after, .buy-now-btn:active::after {
-            width: 300px;
-            height: 300px;
-        }
-        
-        .size-btn {
-            transition: all 0.2s cubic-bezier(0.34, 1.2, 0.64, 1);
-            position: relative;
-        }
-        
-        .size-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        
-        .size-btn:active {
-            transform: translateY(0);
-        }
-        
+        /* Quantity buttons */
         .quantity-btn {
             transition: all 0.2s ease;
         }
@@ -845,6 +944,7 @@
             transform: scale(0.9);
         }
         
+        /* Close button */
         button[onclick="closeModal()"]:hover i {
             transform: rotate(90deg);
         }
@@ -853,6 +953,75 @@
             transition: transform 0.3s ease;
         }
         
+        /* Variation option buttons */
+        .variation-option-btn {
+            padding: 8px 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+        
+        @media (max-width: 640px) {
+            .variation-option-btn {
+                padding: 6px 12px;
+                font-size: 12px;
+                min-height: 36px;
+            }
+        }
+        
+        .variation-option-btn:hover:not([disabled]) {
+            border-color: #000;
+            background: #f9fafb;
+            color: #000;
+        }
+        
+        .variation-option-btn.active {
+            background: #000;
+            color: white;
+            border-color: #000;
+        }
+        
+        .variation-option-btn[disabled] {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #f3f4f6;
+            text-decoration: line-through;
+        }
+        
+        /* Stock status colors */
+        #modalStock .text-success {
+            color: #10b981;
+        }
+        
+        #modalStock .text-warning {
+            color: #f59e0b;
+        }
+        
+        #modalStock .text-danger {
+            color: #ef4444;
+        }
+        
+        /* Toast notification */
+        #toast {
+            animation: slideInDown 0.3s ease-out;
+            z-index: 10000;
+        }
+        
+        @keyframes slideInDown {
+            from {
+                transform: translate(-50%, 100px);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, 0);
+                opacity: 1;
+            }
+        }
+        
+        /* Loading animation */
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -868,81 +1037,10 @@
             animation: spin 0.8s linear infinite;
         }
         
-        @keyframes slideInDown {
-            from {
-                transform: translate(-50%, 100px);
-                opacity: 0;
-            }
-            to {
-                transform: translate(-50%, 0);
-                opacity: 1;
-            }
-        }
-        
-        #toast {
-            animation: slideInDown 0.3s ease-out;
-        }
-        
-        @media (min-width: 640px) {
-            .modal-responsive {
-                max-width: 85%;
-            }
-        }
-        
-        @media (min-width: 768px) {
-            .modal-responsive {
-                max-width: 700px;
-                margin: 80px auto 40px auto;
-            }
-        }
-        
-        @media (min-width: 1024px) {
-            .modal-responsive {
-                max-width: 800px;
-            }
-        }
-        
-        @media (max-width: 640px) {
-            .modal-responsive {
-                margin: 40px auto 20px auto;
-            }
-            
-            .size-btn {
-                min-height: 44px;
-                font-size: 14px;
-            }
-            
-            .quantity-btn {
-                min-width: 44px;
-                min-height: 44px;
-            }
-            
-            .add-cart-btn {
-                min-height: 48px;
-            }
-        }
-        
-        .active-size {
-            border-color: black !important;
-            background-color: black !important;
-            color: white !important;
-            transform: scale(1.05);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-        
-        .line-clamp-2 {
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-        
-        main, header, footer, .navbar {
-            transition: filter 0.3s ease;
-        }
-        
+        /* Product cards */
         .product-card {
             transition: transform 0.2s ease, box-shadow 0.2s ease;
+            position: relative;
         }
         
         .product-card:hover {
@@ -950,100 +1048,27 @@
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
         }
         
-        @keyframes pulse {
-            0%, 100% {
-                opacity: 1;
-            }
-            50% {
-                opacity: 0.7;
-            }
-        }
-        
-        body.modal-blur::before {
-            content: '';
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            width: 12px;
-            height: 12px;
-            background: #4ade80;
-            border-radius: 50%;
-            z-index: 10000;
-            animation: pulse 2s infinite;
-            box-shadow: 0 0 8px rgba(74, 222, 128, 0.6);
-        }
-        
-        .variation-option-btn {
-            padding: 8px 16px;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            background: white;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .variation-option-btn:hover:not([disabled]) {
-            border-color: #000;
-            background: #f9fafb;
-            color: #000;
-        }
-
-        .variation-option-btn.active {
-            background: #000;
-            color: white;
-            border-color: #000;
-        }
-
-        .variation-option-btn[disabled] {
-            opacity: 0.5;
-            cursor: not-allowed;
-            background: #f3f4f6;
-            text-decoration: line-through;
-        }
-
-        /* Stock warning badge */
-        .stock-warning {
-            font-size: 11px;
-            padding: 2px 6px;
-            border-radius: 12px;
-            background: #fef3c7;
-            color: #d97706;
-            margin-left: 8px;
-        }
-        
-        @media (max-width: 640px) {
-            .variation-option-btn {
-                padding: 6px 14px;
-                font-size: 12px;
-                min-height: 36px;
-            }
-        }
-        
-        #modalProductPrice {
-            color: #1f2937;
-        }
-        
-        #modalStock .text-success {
-            color: #10b981;
-        }
-        
-        #modalStock .text-warning {
-            color: #f59e0b;
-        }
-        
-        #modalStock .text-danger {
-            color: #ef4444;
-        }
-
-        /* Smooth image transition */
-        #modalProductImage {
-            transition: all 0.3s ease-in-out;
-        }
-
-        /* Add a subtle fade effect when image changes */
+        /* Image transition effect */
         .image-changing {
             opacity: 0.5;
             transform: scale(0.98);
+        }
+        
+        /* Scrollbar hide for category tabs */
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        /* Make sure modal content is scrollable on mobile */
+        @media (max-width: 640px) {
+            .modal-responsive {
+                -webkit-overflow-scrolling: touch;
+            }
         }
     </style>
 @endsection

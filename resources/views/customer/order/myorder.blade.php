@@ -68,108 +68,108 @@
                 @else
                     <div class="space-y-4">
                         @foreach($pendingOrders as $order)
-                        @php
-                            // Get the first item's product image
-                            $firstItem = $order->items->first();
-                            
-                            $imagePath = null;
-                            
-                            if ($firstItem) {
-                                // PRIORITY 1: Check if variation has its own image (using firstItem)
-                                if ($firstItem->variation && $firstItem->variation->variant_image && $firstItem->variation->variant_image !== 'null' && $firstItem->variation->variant_image !== '') {
-                                    $variantImage = $firstItem->variation->variant_image;
-                                    
-                                    // Check if image exists in product-variations folder
-                                    if (strpos($variantImage, 'product-variations/') !== false) {
-                                        $imagePath = asset('storage/' . $variantImage);
-                                    } 
-                                    // Check if image exists in storage/product-variations
-                                    else if (strpos($variantImage, 'storage/product-variations/') !== false) {
-                                        $imagePath = asset($variantImage);
-                                    }
-                                    // If it's just the filename without path
-                                    else if (!strpos($variantImage, '/')) {
-                                        $imagePath = asset('storage/product-variations/' . $variantImage);
-                                    }
-                                    // Default for other formats
-                                    else {
-                                        $imagePath = asset('storage/' . $variantImage);
-                                    }
-                                }
+                            @php
+                                // Get the first item's product image
+                                $firstItem = $order->items->first();
                                 
-                                // PRIORITY 2: If no variation image, use product's main image (using firstItem)
-                                if (!$imagePath && $firstItem->product && $firstItem->product->prdctimage) {
-                                    $images = $firstItem->product->prdctimage;
-                                    if (is_string($images)) {
-                                        $images = json_decode($images, true);
-                                    }
-                                    
-                                    if (is_array($images) && count($images) > 0) {
-                                        $firstImage = $images[0];
+                                $imagePath = null;
+                                
+                                if ($firstItem) {
+                                    // PRIORITY 1: Check if variation has its own image (using firstItem)
+                                    if ($firstItem->variation && $firstItem->variation->variant_image && $firstItem->variation->variant_image !== 'null' && $firstItem->variation->variant_image !== '') {
+                                        $variantImage = $firstItem->variation->variant_image;
                                         
-                                        // Check if image is in products folder
-                                        if (strpos($firstImage, 'products/') !== false) {
-                                            $imagePath = asset('storage/' . $firstImage);
+                                        // Check if image exists in product-variations folder
+                                        if (strpos($variantImage, 'product-variations/') !== false) {
+                                            $imagePath = asset('storage/' . $variantImage);
                                         } 
-                                        // Check if image is in storage/products
-                                        else if (strpos($firstImage, 'storage/products/') !== false) {
-                                            $imagePath = asset($firstImage);
+                                        // Check if image exists in storage/product-variations
+                                        else if (strpos($variantImage, 'storage/product-variations/') !== false) {
+                                            $imagePath = asset($variantImage);
                                         }
                                         // If it's just the filename without path
-                                        else if (!strpos($firstImage, '/')) {
-                                            $imagePath = asset('storage/products/' . $firstImage);
+                                        else if (!strpos($variantImage, '/')) {
+                                            $imagePath = asset('storage/product-variations/' . $variantImage);
                                         }
                                         // Default for other formats
                                         else {
-                                            $imagePath = asset('storage/' . $firstImage);
+                                            $imagePath = asset('storage/' . $variantImage);
+                                        }
+                                    }
+                                    
+                                    // PRIORITY 2: If no variation image, use product's main image (using firstItem)
+                                    if (!$imagePath && $firstItem->product && $firstItem->product->prdctimage) {
+                                        $images = $firstItem->product->prdctimage;
+                                        if (is_string($images)) {
+                                            $images = json_decode($images, true);
+                                        }
+                                        
+                                        if (is_array($images) && count($images) > 0) {
+                                            $firstImage = $images[0];
+                                            
+                                            // Check if image is in products folder
+                                            if (strpos($firstImage, 'products/') !== false) {
+                                                $imagePath = asset('storage/' . $firstImage);
+                                            } 
+                                            // Check if image is in storage/products
+                                            else if (strpos($firstImage, 'storage/products/') !== false) {
+                                                $imagePath = asset($firstImage);
+                                            }
+                                            // If it's just the filename without path
+                                            else if (!strpos($firstImage, '/')) {
+                                                $imagePath = asset('storage/products/' . $firstImage);
+                                            }
+                                            // Default for other formats
+                                            else {
+                                                $imagePath = asset('storage/' . $firstImage);
+                                            }
                                         }
                                     }
                                 }
-                            }
-                            
-                            if (!$imagePath) {
-                                $imagePath = 'https://images.unsplash.com/photo-1534030347209-467a5b0ad3e6?w=60&h=60&fit=crop';
-                            }
-                        @endphp
+                                
+                                if (!$imagePath) {
+                                    $imagePath = 'https://images.unsplash.com/photo-1534030347209-467a5b0ad3e6?w=60&h=60&fit=crop';
+                                }
+                            @endphp
 
-                        <div class="bg-white card-item rounded-2xl border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200">
-                            <div class="p-4 sm:p-5">
-                                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                                    <div class="flex items-start gap-3">
-                                        <div class="w-12 h-12 rounded-xl overflow-hidden shrink-0">
-                                            <img src="{{ $imagePath }}" class="w-full h-full object-cover" alt="{{ $firstItem->product_name ?? 'Product' }}">
-                                        </div>
-                                        <div>
-                                            <h3 class="font-bold text-gray-800 text-base md:text-lg">{{ $order->order_number }}</h3>
-                                            <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500 mt-1">
-                                                <span><i class="far fa-calendar-alt mr-1"></i> {{ $order->created_at->format('M d, Y') }}</span>
-                                                <span><i class="fas fa- peso-sign mr-1"></i> ₱{{ number_format($order->total, 2) }}</span>
-                                                <span><i class="fas fa-box mr-1"></i> {{ $order->items->count() }} item(s)</span>
+                            <div class="bg-white card-item rounded-2xl border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200">
+                                <div class="p-4 sm:p-5">
+                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                        <div class="flex items-start gap-3">
+                                            <div class="w-12 h-12 rounded-xl overflow-hidden shrink-0">
+                                                <img src="{{ $imagePath }}" class="w-full h-full object-cover" alt="{{ $firstItem->product_name ?? 'Product' }}">
+                                            </div>
+                                            <div>
+                                                <h3 class="font-bold text-gray-800 text-base md:text-lg">{{ $order->order_number }}</h3>
+                                                <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500 mt-1">
+                                                    <span><i class="far fa-calendar-alt mr-1"></i> {{ $order->created_at->format('M d, Y') }}</span>
+                                                    <span><i class="fas fa- peso-sign mr-1"></i> ₱{{ number_format($order->total, 2) }}</span>
+                                                    <span><i class="fas fa-box mr-1"></i> {{ $order->items->count() }} item(s)</span>
+                                                </div>
                                             </div>
                                         </div>
+                                        <div class="flex items-center gap-3">
+                                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                                                <i class="fas fa-hourglass-half mr-1 text-xs"></i> Pending
+                                            </span>
+                                            <button onclick="viewOrder('{{ $order->encrypted_id }}')" class="text-blue-600 text-sm font-medium hover:text-blue-800 transition ml-auto sm:ml-0">View Details <i class="fas fa-arrow-right ml-1 text-xs"></i></button>
+                                        </div>
                                     </div>
-                                    <div class="flex items-center gap-3 ml-auto sm:ml-0">
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
-                                            <i class="fas fa-hourglass-half mr-1 text-xs"></i> Pending
-                                        </span>
-                                        <button onclick="viewOrder('{{ $order->encrypted_id }}')" class="text-blue-600 text-sm font-medium hover:text-blue-800 transition">View Details <i class="fas fa-arrow-right ml-1 text-xs"></i></button>
-                                    </div>
-                                </div>
-                                <div class="mt-3 pt-3 border-t border-gray-100 flex flex-wrap justify-between items-center gap-2">
-                                    <div class="text-xs text-gray-500">
-                                        <i class="far fa-clock mr-1"></i> 
-                                        Estimated: {{ $order->estimated_time_display ?? 'Ready in 25-35 min' }}
-                                    </div>
-                                    <div class="flex gap-2">
-                                        @if($order->canCancel())
-                                        <button onclick="cancelOrder({{ $order->id }})" class="text-red-500 hover:text-red-700 text-sm">
-                                            <i class="far fa-trash-alt mr-1"></i> Cancel
-                                        </button>
-                                        @endif
+                                    <div class="mt-3 pt-3 border-t border-gray-100 flex flex-wrap justify-between items-center gap-2">
+                                        <div class="text-xs text-gray-500">
+                                            <i class="far fa-clock mr-1"></i> 
+                                            Estimated: {{ $order->estimated_time_display ?? 'Ready in 25-35 min' }}
+                                        </div>
+                                        <div class="flex gap-2">
+                                            @if($order->canCancel())
+                                            <button onclick="cancelOrder({{ $order->id }})" class="text-red-500 hover:text-red-700 text-sm">
+                                                <i class="far fa-trash-alt mr-1"></i> Cancel
+                                            </button>
+                                            @endif
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
                         @endforeach
                     </div>
                 @endif
@@ -186,12 +186,75 @@
                 @else
                     <div class="space-y-4">
                         @foreach($acceptedOrders as $order)
+                            @php
+                                // Get the first item's product image
+                                $firstItem = $order->items->first();
+                                
+                                $imagePath = null;
+                                
+                                if ($firstItem) {
+                                    // PRIORITY 1: Check if variation has its own image (using firstItem)
+                                    if ($firstItem->variation && $firstItem->variation->variant_image && $firstItem->variation->variant_image !== 'null' && $firstItem->variation->variant_image !== '') {
+                                        $variantImage = $firstItem->variation->variant_image;
+                                        
+                                        // Check if image exists in product-variations folder
+                                        if (strpos($variantImage, 'product-variations/') !== false) {
+                                            $imagePath = asset('storage/' . $variantImage);
+                                        } 
+                                        // Check if image exists in storage/product-variations
+                                        else if (strpos($variantImage, 'storage/product-variations/') !== false) {
+                                            $imagePath = asset($variantImage);
+                                        }
+                                        // If it's just the filename without path
+                                        else if (!strpos($variantImage, '/')) {
+                                            $imagePath = asset('storage/product-variations/' . $variantImage);
+                                        }
+                                        // Default for other formats
+                                        else {
+                                            $imagePath = asset('storage/' . $variantImage);
+                                        }
+                                    }
+                                    
+                                    // PRIORITY 2: If no variation image, use product's main image (using firstItem)
+                                    if (!$imagePath && $firstItem->product && $firstItem->product->prdctimage) {
+                                        $images = $firstItem->product->prdctimage;
+                                        if (is_string($images)) {
+                                            $images = json_decode($images, true);
+                                        }
+                                        
+                                        if (is_array($images) && count($images) > 0) {
+                                            $firstImage = $images[0];
+                                            
+                                            // Check if image is in products folder
+                                            if (strpos($firstImage, 'products/') !== false) {
+                                                $imagePath = asset('storage/' . $firstImage);
+                                            } 
+                                            // Check if image is in storage/products
+                                            else if (strpos($firstImage, 'storage/products/') !== false) {
+                                                $imagePath = asset($firstImage);
+                                            }
+                                            // If it's just the filename without path
+                                            else if (!strpos($firstImage, '/')) {
+                                                $imagePath = asset('storage/products/' . $firstImage);
+                                            }
+                                            // Default for other formats
+                                            else {
+                                                $imagePath = asset('storage/' . $firstImage);
+                                            }
+                                        }
+                                    }
+                                }
+                                
+                                if (!$imagePath) {
+                                    $imagePath = 'https://images.unsplash.com/photo-1534030347209-467a5b0ad3e6?w=60&h=60&fit=crop';
+                                }
+                            @endphp
                             <div class="bg-white card-item rounded-2xl border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200">
                                 <div class="p-4 sm:p-5">
                                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                                         <div class="flex items-start gap-3">
-                                            <div class="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
-                                                <i class="fas fa-thumbs-up text-blue-600 text-xl"></i>
+                                            <div class="w-12 h-12 rounded-xl overflow-hidden shrink-0">
+                                                <img src="{{ $imagePath }}" class="w-full h-full object-cover" alt="{{ $firstItem->product_name ?? 'Product' }}">
                                             </div>
                                             <div>
                                                 <h3 class="font-bold text-gray-800 text-base md:text-lg">{{ $order->order_number }}</h3>
@@ -203,17 +266,35 @@
                                             </div>
                                         </div>
                                         <div class="flex items-center gap-3">
-                                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                <i class="fas fa-check-circle mr-1 text-xs"></i> {{ ucfirst($order->status) }}
-                                            </span>
-                                            <button onclick="viewOrder({{ $order->id }})" class="text-blue-600 text-sm font-medium hover:text-blue-800 transition">Track <i class="fas fa-map-marker-alt ml-1 text-xs"></i></button>
+                                            @if($order->status === 'accepted')
+                                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                    <i class="fas fa-check-circle mr-1 text-xs"></i> {{ ucfirst($order->status) }}
+                                                </span>
+                                            @elseif($order->status === 'preparing')
+                                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                                    <i class="fas fa-check-circle mr-1 text-xs"></i> {{ ucfirst($order->status) }}
+                                                </span>
+                                            @else
+                                            @endif
+                                            <button onclick="viewOrder('{{ $order->encrypted_id }}')" class="text-blue-600 text-sm font-medium hover:text-blue-800 transition ml-auto sm:ml-0">View Details <i class="fas fa-arrow-right ml-1 text-xs"></i></button>
                                         </div>
                                     </div>
-                                    <div class="mt-3 pt-3 border-t border-gray-100">
-                                        <div class="text-xs text-green-700">
-                                            <i class="fas fa-utensils mr-1"></i> 
-                                            @if($order->status === 'accepted') Order accepted, preparing soon
-                                            @else Chef is preparing your order @endif
+                                    <div class="mt-3 pt-3 border-t border-gray-100 flex flex-wrap justify-between items-center gap-2">
+                                        <div class="text-xs text-gray-600">
+                                            <i class="fas fa-check-to-slot text-green-600 mr-1"></i> 
+                                            @if($order->status === 'accepted') 
+                                                Order accepted, preparing soon
+                                            @else 
+                                                Chef is preparing your order 
+                                            @endif
+                                        </div>
+                                        <div class="flex gap-2">
+                                            <button onclick="viewOrder({{ $order->encrypted_id }})" class="text-green-600 text-sm font-medium hover:text-blue-800 transition">Track <i class="fas fa-map-marker-alt ml-1 text-xs"></i></button>
+                                            {{-- @if($order->canCancel())
+                                            <button onclick="cancelOrder({{ $order->id }})" class="text-red-500 hover:text-red-700 text-sm">
+                                                <i class="far fa-trash-alt mr-1"></i> Cancel
+                                            </button>
+                                            @endif --}}
                                         </div>
                                     </div>
                                 </div>
@@ -234,54 +315,123 @@
                 @else
                     <div class="space-y-4">
                         @foreach($readyOrders as $order)
-                        <div class="bg-white card-item rounded-2xl border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200 {{ $order->delivery_method === 'pickup' ? 'border-l-4 border-l-green-500' : '' }}">
-                            <div class="p-4 sm:p-5">
-                                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                                    <div class="flex items-start gap-3">
-                                        <div class="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center shrink-0">
-                                            @if($order->status === 'ready_to_claim')
-                                                <i class="fas fa-store text-green-600 text-xl"></i>
-                                            @elseif($order->status === 'ready_to_deliver')
-                                                <i class="fas fa-truck-fast text-green-600 text-xl"></i>
-                                            @else
-                                                <i class="fas fa-motorcycle text-green-600 text-xl"></i>
-                                            @endif
-                                        </div>
-                                        <div>
-                                            <h3 class="font-bold text-gray-800 text-base md:text-lg">{{ $order->order_number }}</h3>
-                                            <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500 mt-1">
-                                                <span><i class="far fa-calendar-alt mr-1"></i> {{ $order->created_at->format('M d, Y') }}</span>
-                                                <span><i class="fas fa- peso-sign mr-1"></i> ₱{{ number_format($order->total, 2) }}</span>
-                                                <span><i class="fas fa-box mr-1"></i> {{ $order->items->count() }} item(s)</span>
+                            @php
+                                // Get the first item's product image
+                                $firstItem = $order->items->first();
+                                
+                                $imagePath = null;
+                                
+                                if ($firstItem) {
+                                    // PRIORITY 1: Check if variation has its own image (using firstItem)
+                                    if ($firstItem->variation && $firstItem->variation->variant_image && $firstItem->variation->variant_image !== 'null' && $firstItem->variation->variant_image !== '') {
+                                        $variantImage = $firstItem->variation->variant_image;
+                                        
+                                        // Check if image exists in product-variations folder
+                                        if (strpos($variantImage, 'product-variations/') !== false) {
+                                            $imagePath = asset('storage/' . $variantImage);
+                                        } 
+                                        // Check if image exists in storage/product-variations
+                                        else if (strpos($variantImage, 'storage/product-variations/') !== false) {
+                                            $imagePath = asset($variantImage);
+                                        }
+                                        // If it's just the filename without path
+                                        else if (!strpos($variantImage, '/')) {
+                                            $imagePath = asset('storage/product-variations/' . $variantImage);
+                                        }
+                                        // Default for other formats
+                                        else {
+                                            $imagePath = asset('storage/' . $variantImage);
+                                        }
+                                    }
+                                    
+                                    // PRIORITY 2: If no variation image, use product's main image (using firstItem)
+                                    if (!$imagePath && $firstItem->product && $firstItem->product->prdctimage) {
+                                        $images = $firstItem->product->prdctimage;
+                                        if (is_string($images)) {
+                                            $images = json_decode($images, true);
+                                        }
+                                        
+                                        if (is_array($images) && count($images) > 0) {
+                                            $firstImage = $images[0];
+                                            
+                                            // Check if image is in products folder
+                                            if (strpos($firstImage, 'products/') !== false) {
+                                                $imagePath = asset('storage/' . $firstImage);
+                                            } 
+                                            // Check if image is in storage/products
+                                            else if (strpos($firstImage, 'storage/products/') !== false) {
+                                                $imagePath = asset($firstImage);
+                                            }
+                                            // If it's just the filename without path
+                                            else if (!strpos($firstImage, '/')) {
+                                                $imagePath = asset('storage/products/' . $firstImage);
+                                            }
+                                            // Default for other formats
+                                            else {
+                                                $imagePath = asset('storage/' . $firstImage);
+                                            }
+                                        }
+                                    }
+                                }
+                                
+                                if (!$imagePath) {
+                                    $imagePath = 'https://images.unsplash.com/photo-1534030347209-467a5b0ad3e6?w=60&h=60&fit=crop';
+                                }
+                            @endphp
+                            <div class="bg-white card-item rounded-2xl border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200 {{ $order->delivery_method === 'pickup' ? 'border-l-4 border-l-green-500' : '' }}">
+                                <div class="p-4 sm:p-5">
+                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                        <div class="flex items-start gap-3">
+                                            <div class="w-12 h-12 rounded-xl overflow-hidden shrink-0">
+                                                <img src="{{ $imagePath }}" class="w-full h-full object-cover" alt="{{ $firstItem->product_name ?? 'Product' }}">
+                                            </div>
+                                            {{-- <div class="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center shrink-0">
+                                                @if($order->status === 'ready_to_claim')
+                                                    <i class="fas fa-store text-green-600 text-xl"></i>
+                                                @elseif($order->status === 'ready_to_deliver')
+                                                    <i class="fas fa-truck-fast text-green-600 text-xl"></i>
+                                                @else
+                                                    <i class="fas fa-motorcycle text-green-600 text-xl"></i>
+                                                @endif
+                                            </div> --}}
+                                            <div>
+                                                <h3 class="font-bold text-gray-800 text-base md:text-lg">{{ $order->order_number }}</h3>
+                                                <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500 mt-1">
+                                                    <span><i class="far fa-calendar-alt mr-1"></i> {{ $order->created_at->format('M d, Y') }}</span>
+                                                    <span><i class="fas fa- peso-sign mr-1"></i> ₱{{ number_format($order->total, 2) }}</span>
+                                                    <span><i class="fas fa-box mr-1"></i> {{ $order->items->count() }} item(s)</span>
+                                                </div>
                                             </div>
                                         </div>
+                                        <div class="flex items-center gap-3">
+                                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                <i class="fas fa-box-open mr-1 text-xs"></i> 
+                                                {{ $order->status === 'ready_to_claim' ? 'Ready to Claim' : ($order->status === 'ready_to_deliver' ? 'Ready to Deliver' : 'Out for Delivery') }}
+                                            </span>
+                                            <button onclick="viewOrder('{{ $order->encrypted_id }}')" class="text-blue-600 text-sm font-medium hover:text-blue-800 transition ml-auto sm:ml-0">View Details <i class="fas fa-arrow-right ml-1 text-xs"></i></button>
+                                        </div>
                                     </div>
-                                    <div class="flex items-center gap-3">
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                            <i class="fas fa-box-open mr-1 text-xs"></i> 
-                                            {{ $order->status === 'ready_to_claim' ? 'Ready to Claim' : ($order->status === 'ready_to_deliver' ? 'Ready to Deliver' : 'Out for Delivery') }}
-                                        </span>
-                                        <button onclick="viewOrder({{ $order->id }})" class="text-blue-600 text-sm font-medium hover:text-blue-800 transition">Track <i class="fas fa-arrow-right ml-1 text-xs"></i></button>
-                                    </div>
-                                </div>
-                                <div class="mt-3 pt-3 border-t border-gray-100 flex flex-wrap justify-between items-center gap-2">
-                                    <div class="text-xs text-gray-600">
+                                    <div class="mt-3 pt-3 border-t border-gray-100 flex flex-wrap justify-between items-center gap-2">
+                                        <div class="text-xs text-gray-600">
+                                            @if($order->status === 'ready_to_claim')
+                                                <i class="fas fa-location-dot text-green-600 mr-1"></i> Ready for pickup at store
+                                            @elseif($order->status === 'ready_to_deliver')
+                                                <i class="fas fa-truck-fast text-green-600 mr-1"></i> Waiting for delivery partner
+                                            @else
+                                                <i class="fas fa-motorcycle text-green-600 mr-1"></i> Delivery partner is on the way
+                                            @endif
+                                        </div>
                                         @if($order->status === 'ready_to_claim')
-                                            <i class="fas fa-location-dot text-green-600 mr-1"></i> Ready for pickup at store
-                                        @elseif($order->status === 'ready_to_deliver')
-                                            <i class="fas fa-truck text-green-600 mr-1"></i> Waiting for delivery partner
-                                        @else
-                                            <i class="fas fa-motorcycle text-green-600 mr-1"></i> Delivery partner is on the way
+                                        <button onclick="showQRCode({{ $order->id }})" class="bg-green-600 hover:bg-green-700 text-white text-xs md:text-sm font-medium px-3 py-1.5 rounded-xl transition shadow-sm">
+                                            <i class="fas fa-qrcode mr-1"></i> Show QR
+                                        </button>
+                                        @endif
+                                        @if($order->status === 'ready_to_deliver')
+                                        <button onclick="viewOrder({{ $order->encrypted_id }})" class="text-green-600 text-sm font-medium hover:text-blue-800 transition">Track <i class="fas fa-map-marker-alt ml-1 text-xs"></i></button>
                                         @endif
                                     </div>
-                                    @if($order->status === 'ready_to_claim')
-                                    <button onclick="showQRCode({{ $order->id }})" class="bg-green-600 hover:bg-green-700 text-white text-xs md:text-sm font-medium px-3 py-1.5 rounded-xl transition shadow-sm">
-                                        <i class="fas fa-qrcode mr-1"></i> Show QR
-                                    </button>
-                                    @endif
                                 </div>
                             </div>
-                        </div>
                         @endforeach
                     </div>
                 @endif
@@ -298,25 +448,104 @@
                 @else
                     <div class="space-y-3">
                         @foreach($deliveredOrders as $order)
-                        <div class="bg-white card-item rounded-2xl border border-gray-200 p-5 shadow-xs hover:shadow-md transition-all duration-200">
-                            <div class="flex flex-wrap items-center justify-between gap-3">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
-                                        <i class="fas fa-check-double text-gray-500"></i>
+                            @php
+                                // Get the first item's product image
+                                $firstItem = $order->items->first();
+                                
+                                $imagePath = null;
+                                
+                                if ($firstItem) {
+                                    // PRIORITY 1: Check if variation has its own image (using firstItem)
+                                    if ($firstItem->variation && $firstItem->variation->variant_image && $firstItem->variation->variant_image !== 'null' && $firstItem->variation->variant_image !== '') {
+                                        $variantImage = $firstItem->variation->variant_image;
+                                        
+                                        // Check if image exists in product-variations folder
+                                        if (strpos($variantImage, 'product-variations/') !== false) {
+                                            $imagePath = asset('storage/' . $variantImage);
+                                        } 
+                                        // Check if image exists in storage/product-variations
+                                        else if (strpos($variantImage, 'storage/product-variations/') !== false) {
+                                            $imagePath = asset($variantImage);
+                                        }
+                                        // If it's just the filename without path
+                                        else if (!strpos($variantImage, '/')) {
+                                            $imagePath = asset('storage/product-variations/' . $variantImage);
+                                        }
+                                        // Default for other formats
+                                        else {
+                                            $imagePath = asset('storage/' . $variantImage);
+                                        }
+                                    }
+                                    
+                                    // PRIORITY 2: If no variation image, use product's main image (using firstItem)
+                                    if (!$imagePath && $firstItem->product && $firstItem->product->prdctimage) {
+                                        $images = $firstItem->product->prdctimage;
+                                        if (is_string($images)) {
+                                            $images = json_decode($images, true);
+                                        }
+                                        
+                                        if (is_array($images) && count($images) > 0) {
+                                            $firstImage = $images[0];
+                                            
+                                            // Check if image is in products folder
+                                            if (strpos($firstImage, 'products/') !== false) {
+                                                $imagePath = asset('storage/' . $firstImage);
+                                            } 
+                                            // Check if image is in storage/products
+                                            else if (strpos($firstImage, 'storage/products/') !== false) {
+                                                $imagePath = asset($firstImage);
+                                            }
+                                            // If it's just the filename without path
+                                            else if (!strpos($firstImage, '/')) {
+                                                $imagePath = asset('storage/products/' . $firstImage);
+                                            }
+                                            // Default for other formats
+                                            else {
+                                                $imagePath = asset('storage/' . $firstImage);
+                                            }
+                                        }
+                                    }
+                                }
+                                
+                                if (!$imagePath) {
+                                    $imagePath = 'https://images.unsplash.com/photo-1534030347209-467a5b0ad3e6?w=60&h=60&fit=crop';
+                                }
+                            @endphp
+                            <div class="bg-white card-item rounded-2xl border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200">
+                                <div class="p-4 sm:p-5">
+                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                        <div class="flex items-start gap-3">
+                                            <div class="w-12 h-12 rounded-xl overflow-hidden shrink-0">
+                                                <img src="{{ $imagePath }}" class="w-full h-full object-cover" alt="{{ $firstItem->product_name ?? 'Product' }}">
+                                            </div>
+                                            <div>
+                                                <h3 class="font-bold text-gray-800 text-base md:text-lg">{{ $order->order_number }}</h3>
+                                                <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500 mt-1">
+                                                    <span><i class="far fa-calendar-alt mr-1"></i> {{ $order->created_at->format('M d, Y') }}</span>
+                                                    <span><i class="fas fa- peso-sign mr-1"></i> ₱{{ number_format($order->total, 2) }}</span>
+                                                    <span><i class="fas fa-box mr-1"></i> {{ $order->items->count() }} item(s)</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-3">
+                                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                <i class="fas fa-check mr-1 text-xs"></i> Delivered
+                                            </span>
+                                            <button onclick="viewOrder('{{ $order->encrypted_id }}')" class="text-blue-600 text-sm font-medium hover:text-blue-800 transition ml-auto sm:ml-0">View Details <i class="fas fa-arrow-right ml-1 text-xs"></i></button>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h4 class="font-semibold text-gray-900">{{ $order->order_number }}</h4>
-                                        <p class="text-xs text-gray-400">
-                                            Delivered {{ $order->delivered_at ? $order->delivered_at->format('M d, Y') : $order->updated_at->format('M d, Y') }} 
-                                            • ₱{{ number_format($order->total, 2) }}
-                                        </p>
+                                    <div class="mt-3 pt-3 border-t border-gray-100 flex flex-wrap justify-between items-center gap-2">
+                                        <div class="text-xs text-gray-600">
+                                            Delivered: {{ $order->delivered_at ? $order->delivered_at->format('M d, Y h:m:A') : $order->updated_at->format('M d, Y h:m:A') }}
+                                        </div>
+                                        @if($order->status === 'delivered')
+                                            <button onclick="reorder({{ $order->id }})" class="text-sm text-yellow-600 font-medium hover:text-blue-800 transition">
+                                                <i class="fas fa-redo-alt mr-1"></i> Reorder
+                                            </button>
+                                        @endif
                                     </div>
                                 </div>
-                                <button onclick="reorder({{ $order->id }})" class="text-sm text-blue-600 font-medium hover:text-blue-800 transition">
-                                    <i class="fas fa-redo-alt mr-1"></i> Reorder
-                                </button>
                             </div>
-                        </div>
                         @endforeach
                     </div>
                 @endif

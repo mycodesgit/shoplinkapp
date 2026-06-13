@@ -730,7 +730,7 @@
             border: 1px solid rgba(0, 0, 0, 0.05);
             animation: modalSlideDown 0.3s ease-out;
             max-height: calc(100vh - 40px);
-            overflow-y: auto;
+            overflow-y: hidden;
             position: relative;
             cursor: default;
         }

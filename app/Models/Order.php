@@ -129,11 +129,11 @@ class Order extends Model
         return match($this->status) {
             self::STATUS_PENDING => ['class' => 'bg-amber-100 text-amber-800', 'icon' => 'fa-hourglass-half', 'text' => 'Pending'],
             self::STATUS_ACCEPTED => ['class' => 'bg-blue-100 text-blue-800', 'icon' => 'fa-check-circle', 'text' => 'Accepted'],
-            self::STATUS_PREPARING => ['class' => 'bg-purple-100 text-purple-800', 'icon' => 'fa-utensils', 'text' => 'Preparing'],
+            self::STATUS_PREPARING => ['class' => 'bg-purple-100 text-purple-800', 'icon' => 'fa-box', 'text' => 'Preparing'],
             self::STATUS_READY_TO_CLAIM => ['class' => 'bg-green-100 text-green-800', 'icon' => 'fa-box-open', 'text' => 'Ready to Claim'],
             self::STATUS_READY_TO_DELIVER => ['class' => 'bg-emerald-100 text-emerald-800', 'icon' => 'fa-truck', 'text' => 'Ready to Deliver'],
             self::STATUS_OUT_FOR_DELIVERY => ['class' => 'bg-indigo-100 text-indigo-800', 'icon' => 'fa-motorcycle', 'text' => 'Out for Delivery'],
-            self::STATUS_DELIVERED => ['class' => 'bg-gray-100 text-gray-800', 'icon' => 'fa-check-double', 'text' => 'Delivered'],
+            self::STATUS_DELIVERED => ['class' => 'bg-green-100 text-green-800', 'icon' => 'fa-check-double', 'text' => 'Delivered'],
             self::STATUS_CANCELLED => ['class' => 'bg-red-100 text-red-800', 'icon' => 'fa-ban', 'text' => 'Cancelled'],
             default => ['class' => 'bg-gray-100 text-gray-800', 'icon' => 'fa-question', 'text' => ucfirst($this->status)],
         };

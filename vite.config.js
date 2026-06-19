@@ -14,7 +14,7 @@ export default defineConfig({
         host: '0.0.0.0',  // Allow network access
         port: 5173,
         hmr: {
-            host: '10.0.27.174',  // Force HMR to use localhost, not network IP
+            host: 'localhost',  // Force HMR to use localhost, not network IP
         },
     },
 });

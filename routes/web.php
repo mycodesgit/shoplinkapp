@@ -25,6 +25,7 @@ use App\Http\Controllers\ShopItemInfoController;
 use App\Http\Controllers\ShopCartController;
 use App\Http\Controllers\ShopOrdersController;
 use App\Http\Controllers\ShopProfileController;
+use App\Http\Controllers\CustomerBroadcastController;
 
 /*
 |--------------------------------------------------------------------------
@@ -36,6 +37,8 @@ use App\Http\Controllers\ShopProfileController;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+
+Route::post('/broadcasting/customer-auth', [CustomerBroadcastController::class, 'authenticate'])->middleware('web');
 
 Route::group(['middleware'=>['guest']],function(){
     Route::get('/',[ShopDashboardController::class,'index'])->name('dashboard.index');
@@ -69,10 +72,13 @@ Route::group(['middleware'=>['customer_auth']],function(){
         Route::post('/clear', [ShopCartController::class, 'clearCart'])->name('cart.clear');
         Route::get('/items', [ShopCartController::class, 'getCartItems'])->name('cart.items');
         Route::post('/checkout', [ShopCartController::class, 'checkout'])->name('cart.checkout');
+        Route::post('/buy-now', [ShopCartController::class, 'buyNow'])->name('cart.buyNow');
+        Route::get('/buy-now/checkout', [ShopCartController::class, 'buyNowCheckout'])->name('cart.buyNowCheckout');
     });
 
     Route::prefix('track')->group(function () {
         Route::get('/myorder',[ShopOrdersController::class,'index'])->name('orders.auth.index');
+        Route::get('/myorder/status-feed',[ShopOrdersController::class,'statusFeed'])->name('orders.auth.feed');
         Route::post('/myorder/store',[ShopOrdersController::class,'placeOrder'])->name('placeOrder.auth.index');
         Route::get('/myorder/show/{orderId}', [ShopOrdersController::class, 'show'])->name('myorder.show');
         Route::post('/myorder/{orderId}/cancel', [ShopOrdersController::class, 'cancel'])->name('myorder.cancel');
@@ -80,6 +86,7 @@ Route::group(['middleware'=>['customer_auth']],function(){
     });
     
     Route::get('/profile/account',[ShopProfileController::class,'index'])->name('profile.auth.account');
+    Route::put('/profile/account',[ShopProfileController::class,'update'])->name('profile.auth.update');
     Route::get('/about/app',[ShopDashboardController::class,'about'])->name('dashboard.auth.about');
     Route::post('/logout/customer',[DashboardController::class,'logout'])->name('logout.customer');
 });
@@ -124,12 +131,17 @@ Route::group(['middleware'=>['login_auth']],function(){
         Route::get('/list/view', [BannerController::class, 'index'])->name('welcomebanner.index');
         Route::post('/list/store', [BannerController::class, 'store'])->name('welcomebanner.store');
         Route::get('/list/show', [BannerController::class, 'show'])->name('welcomebanner.show');
+        Route::post('/list/update', [BannerController::class, 'update'])->name('welcomebanner.update');
+        Route::post('/list/destroy/{id}', [BannerController::class, 'destroy'])->name('welcomebanner.destroy');
     });
 
     Route::prefix('orders')->group(function () {
         Route::get('/list/view', [OrderController::class, 'index'])->name('order.index');
         Route::get('/list/show', [OrderController::class, 'show'])->name('order.show');
         Route::get('/list/details/{id}', [OrderController::class, 'details'])->name('order.details');
+        Route::get('/list/receipt/{id}', [OrderController::class, 'receipt'])->name('order.receipt');
+        Route::get('/list/receipt/{id}/pdf', [OrderController::class, 'receiptPdf'])->name('order.receiptPdf');
+        Route::get('/list/bulk-stickers', [OrderController::class, 'bulkStickers'])->name('order.bulkStickers');
         Route::post('/list/status', [OrderController::class, 'updateStatus'])->name('order.updateStatus');
     });
 });

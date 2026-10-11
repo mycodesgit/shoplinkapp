@@ -63,11 +63,11 @@
                         </label>
                     </div>
                     
-                    <!-- Delivery Address (hidden by default) -->
+                    <!-- Delivery Address (hidden for pickup, auto-filled from profile for delivery) -->
                     <div id="deliveryAddressContainer" class="mt-4 hidden">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Delivery Address *</label>
-                        <textarea name="delivery_address" id="deliveryAddress" rows="3" class="w-full px-4 py-2 border border-gray-200 rounded-2xl focus:outline-none focus:border-[#e5e7eb] focus:ring-2 focus:ring-[#e5e7eb]/40 transition-all duration-200" placeholder="House/Unit No., Street, Barangay, City"></textarea>
-                        <p class="text-xs text-gray-400 mt-1">We'll deliver to this address</p>
+                        <textarea name="delivery_address" id="deliveryAddress" rows="3" class="w-full px-4 py-2 border border-gray-200 rounded-2xl focus:outline-none focus:border-[#e5e7eb] focus:ring-2 focus:ring-[#e5e7eb]/40 transition-all duration-200" placeholder="House/Unit No., Street, Barangay, City">{{ $savedAddress ?? '' }}</textarea>
+                        <p class="text-xs text-gray-400 mt-1">We'll deliver to this address — edit it here if needed, or update your <a href="{{ route('profile.auth.account') }}" class="underline hover:text-black">profile address</a>.</p>
                     </div>
                 </div>
 
@@ -379,12 +379,19 @@
             const pickupRadio = document.querySelector('input[value="pickup"]');
             const deliveryRadio = document.querySelector('input[value="delivery"]');
             const addressContainer = document.getElementById('deliveryAddressContainer');
+            const addressField = document.getElementById('deliveryAddress');
             const deliveryFeeDisplay = document.getElementById('deliveryFeeDisplay');
-            
+            const savedAddress = @json($savedAddress ?? '');
+
             function updateDeliveryOption() {
                 if (deliveryRadio.checked) {
                     addressContainer.classList.remove('hidden');
                     deliveryFeeDisplay.innerHTML = '₱50.00';
+                    // Auto-fill the saved profile address the first time delivery is picked
+                    if (addressField && !addressField.value.trim() && savedAddress) {
+                        addressField.value = savedAddress;
+                        showToast('Delivery address filled from your profile', 'info');
+                    }
                 } else {
                     addressContainer.classList.add('hidden');
                     deliveryFeeDisplay.innerHTML = 'Free';

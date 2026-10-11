@@ -510,36 +510,59 @@
             });
         }
         
-        // Buy Now
+        // Buy Now — skip the cart, stage the picked variation and jump to checkout
         const buyNowBtn = document.getElementById('buyNowBtn');
+        const buyNowUrl = "{{ route('cart.buyNow') }}";
         if (buyNowBtn) {
             buyNowBtn.addEventListener('click', function() {
                 if (!currentVariation) {
                     showToast('Please select a variation');
                     return;
                 }
-                
+
                 if (currentVariation.available_stock <= 0) {
                     showToast('This variation is out of stock');
                     return;
                 }
-                
+
                 if (currentQuantity > currentVariation.available_stock) {
                     showToast(`Only ${currentVariation.available_stock} items available`);
                     return;
                 }
-                
-                const buyData = {
-                    variation_id: currentVariation.id,
-                    product_id: {{ $product->id }},
-                    quantity: currentQuantity,
-                    variation_name: currentVariation.variation_name,
-                    variation_value: currentVariation.variation_value,
-                    price: currentVariation.variant_price
-                };
-                
-                sessionStorage.setItem('buyNowData', JSON.stringify(buyData));
-                window.location.href = "{{ route('cart.auth.index') }}";
+
+                const originalHtml = buyNowBtn.innerHTML;
+                buyNowBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+                buyNowBtn.disabled = true;
+
+                fetch(buyNowUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        product_id: {{ $product->id }},
+                        variation_id: currentVariation.id,
+                        quantity: currentQuantity
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.redirect) {
+                        window.location.href = data.redirect;
+                    } else {
+                        showToast(data.message || 'Failed to start quick checkout');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('Network error. Please try again.');
+                })
+                .finally(() => {
+                    buyNowBtn.innerHTML = originalHtml;
+                    buyNowBtn.disabled = false;
+                });
             });
         }
         

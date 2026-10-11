@@ -103,6 +103,27 @@
         </div>
 
         <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5" id="productsGrid">
+            @php
+                $productMap = $products->take(8)->mapWithKeys(function ($p) {
+                    return [$p->encrypted_id => [
+                        'id' => $p->id,
+                        'prdctname' => $p->prdctname,
+                        'prdctimage' => $p->prdctimage,
+                        'variations' => $p->variations->map(function ($v) {
+                            return [
+                                'id' => $v->id,
+                                'variation_name' => $v->variation_name,
+                                'variation_value' => $v->variation_value,
+                                'variant_price' => $v->variant_price,
+                                'variant_sku' => $v->variant_sku,
+                                'variant_stock' => $v->variant_stock,
+                                'available_stock' => $v->available_stock ?? $v->variant_stock,
+                                'variant_image' => $v->variant_image,
+                            ];
+                        })->values(),
+                    ]];
+                });
+            @endphp
             @forelse ($products->take(8) as $item)
                 <div class="product-card group card-item flex h-full flex-col" data-product-id="{{ $item->encrypted_id }}" data-category="{{ strtolower(optional($item->category)->catname ?? 'all') }}">
                     @php
@@ -205,11 +226,11 @@
 
                         <div class="mt-auto flex flex-col gap-2 pt-3 sm:flex-row">
                             @if(Auth::guard('customer')->check())
-                                <button class="add-cart-btn min-h-11 flex-1 text-xs sm:text-[13px]" onclick='openModal(@json($item))' {{ !$hasAvailableStock ? 'disabled' : '' }}>
+                                <button class="add-cart-btn min-h-11 flex-1 text-xs sm:text-[13px]" onclick="openModalById('{{ $item->encrypted_id }}')" {{ !$hasAvailableStock ? 'disabled' : '' }}>
                                     <i class="fas fa-shopping-cart text-sm"></i>
                                     Add Cart
                                 </button>
-                                <button class="buy-now-btn min-h-11 flex-1 text-xs sm:text-[13px]" onclick="buyNow('{{ $item->encrypted_id }}')" {{ !$hasAvailableStock ? 'disabled' : '' }}>
+                                <button class="buy-now-btn min-h-11 flex-1 text-xs sm:text-[13px]" onclick="openBuyNowById('{{ $item->encrypted_id }}')" {{ !$hasAvailableStock ? 'disabled' : '' }}>
                                     Buy Now
                                 </button>
                             @else
@@ -242,9 +263,38 @@
         let currentQuantity = 1;
         let selectedVariationId = null;
         let mainProductImages = [];
+        let buyNowMode = false;
+        var buyNowRoute = "{{ route('cart.buyNow') }}";
+        var shopProducts = @json($productMap);
+
+        function openModalById(encId) {
+            var product = shopProducts[encId];
+            if (!product) {
+                showToast('Product not available', 'error');
+                return;
+            }
+            openModal(product);
+        }
+
+        function openBuyNowById(encId) {
+            var product = shopProducts[encId];
+            if (!product) {
+                showToast('Product not available', 'error');
+                return;
+            }
+            openBuyNow(product);
+        }
 
         function redirectToLogin() {
             window.ShopLink.redirectToLogin();
+        }
+
+        function setModalConfirmLabel() {
+            var btn = document.querySelector('#productModal .add-cart-btn');
+            if (!btn) return;
+            btn.innerHTML = buyNowMode
+                ? '<i class="fas fa-bolt text-sm mr-2"></i> Buy Now →'
+                : '<i class="fas fa-shopping-cart text-sm mr-2"></i> Add to Cart';
         }
 
         // Updated openModal function - FIXED for bottom of page
@@ -287,6 +337,16 @@
                     updateStockDisplay(availableStock);
                 }
             }, 100);
+
+            buyNowMode = false;
+            setModalConfirmLabel();
+        }
+
+        // Buy Now: same picker, but the confirm button skips the cart entirely
+        function openBuyNow(product) {
+            openModal(product);
+            buyNowMode = true;
+            setModalConfirmLabel();
         }
 
         // Display product images
@@ -547,12 +607,12 @@
             }
         }
 
-        function buyNow(productId) {
-            window.location.href = "/checkout?product=" + encodeURIComponent(productId);
-        }
-
-        // Add to cart function
+        // Add to cart function (branches to Buy Now checkout when in buy-now mode)
         function confirmAddToCart() {
+            if (buyNowMode) {
+                confirmBuyNow();
+                return;
+            }
             if (!currentVariation) {
                 showToast('Please select a variation', 'error');
                 return;
@@ -617,6 +677,67 @@
             .finally(() => {
                 addBtn.innerHTML = originalHtml;
                 addBtn.disabled = false;
+            });
+        }
+
+        // Buy Now: stage the picked variation server-side, then jump to checkout (no cart)
+        function confirmBuyNow() {
+            if (!currentVariation) {
+                showToast('Please select a variation', 'error');
+                return;
+            }
+
+            const availableStock = currentVariation.available_stock !== undefined
+                ? currentVariation.available_stock
+                : currentVariation.variant_stock;
+
+            if (availableStock <= 0) {
+                showToast('This variation is out of stock', 'error');
+                return;
+            }
+
+            if (currentQuantity > availableStock) {
+                showToast(`Only ${availableStock} items available in stock`, 'error');
+                return;
+            }
+
+            const buyBtn = document.querySelector('#productModal .add-cart-btn');
+            const originalHtml = buyBtn.innerHTML;
+            buyBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Processing...';
+            buyBtn.disabled = true;
+
+            fetch(buyNowRoute, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    product_id: currentProduct.id,
+                    variation_id: currentVariation.id,
+                    quantity: currentQuantity
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.redirect) {
+                    window.location.href = data.redirect;
+                } else if (data.require_login) {
+                    closeModal();
+                    showToast('Please login to continue', 'warning');
+                    setTimeout(() => redirectToLogin(), 1500);
+                } else {
+                    showToast(data.message || 'Failed to start quick checkout', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('Something went wrong', 'error');
+            })
+            .finally(() => {
+                buyBtn.innerHTML = originalHtml;
+                buyBtn.disabled = false;
             });
         }
 

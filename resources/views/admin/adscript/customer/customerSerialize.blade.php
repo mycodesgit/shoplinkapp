@@ -31,6 +31,9 @@
         return [row.fname, row.mname, row.lname].filter(Boolean).join(' ');
     }
 
+    // Row cache lives at script scope so the view handler can reach it
+    var rowCache = {};
+
     $(document).ready(function () {
         var dataTable = $('#customerTable').DataTable({
             "ajax": {
@@ -101,7 +104,7 @@
         });
 
         // Cache rows for the details modal (no extra request needed)
-        var rowCache = {};
+        rowCache = {};
         dataTable.on('xhr', function (e, settings, json) {
             rowCache = {};
             (json.data || []).forEach(function (row) { rowCache[row.id] = row; });

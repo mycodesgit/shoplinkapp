@@ -544,7 +544,7 @@
     <div id="editProfileModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 9999; align-items: center; justify-content: center; padding: 1rem; overflow-y: auto;">
         <div style="background: white; border-radius: 1rem; max-width: 42rem; width: 100%; margin: auto; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);">
             
-            <form id="editProfileForm" action="#" method="POST" enctype="multipart/form-data" style="padding: 1.5rem;">
+            <form id="editProfileForm" action="{{ route('profile.auth.update') }}" method="POST" enctype="multipart/form-data" style="padding: 1.5rem;">
                 @csrf
                 @method('PUT')
                 
@@ -716,6 +716,19 @@
                     closeEditModal();
                 }
             }
+        });
+
+        // Server flash messages → pairing popup
+        document.addEventListener('DOMContentLoaded', function() {
+            @if(session('success'))
+                window.ShopLink.showToast(@json(session('success')), 'success');
+            @endif
+            @if(session('error'))
+                window.ShopLink.showToast(@json(session('error')), 'error');
+            @endif
+            @if($errors->any())
+                window.ShopLink.showToast(@json($errors->first()), 'error');
+            @endif
         });
     </script>
 @endpush

@@ -8,6 +8,25 @@ use Illuminate\Http\Request;
 class OrderController extends Controller
 {
     /**
+     * Next valid statuses for an order. A preparing order only exposes the
+     * ready-state that matches its fulfilment method (no duplicate actions).
+     */
+    protected function nextStatuses(Order $order): array
+    {
+        $next = $this->transitions[$order->status] ?? [];
+
+        if ($order->status === 'preparing') {
+            $keep = $order->delivery_method === 'delivery' ? 'ready_to_deliver' : 'ready_to_claim';
+            $next = array_values(array_filter(
+                $next,
+                fn ($s) => $s === $keep || ($s !== 'ready_to_claim' && $s !== 'ready_to_deliver')
+            ));
+        }
+
+        return $next;
+    }
+
+    /**
      * Allowed status transitions per current status.
      * Delivery orders flow through out_for_delivery; pickup orders go ready_to_claim -> delivered.
      */
@@ -47,7 +66,7 @@ class OrderController extends Controller
                     'payment_status' => $order->payment_status,
                     'delivery_method' => $order->delivery_method,
                     'status' => $order->status,
-                    'next_statuses' => $this->transitions[$order->status] ?? [],
+                    'next_statuses' => $this->nextStatuses($order),
                     'created_at' => $order->created_at ? $order->created_at->format('M d, Y h:i A') : '',
                 ];
             });
@@ -55,8 +74,7 @@ class OrderController extends Controller
         return response()->json(['data' => $data]);
     }
 
-    public function details($id)
-    {
+    public function details($id)    {
         $order = Order::with(['customer', 'items'])->find($id);
 
         if (!$order) {
@@ -85,7 +103,7 @@ class OrderController extends Controller
                 'total' => $order->total,
                 'notes' => $order->notes,
                 'created_at' => $order->created_at ? $order->created_at->format('M d, Y h:i A') : '',
-                'next_statuses' => $this->transitions[$order->status] ?? [],
+                'next_statuses' => $this->nextStatuses($order),
                 'items' => $order->items->map(fn ($item) => [
                     'product_name' => $item->product_name,
                     'variation_name' => $item->variation_name,
@@ -95,6 +113,55 @@ class OrderController extends Controller
                 ]),
             ],
         ]);
+    }
+
+    public function receipt($id)
+    {
+        $order = Order::with(['customer', 'items'])->find($id);
+
+        if (!$order) {
+            abort(404, 'Order not found');
+        }
+
+        return view('admin.order.receipt', compact('order'));
+    }
+
+    /**
+     * Individual packing slip rendered as PDF (for modal iframe preview).
+     */
+    public function receiptPdf($id)
+    {
+        $order = Order::with(['customer', 'items'])->find($id);
+
+        if (!$order) {
+            abort(404, 'Order not found');
+        }
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.order.receipt', compact('order'))
+            ->setPaper('a4', 'portrait');
+
+        return $pdf->stream('packing-slip-' . $order->order_number . '.pdf');
+    }
+
+    /**
+     * Bulk packing stickers (4-up on A4) for all accepted orders, as PDF.
+     */
+    public function bulkStickers()
+    {
+        $orders = Order::with(['customer', 'items'])
+            ->where('status', 'accepted')
+            ->orderBy('created_at', 'ASC')
+            ->get();
+
+        if ($orders->isEmpty()) {
+            return response()->view('admin.order.bulk-empty', [], 200);
+        }
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.order.stickers', [
+            'pages' => $orders->chunk(4),
+        ])->setPaper('a4', 'portrait');
+
+        return $pdf->stream('packing-stickers-accepted.pdf');
     }
 
     public function updateStatus(Request $request)
@@ -140,6 +207,13 @@ class OrderController extends Controller
 
         try {
             $order->update($update);
+
+            // Live customer notification (never break the admin flow if Reverb is down)
+            try {
+                \App\Events\OrderStatusUpdated::dispatch($order->fresh());
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::warning('OrderStatusUpdated broadcast failed: ' . $e->getMessage());
+            }
 
             return response()->json(['success' => true, 'message' => "Order {$next} successfully!"], 200);
         } catch (\Exception $e) {

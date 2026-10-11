@@ -4,14 +4,25 @@
 
 @section('content')
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 md:pb-10 page-fade">    
-        <!-- Hero Banner - UP TO 25% OFF -->
+        <!-- Hero Banner — driven by the Active welcome banner in admin -->
         <div class="hero-banner rounded-2xl overflow-hidden mb-8 relative card-item">
-            <div class="px-6 py-12 md:py-16 text-center">
-                <p class="text-white/80 text-sm mb-2">LIMITED TIME OFFER</p>
-                <h2 class="text-4xl md:text-6xl font-bold text-white mb-3">UP TO <span class="text-white underline decoration-white/60 decoration-4 underline-offset-8">25% OFF</span></h2>
-                <p class="text-white/70 text-sm mb-6">ENDS SOON</p>
-                <a href="{{ Auth::guard('customer')->check() ? route('dashboard.auth.items') : route('dashboard.items') }}" class="inline-block bg-white text-black px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition btn-press">Shop Now →</a>
-            </div>
+            @if(!empty($banner?->welcometext))
+                <div class="px-6 py-12 md:py-16 text-center">
+                    <p class="text-white/80 text-sm mb-2">SHOPLINK</p>
+                    <h2 class="text-3xl md:text-5xl font-bold text-white mb-3">{{ $banner->welcometext }}</h2>
+                    @if(!empty($banner->welcomesubtext))
+                        <p class="text-white/70 text-sm mb-6">{{ $banner->welcomesubtext }}</p>
+                    @endif
+                    <a href="{{ Auth::guard('customer')->check() ? route('dashboard.auth.items') : route('dashboard.items') }}" class="inline-block bg-white text-black px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition btn-press">Shop Now →</a>
+                </div>
+            @else
+                <div class="px-6 py-12 md:py-16 text-center">
+                    <p class="text-white/80 text-sm mb-2">LIMITED TIME OFFER</p>
+                    <h2 class="text-4xl md:text-6xl font-bold text-white mb-3">UP TO <span class="text-white underline decoration-white/60 decoration-4 underline-offset-8">25% OFF</span></h2>
+                    <p class="text-white/70 text-sm mb-6">ENDS SOON</p>
+                    <a href="{{ Auth::guard('customer')->check() ? route('dashboard.auth.items') : route('dashboard.items') }}" class="inline-block bg-white text-black px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition btn-press">Shop Now →</a>
+                </div>
+            @endif
             <!-- Decorative elements -->
             <div class="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl"></div>
             <div class="absolute bottom-0 left-0 w-40 h-40 bg-white/5 rounded-full blur-2xl"></div>

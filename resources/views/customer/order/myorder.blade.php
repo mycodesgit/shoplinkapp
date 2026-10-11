@@ -667,8 +667,13 @@
                 });
             });
 
-            // Set default active tab
-            setActiveTab('pending');
+            // Set default active tab (deep-linkable via ?tab=pending|accepted|ready|delivered)
+            var requestedTab = new URLSearchParams(window.location.search).get('tab');
+            if (requestedTab && panels[requestedTab]) {
+                setActiveTab(requestedTab);
+            } else {
+                setActiveTab('pending');
+            }
         })();
     </script>
 @endpush

@@ -102,6 +102,36 @@ class ShopOrdersController extends Controller
         }
     }
 
+    public function statusFeed()
+    {
+        $customerId = Auth::guard('customer')->check() ? Auth::guard('customer')->id() : null;
+
+        if (!$customerId) {
+            return response()->json(['success' => false, 'message' => 'Please login'], 401);
+        }
+
+        $groupOf = function ($status) {
+            if (in_array($status, ['accepted', 'preparing'], true)) return 'accepted';
+            if (in_array($status, ['ready_to_claim', 'ready_to_deliver', 'out_for_delivery'], true)) return 'ready';
+            if (in_array($status, ['pending', 'delivered'], true)) return $status;
+            return null;
+        };
+
+        $orders = Order::where('customer_id', $customerId)
+            ->orderBy('updated_at', 'desc')
+            ->take(10)
+            ->get(['id', 'order_number', 'status', 'updated_at'])
+            ->map(function ($order) use ($groupOf) {
+                $group = $groupOf($order->status);
+                $order->url = $group
+                    ? route('orders.auth.index') . '?tab=' . $group
+                    : route('myorder.show', Crypt::encryptString($order->id));
+                return $order;
+            });
+
+        return response()->json(['success' => true, 'orders' => $orders]);
+    }
+
     public function index()
     {
         $customerId = Auth::guard('customer')->check() ? Auth::guard('customer')->id() : null;

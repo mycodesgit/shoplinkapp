@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Broadcast;
 
 /*
@@ -19,4 +20,10 @@ Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
 
 Broadcast::channel('admin.orders', function ($user) {
     return in_array($user->role ?? '', ['Administrator', 'Staff']);
+});
+
+Broadcast::channel('customer.orders.{customerId}', function ($user, $customerId) {
+    $customer = Auth::guard('customer')->user();
+
+    return $customer && (int) $customer->id === (int) $customerId;
 });

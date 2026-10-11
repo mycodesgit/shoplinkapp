@@ -7,6 +7,7 @@
 
     var orderDataTable = null;
     var orderStatusFilter = 'all';
+    var orderRowCache = {};
 
     var orderStatusPills = {
         'pending': ['Pending', 'bg-light text-dark border'],
@@ -22,8 +23,8 @@
     var orderActionLabels = {
         'accepted': 'Accept',
         'preparing': 'Prepare',
-        'ready_to_claim': 'Mark Ready',
-        'ready_to_deliver': 'Mark Ready',
+        'ready_to_claim': 'Ready for Pickup',
+        'ready_to_deliver': 'Ready for Delivery',
         'out_for_delivery': 'Dispatch',
         'delivered': 'Complete',
         'cancelled': 'Cancel'
@@ -36,16 +37,86 @@
 
     function orderActionButtons(row) {
         var html = '<button type="button" class="btn btn-sm btn-outline-dark btn-orderview" data-id="' + row.id + '" data-toggle="tooltip" data-placement="top" title="View order details."><i class="ti ti-eye"></i></button>&nbsp;';
-        (row.next_statuses || []).forEach(function (status) {
-            var label = orderActionLabels[status] || status;
-            if (status === 'cancelled') {
-                html += '<button type="button" class="btn btn-sm btn-outline-danger btn-orderstatus" data-id="' + row.id + '" data-status="' + status + '" data-number="' + row.order_number + '" data-toggle="tooltip" data-placement="top" title="Cancel this order.">' + label + '</button>&nbsp;';
-            } else {
-                html += '<button type="button" class="btn btn-sm btn-dark btn-orderstatus" data-id="' + row.id + '" data-status="' + status + '" data-number="' + row.order_number + '" data-toggle="tooltip" data-placement="top" title="Move to ' + label + '.">' + label + '</button>&nbsp;';
-            }
-        });
+        html += '<button type="button" class="btn btn-sm btn-outline-dark btn-orderprint" data-id="' + row.id + '" data-toggle="tooltip" data-placement="top" title="Print packing slip."><i class="ti ti-printer"></i></button>&nbsp;';
+        if ((row.next_statuses || []).length) {
+            html += '<button type="button" class="btn btn-sm btn-dark btn-ordermenu" data-id="' + row.id + '" data-toggle="tooltip" data-placement="top" title="More actions."><i class="ti ti-dots-vertical"></i></button>';
+        }
         return html;
     }
+
+    // Floating action menu (appended to body so the responsive table never clips it)
+    function orderMenuEl() {
+        var menu = document.getElementById('orderMenuFloat');
+        if (!menu) {
+            menu = document.createElement('div');
+            menu.id = 'orderMenuFloat';
+            menu.className = 'card shadow';
+            menu.style.cssText = 'display:none; position:fixed; z-index:1055; min-width:190px;';
+            menu.innerHTML = '<div class="list-group list-group-flush" id="orderMenuItems"></div>';
+            document.body.appendChild(menu);
+        }
+        return menu;
+    }
+
+    function hideOrderMenu() {
+        var menu = document.getElementById('orderMenuFloat');
+        if (menu) menu.style.display = 'none';
+    }
+
+    function openOrderMenu(btn) {
+        var menu = orderMenuEl();
+        var list = document.getElementById('orderMenuItems');
+        var id = $(btn).data('id');
+        var row = orderRowCache[id] || null;
+        if (!row) {
+            var tr = btn.closest('tr');
+            row = (tr && orderDataTable) ? orderDataTable.row(tr).data() : null;
+        }
+        if (!row) return;
+
+        list.innerHTML = (row.next_statuses || []).map(function (status) {
+            var label = orderActionLabels[status] || status;
+            var danger = status === 'cancelled';
+            return '<button type="button" class="list-group-item list-group-item-action btn-orderstatus ' + (danger ? 'text-danger' : '') + '" ' +
+                'data-id="' + row.id + '" data-status="' + status + '" data-number="' + row.order_number + '">' +
+                (danger ? '<i class="ti ti-x me-2"></i>' : '<i class="ti ti-arrow-right me-2"></i>') + label +
+            '</button>';
+        }).join('');
+
+        menu.style.display = 'block';
+        var rect = btn.getBoundingClientRect();
+        var mw = menu.offsetWidth, mh = menu.offsetHeight;
+        var top = rect.bottom + 4;
+        if (top + mh > window.innerHeight - 8) top = Math.max(8, rect.top - mh - 4);
+        var left = Math.min(Math.max(8, rect.right - mw), window.innerWidth - mw - 8);
+        menu.style.top = top + 'px';
+        menu.style.left = left + 'px';
+    }
+
+    $(document).on('click', '.btn-ordermenu', function (e) {
+        e.stopPropagation();
+        var menu = document.getElementById('orderMenuFloat');
+        if (menu && menu.style.display === 'block' && menu.dataset.for === String($(this).data('id'))) {
+            hideOrderMenu();
+            return;
+        }
+        openOrderMenu(this);
+        document.getElementById('orderMenuFloat').dataset.for = String($(this).data('id'));
+    });
+
+    $(document).on('click', function (e) {
+        if (!e.target.closest('#orderMenuFloat') && !e.target.closest('.btn-ordermenu')) hideOrderMenu();
+    });
+
+    $(document).on('keydown', function (e) {
+        if (e.key === 'Escape') hideOrderMenu();
+    });
+
+    $(window).on('scroll resize', hideOrderMenu);
+
+    $(document).on('orderUpdated', function () {
+        hideOrderMenu();
+    });
 
     function changeOrderStatus(id, status, orderNumber) {
         var label = orderActionLabels[status] || status;
@@ -137,7 +208,7 @@
                 $('#detailTotal').text(peso(order.total));
                 $('#detailNotes').text(order.notes ? 'Note: ' + order.notes : '');
 
-                var actionsHtml = '';
+                var actionsHtml = '<button type="button" class="btn btn-outline-dark btn-orderprint" data-id="' + order.id + '"><i class="ti ti-printer"></i> Print Receipt</button>';
                 (order.next_statuses || []).forEach(function (status) {
                     var label = orderActionLabels[status] || status;
                     actionsHtml += '<button type="button" class="btn ' + (status === 'cancelled' ? 'btn-outline-danger' : 'btn-dark') + ' btn-orderstatus" data-id="' + order.id + '" data-status="' + status + '" data-number="' + order.order_number + '">' + label + '</button>';
@@ -213,6 +284,11 @@
 
         $(document).on('orderUpdated', function () {
             orderDataTable.ajax.reload(null, false);
+        });
+
+        orderDataTable.on('xhr', function (e, settings, json) {
+            orderRowCache = {};
+            (json.data || []).forEach(function (row) { orderRowCache[row.id] = row; });
         });
 
         orderDataTable.on('draw', function () {

@@ -19,13 +19,18 @@
                                 </h6>
                             </div>
                             <div class="card-body">
-                                <div class="d-flex flex-wrap gap-2 mb-3">
-                                    <button type="button" class="btn btn-dark btn-sm order-filter active" data-filter="all">All</button>
-                                    <button type="button" class="btn btn-outline-dark btn-sm order-filter" data-filter="pending">Pending</button>
-                                    <button type="button" class="btn btn-outline-dark btn-sm order-filter" data-filter="active">Active</button>
-                                    <button type="button" class="btn btn-outline-dark btn-sm order-filter" data-filter="ready">Ready</button>
-                                    <button type="button" class="btn btn-outline-dark btn-sm order-filter" data-filter="delivered">Delivered</button>
-                                    <button type="button" class="btn btn-outline-dark btn-sm order-filter" data-filter="cancelled">Cancelled</button>
+                                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <button type="button" class="btn btn-dark btn-sm order-filter active" data-filter="all">All</button>
+                                        <button type="button" class="btn btn-outline-dark btn-sm order-filter" data-filter="pending">Pending</button>
+                                        <button type="button" class="btn btn-outline-dark btn-sm order-filter" data-filter="active">Active</button>
+                                        <button type="button" class="btn btn-outline-dark btn-sm order-filter" data-filter="ready">Ready</button>
+                                        <button type="button" class="btn btn-outline-dark btn-sm order-filter" data-filter="delivered">Delivered</button>
+                                        <button type="button" class="btn btn-outline-dark btn-sm order-filter" data-filter="cancelled">Cancelled</button>
+                                    </div>
+                                    <button type="button" class="btn btn-dark btn-sm" data-bs-toggle="modal" data-bs-target="#bulkPrintModal">
+                                        <i class="ti ti-printer"></i> Print Accepted Stickers (PDF)
+                                    </button>
                                 </div>
                                 <div class="table-responsive mt-3 p-2">
                                     <table id="orderTable" class="table table-striped">
@@ -49,6 +54,40 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="printModal" tabindex="-1" role="dialog" aria-labelledby="printModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="printModalLabel"><i class="ti ti-printer"></i> Packing Slip (PDF)</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-2">
+                    <iframe id="printFrame" title="Packing slip PDF" style="width: 100%; height: 75vh; border: 0; border-radius: 8px; background: #f4f5f7;"></iframe>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-light" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="bulkPrintModal" tabindex="-1" role="dialog" aria-labelledby="bulkPrintModalLabel" aria-hidden="true">        <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="bulkPrintModalLabel"><i class="ti ti-printer"></i> Accepted Orders — Packing Stickers (PDF)</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-2">
+                    <iframe id="bulkPdfFrame" title="Packing stickers PDF" style="width: 100%; height: 75vh; border: 0; border-radius: 8px; background: #f4f5f7;"></iframe>
+                </div>
+                <div class="modal-footer">
+                    <a id="bulkPdfOpen" href="#" target="_blank" class="btn btn-sm btn-outline-dark">Open full view</a>
+                    <button type="button" class="btn btn-sm btn-light" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
@@ -127,6 +166,25 @@
         var orderReadRoute = "{{ route('order.show') }}";
         var orderDetailsRoute = "{{ route('order.details', ['id' => '__ID__']) }}";
         var orderStatusRoute = "{{ route('order.updateStatus') }}";
+        var orderReceiptRoute = "{{ route('order.receipt', ['id' => '__ID__']) }}";
+        var orderReceiptPdfRoute = "{{ route('order.receiptPdf', ['id' => '__ID__']) }}";
+        var orderBulkRoute = "{{ route('order.bulkStickers') }}";
+
+        $(document).on('click', '.btn-orderprint', function () {
+            $('#printFrame').attr('src', orderReceiptPdfRoute.replace('__ID__', $(this).data('id')));
+            $('#printModal').modal('show');
+        });
+        document.getElementById('printModal').addEventListener('hidden.bs.modal', function () {
+            document.getElementById('printFrame').removeAttribute('src');
+        });
+
+        document.getElementById('bulkPrintModal').addEventListener('show.bs.modal', function () {
+            document.getElementById('bulkPdfFrame').src = orderBulkRoute;
+            document.getElementById('bulkPdfOpen').href = orderBulkRoute;
+        });
+        document.getElementById('bulkPrintModal').addEventListener('hidden.bs.modal', function () {
+            document.getElementById('bulkPdfFrame').removeAttribute('src');
+        });
     </script>
     @include('admin.adscript.order.orderSerialize')
 @endpush

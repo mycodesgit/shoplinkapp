@@ -36,8 +36,45 @@
             </nav>
 
             @if(Auth::guard('customer')->check())
-                <div class="flex items-center gap-3 sm:gap-4 min-w-0">
+                <div class="flex items-center gap-1 sm:gap-2 min-w-0">
                     <span class="hidden sm:block text-sm text-gray-600 truncate max-w-32 lg:max-w-48">Hello, {{ Auth::guard('customer')->user()->fname }}</span>
+                    <div class="relative">
+                        <button id="custBellBtn" type="button" class="relative p-2 rounded-full hover:bg-gray-100 transition" aria-label="Notifications" aria-haspopup="true">
+                            <i class="fas fa-bell text-gray-700 text-lg"></i>
+                            <span id="custBellBadge" class="hidden absolute top-0.5 right-0.5 bg-black text-white text-[10px] font-bold rounded-full min-w-4 h-4 px-1 items-center justify-center">0</span>
+                        </button>
+                        <div id="custBellDropdown" class="hidden absolute right-0 top-full mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl ring-1 ring-black/10 z-50 overflow-hidden">
+                            <div class="flex items-center justify-between px-4 py-2.5 border-b border-gray-100">
+                                <strong class="text-sm text-black">Notifications</strong>
+                                <button id="custMarkRead" type="button" class="text-xs text-gray-500 hover:text-black transition">Mark all read</button>
+                            </div>
+                            <ul id="custBellList" class="max-h-80 overflow-y-auto divide-y divide-gray-100">
+                                @php
+                                    $tabOf = function ($status) {
+                                        if (in_array($status, ['accepted', 'preparing'], true)) return 'accepted';
+                                        if (in_array($status, ['ready_to_claim', 'ready_to_deliver', 'out_for_delivery'], true)) return 'ready';
+                                        if (in_array($status, ['pending', 'delivered'], true)) return $status;
+                                        return null;
+                                    };
+                                @endphp
+                                @forelse($bellOrders ?? [] as $bellOrder)
+                                    @php $bellTab = $tabOf($bellOrder->status); @endphp
+                                    <li>
+                                        <a href="{{ $bellTab ? route('orders.auth.index') . '?tab=' . $bellTab : route('myorder.show', Crypt::encryptString($bellOrder->id)) }}" data-id="{{ $bellOrder->id }}" data-updated="{{ $bellOrder->updated_at }}" class="flex items-start gap-2.5 px-4 py-2.5 hover:bg-gray-50 transition">
+                                            <span class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500"><i class="fas fa-box text-xs"></i></span>
+                                            <span class="min-w-0 flex-1">
+                                                <span class="block truncate text-xs font-semibold text-black">{{ $bellOrder->order_number }}</span>
+                                                <span class="mt-0.5 block text-[11px] text-gray-500">{{ ucwords(str_replace('_', ' ', $bellOrder->status)) }} · {{ $bellOrder->updated_at ? $bellOrder->updated_at->format('M d, h:i A') : '' }}</span>
+                                            </span>
+                                        </a>
+                                    </li>
+                                @empty
+                                    <li class="px-4 py-4 text-center text-sm text-gray-400">No orders yet — your status updates will appear here.</li>
+                                @endforelse
+                            </ul>
+                            <a href="{{ route('orders.auth.index') }}" class="block text-center text-xs font-medium text-gray-500 hover:text-black transition py-2.5 border-t border-gray-100">View my orders</a>
+                        </div>
+                    </div>
                     <a href="{{ route('cart.auth.index') }}" class="relative p-2 -m-1 rounded-full hover:bg-gray-100 transition" aria-label="Cart">
                         <i class="fas fa-shopping-bag text-gray-700 text-lg"></i>
                         <span id="cartCount" class="absolute top-0 right-0 bg-black text-white text-[10px] font-bold rounded-full min-w-4 h-4 px-1 flex items-center justify-center">0</span>

@@ -1,7 +1,7 @@
 @extends('admin.layouts.master')
 
 @section('title')
-    Shoplink || Products
+    Shoplink || Banner
 @endsection
 
 @section('body')
@@ -110,12 +110,49 @@
         </div>
     </div>
 
+    <div class="modal fade" id="editBannerModal" tabindex="-1" role="dialog" aria-labelledby="editBannerModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-md modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editBannerModalLabel">Edit Welcome Banner</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="editBannerForm">
+                    <div class="modal-body">
+                        <input type="hidden" name="id" id="editBannerId">
+                        <div class="form-group">
+                            <label for="editBannerText">Welcome Text</label>
+                            <input type="text" class="form-control" id="editBannerText" name="welcometext">
+                        </div>
+                        <div class="form-group mt-3">
+                            <label for="editBannerSubText">Welcome Sub Text</label>
+                            <input type="text" class="form-control" id="editBannerSubText" name="welcomesubtext">
+                        </div>
+                        <div class="form-group mt-3">
+                            <label for="editBannerStatus">Status <small class="text-muted">(only one banner can be Active)</small></label>
+                            <select class="form-control" id="editBannerStatus" name="welcomestatus">
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-success">Save changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
 @endsection
 
 @push('scripts')
     <script>
         var welcomeReadRoute = "{{ route('welcomebanner.show') }}";
         var welcomeCreateRoute = "{{ route('welcomebanner.store') }}";
+        var welcomeUpdateRoute = "{{ route('welcomebanner.update') }}";
+        var welcomeDeleteRoute = "{{ route('welcomebanner.destroy', ['id' => '__ID__']) }}";
     </script>
     @include('admin.adscript.baner.welcomeSerialize')
 @endpush

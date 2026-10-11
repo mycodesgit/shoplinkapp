@@ -35,7 +35,7 @@
     <!-- TOPBAR -->
     <nav id="topbar" class="navbar bg-white border-bottom fixed-top topbar px-3">
         <button id="toggleBtn" class="d-none d-lg-inline-flex btn btn-light btn-icon btn-sm ">
-            <i class="fas fa-bars"></i>
+            <i class="ti ti-layout-sidebar-left-expand"></i>
         </button>
 
         <!-- MOBILE -->
@@ -127,8 +127,12 @@
 
             <div class="row d-none d-md-block">
                 <div class="col-12">
-                    <footer class="text-center py-2 mt-6 text-secondary fixed-bottom bg-white" style="z-index: 99">
-                        <p class="mb-0">CISS V.1.0: Maintained and Managed by Management Information System Office (MISO) under the Leadership of Dr. Aladino C. Moraca Copyright © 2023 CPSU, All Rights Reserved</p>
+                    <footer class="text-center py-2 mt-6 bg-white border-top fixed-bottom" style="z-index: 99">
+                        <p class="mb-0 small text-muted">
+                            <i class="ti ti-shopping-bag"></i>
+                            <strong class="text-dark">ShopLink</strong> Admin Portal
+                            <span class="mx-1">·</span> © {{ date('Y') }} ShopLink. All rights reserved.
+                        </p>
                     </footer>
                 </div>
             </div>

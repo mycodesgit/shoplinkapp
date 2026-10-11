@@ -326,6 +326,139 @@ class ShopCartController extends Controller
         $tax = $subtotal * 0.12;
         $total = $subtotal + $tax;
 
-        return view('customer.cart.checkout', compact('cartItems', 'subtotal', 'tax', 'total'));
+        session()->forget('buy_now');
+
+        return view('customer.cart.checkout', array_merge(
+            compact('cartItems', 'subtotal', 'tax', 'total'),
+            ['savedAddress' => $this->savedAddress()]
+        ));
+    }
+
+    /**
+     * Customer's saved address composed from profile fields
+     */
+    protected function savedAddress()
+    {
+        $customer = Auth::guard('customer')->user();
+
+        if (!$customer) {
+            return '';
+        }
+
+        if (!empty($customer->address)) {
+            return $customer->address;
+        }
+
+        $parts = array_filter([
+            $customer->hnum,
+            $customer->brgy,
+            $customer->city,
+            $customer->province,
+            $customer->region,
+            $customer->zcode,
+        ]);
+
+        return implode(', ', $parts);
+    }
+
+    /**
+     * Buy Now - stage a single item for direct checkout (no cart involved)
+     */
+    public function buyNow(Request $request)
+    {
+        $customerId = Auth::guard('customer')->check() ? Auth::guard('customer')->id() : null;
+
+        if (!$customerId) {
+            return response()->json(['success' => false, 'message' => 'Please login to continue', 'require_login' => true], 401);
+        }
+
+        $validated = $request->validate([
+            'product_id' => 'required|integer|exists:products,id',
+            'variation_id' => 'required|integer',
+            'quantity' => 'required|integer|min:1',
+        ]);
+
+        $variation = ProductVariation::where('id', $validated['variation_id'])
+            ->where('variant_product_id', $validated['product_id'])
+            ->first();
+
+        if (!$variation) {
+            return response()->json(['success' => false, 'message' => 'Invalid product variation'], 422);
+        }
+
+        $available = $variation->available_stock ?? $variation->variant_stock;
+
+        if ($available <= 0) {
+            return response()->json(['success' => false, 'message' => 'This item is out of stock'], 422);
+        }
+
+        if ($validated['quantity'] > $available) {
+            return response()->json(['success' => false, 'message' => "Only {$available} available in stock"], 422);
+        }
+
+        session(['buy_now' => [
+            'product_id' => $validated['product_id'],
+            'variation_id' => $variation->id,
+            'quantity' => $validated['quantity'],
+        ]]);
+
+        return response()->json(['success' => true, 'redirect' => route('cart.buyNowCheckout')]);
+    }
+
+    /**
+     * Buy Now checkout page - renders the standard checkout with the staged item
+     */
+    public function buyNowCheckout()
+    {
+        $customerId = Auth::guard('customer')->check() ? Auth::guard('customer')->id() : null;
+
+        if (!$customerId) {
+            return redirect()->route('shop.login')->with('error', 'Please login to checkout');
+        }
+
+        $buyNow = session('buy_now');
+
+        if (!$buyNow) {
+            return redirect()->route('dashboard.auth.items')->with('error', 'No item selected for quick checkout');
+        }
+
+        $product = Product::find($buyNow['product_id']);
+        $variation = ProductVariation::where('id', $buyNow['variation_id'])
+            ->where('variant_product_id', $buyNow['product_id'])
+            ->first();
+
+        if (!$product || !$variation) {
+            session()->forget('buy_now');
+            return redirect()->route('dashboard.auth.items')->with('error', 'Selected item is no longer available');
+        }
+
+        $available = $variation->available_stock ?? $variation->variant_stock;
+        $quantity = min($buyNow['quantity'], max($available, 0));
+
+        if ($quantity < 1) {
+            session()->forget('buy_now');
+            return redirect()->route('dashboard.auth.items')->with('error', 'Selected item is out of stock');
+        }
+
+        $cartItem = new Cart([
+            'product_id' => $product->id,
+            'variation_id' => $variation->id,
+            'customer_id' => $customerId,
+            'quantity' => $quantity,
+            'price' => $variation->variant_price,
+        ]);
+        $cartItem->setRelation('product', $product);
+        $cartItem->setRelation('variation', $variation);
+
+        $cartItems = collect([$cartItem]);
+
+        $subtotal = $cartItem->price * $cartItem->quantity;
+        $tax = $subtotal * 0.12;
+        $total = $subtotal + $tax;
+
+        return view('customer.cart.checkout', array_merge(
+            compact('cartItems', 'subtotal', 'tax', 'total'),
+            ['savedAddress' => $this->savedAddress()]
+        ));
     }
 }

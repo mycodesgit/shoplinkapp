@@ -66,7 +66,16 @@
         window.ShopLink = window.ShopLink || {};
         window.ShopLink.csrf = '{{ csrf_token() }}';
         window.ShopLink.isCustomer = {{ Auth::guard('customer')->check() ? 'true' : 'false' }};
+        window.ShopLink.customerId = {{ Auth::guard('customer')->check() ? (int) Auth::guard('customer')->id() : 'null' }};
         window.ShopLink.cartCountUrl = '{{ route("cart.realtime.count") }}';
+        window.ShopLink.orderFeedUrl = '{{ Auth::guard('customer')->check() ? route('orders.auth.feed') : '' }}';
+        window.ShopLink.ordersUrl = '{{ Auth::guard('customer')->check() ? route('orders.auth.index') : '' }}';
+        window.ShopLink.reverb = {
+            key: '{{ config('broadcasting.connections.reverb.key') }}',
+            host: '{{ config('broadcasting.connections.reverb.options.host', 'localhost') }}',
+            port: {{ (int) config('broadcasting.connections.reverb.options.port', 8080) }},
+            tls: {{ config('broadcasting.connections.reverb.options.scheme', 'http') === 'https' ? 'true' : 'false' }}
+        };
 
         window.ShopLink.setCartCount = function (count) {
             ['cartCount', 'mobileCartBadge'].forEach(function (id) {
@@ -161,6 +170,44 @@
         };
 
         document.addEventListener('DOMContentLoaded', function () {
+            // Bell dropdown works standalone — never blocked by feed/socket issues
+            var bellBtn = document.getElementById('custBellBtn');
+            var bellDrop = document.getElementById('custBellDropdown');
+            if (bellBtn && bellDrop && !bellBtn.dataset.wired) {
+                bellBtn.dataset.wired = '1';
+                bellBtn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    bellDrop.classList.toggle('hidden');
+                });
+                // Mark as read on click, then follow the link (exact tab / details)
+                document.getElementById('custBellList').addEventListener('click', function (e) {
+                    var link = e.target.closest('a[data-id]');
+                    if (!link) return;
+                    try {
+                        var seen = JSON.parse(localStorage.getItem('custNotifSeen') || '{}');
+                        seen[link.getAttribute('data-id')] = link.getAttribute('data-updated');
+                        localStorage.setItem('custNotifSeen', JSON.stringify(seen));
+                    } catch (err) {}
+                });
+                document.addEventListener('click', function (e) {
+                    if (!bellDrop.classList.contains('hidden') && !bellDrop.contains(e.target) && e.target !== bellBtn) {
+                        bellDrop.classList.add('hidden');
+                    }
+                });
+                document.addEventListener('keydown', function (e) {
+                    if (e.key === 'Escape') bellDrop.classList.add('hidden');
+                });
+                var markRead = document.getElementById('custMarkRead');
+                if (markRead) {
+                    markRead.addEventListener('click', function () {
+                        var seen = {};
+                        custFeedCache.forEach(function (o) { seen[o.id] = o.updated_at; });
+                        try { localStorage.setItem('custNotifSeen', JSON.stringify(seen)); } catch (err) {}
+                        paintCustBell(custFeedCache);
+                    });
+                }
+            }
+
             if (!window.ShopLink.isCustomer) {
                 window.ShopLink.setCartCount(0);
                 return;
@@ -179,8 +226,141 @@
             fetchCount();
             setInterval(fetchCount, 15000);
             window.cartManager = { manualRefresh: fetchCount };
+
+            startOrderNotifications();
         });
+
+        /* Live order-status notifications (Reverb socket + AJAX fallback) */
+        function handleStatusUpdate(order) {
+            var label = (order.order_number || ('#' + order.order_id)) + ': ' + (order.message || 'Your order status changed.');
+            window.ShopLink.showToast(label, order.status === 'cancelled' ? 'error' : 'success');
+            // Let pills/tables on order pages reflect the new status
+            if (/myorder/.test(window.location.pathname)) {
+                setTimeout(function () { window.location.reload(); }, 3000);
+            }
+        }
+
+        var statusBaseline = {};
+        function pollOrderStatuses() {
+            if (!window.ShopLink.isCustomer || !window.ShopLink.orderFeedUrl) return;
+            fetch(window.ShopLink.orderFeedUrl, {
+                method: 'GET',
+                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': window.ShopLink.csrf }
+            })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (!data || !data.success) return;
+                var firstRun = Object.keys(statusBaseline).length === 0;
+                (data.orders || []).forEach(function (o) {
+                    if (!firstRun && statusBaseline[o.id] && statusBaseline[o.id] !== o.status) {
+                        handleStatusUpdate({ order_id: o.id, order_number: o.order_number, status: o.status, message: statusMessage(o.status, o.order_number) });
+                    }
+                    statusBaseline[o.id] = o.status;
+                });
+                paintCustBell(data.orders || []);
+            })
+            .catch(function (e) { console.error('Status feed error:', e); });
+        }
+
+        function statusMessage(status, number) {
+            var map = {
+                accepted: 'Your order was accepted and is now in queue.',
+                preparing: 'Your order is being prepared.',
+                ready_to_claim: 'Your order is ready for pickup!',
+                ready_to_deliver: 'Your order is ready and waiting for delivery.',
+                out_for_delivery: 'Your order is out for delivery!',
+                delivered: 'Your order has been delivered. Enjoy!',
+                cancelled: 'Your order was cancelled.'
+            };
+            return map[status] || ('Order ' + number + ' is now ' + status + '.');
+        }
+
+        /* Customer notification bell: per-order status history */
+        var custFeedCache = [];
+        function getCustSeen() {
+            try { return JSON.parse(localStorage.getItem('custNotifSeen') || '{}'); }
+            catch (e) { return {}; }
+        }
+        function statusPill(status) {
+            var label = (status || '').replace(/_/g, ' ');
+            var cls = 'bg-gray-100 text-gray-800';
+            if (['accepted', 'preparing'].indexOf(status) !== -1) cls = 'bg-gray-200 text-gray-900';
+            else if (['ready_to_claim', 'ready_to_deliver', 'out_for_delivery', 'delivered'].indexOf(status) !== -1) cls = 'bg-black text-white';
+            else if (status === 'cancelled') cls = 'bg-gray-100 text-gray-500';
+            return '<span class="inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold ' + cls + '">' + label + '</span>';
+        }
+        function paintCustBell(orders) {
+            var badge = document.getElementById('custBellBadge');
+            var list = document.getElementById('custBellList');
+            if (!badge || !list) return;
+            custFeedCache = orders || [];
+            var seen = getCustSeen();
+            var unread = custFeedCache.filter(function (o) { return seen[o.id] !== o.updated_at; });
+
+            if (unread.length) {
+                badge.textContent = unread.length > 9 ? '9+' : unread.length;
+                badge.classList.remove('hidden');
+                badge.classList.add('flex');
+            } else {
+                badge.classList.add('hidden');
+                badge.classList.remove('flex');
+            }
+
+            if (!custFeedCache.length) {
+                list.innerHTML = '<li class="px-4 py-4 text-center text-sm text-gray-400">No orders yet — your status updates will appear here.</li>';
+                return;
+            }
+            list.innerHTML = custFeedCache.map(function (o) {
+                var isNew = seen[o.id] !== o.updated_at;
+                var when = o.updated_at ? new Date(o.updated_at).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '';
+                return '<li>' +
+                    '<a href="' + (o.url || window.ShopLink.ordersUrl) + '" data-id="' + o.id + '" data-updated="' + (o.updated_at || '') + '" class="flex items-start gap-2.5 px-4 py-2.5 hover:bg-gray-50 transition ' + (isNew ? 'bg-gray-50' : '') + '">' +
+                        '<span class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ' + (isNew ? 'bg-black text-white' : 'bg-gray-100 text-gray-500') + '"><i class="fas fa-box text-xs"></i></span>' +
+                        '<span class="min-w-0 flex-1">' +
+                            '<span class="block truncate text-xs font-semibold text-black">' + (o.order_number || ('#' + o.id)) + '</span>' +
+                            '<span class="mt-0.5 block">' + statusPill(o.status) + '</span>' +
+                            '<span class="mt-0.5 block text-[11px] text-gray-400">' + when + '</span>' +
+                        '</span>' +
+                        (isNew ? '<span class="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-black"></span>' : '') +
+                    '</a>' +
+                '</li>';
+            }).join('');
+        }
+
+        function startOrderNotifications() {
+            if (!window.ShopLink.isCustomer) return;
+            pollOrderStatuses();
+            setInterval(pollOrderStatuses, 25000);
+
+            if (!window.Pusher || !window.Echo) return;
+            try {
+                var EchoCtor = window.Echo.default || window.Echo;
+                if (typeof EchoCtor !== 'function') throw new Error('Echo constructor not found');
+                var echo = new EchoCtor({
+                    broadcaster: 'reverb',
+                    key: window.ShopLink.reverb.key,
+                    wsHost: window.ShopLink.reverb.host,
+                    wsPort: window.ShopLink.reverb.port,
+                    wssPort: window.ShopLink.reverb.port,
+                    forceTLS: window.ShopLink.reverb.tls,
+                    enabledTransports: ['ws', 'wss'],
+                    authEndpoint: '/broadcasting/customer-auth',
+                    auth: { headers: { 'X-CSRF-TOKEN': window.ShopLink.csrf } }
+                });
+                echo.private('customer.orders.' + window.ShopLink.customerId).listen('.order.status', function (e) {
+                    handleStatusUpdate(e);
+                    if (e && e.order_id) statusBaseline[e.order_id] = e.status;
+                    pollOrderStatuses();
+                });
+                window.customerEcho = echo;
+            } catch (e) {
+                console.error('Reverb connection failed, using AJAX polling:', e);
+            }
+        }
     </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/pusher-js@8.4.0/dist/web/pusher.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/laravel-echo@2.6.1/dist/echo.iife.js"></script>
 
     @stack('scripts')
 

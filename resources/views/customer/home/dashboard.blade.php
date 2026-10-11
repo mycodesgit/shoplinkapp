@@ -1,14 +1,16 @@
 @extends('customer.layouts.app')
 
+@section('title', 'Shoplink | Home')
+
 @section('content')
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 md:pb-10 page-fade">    
         <!-- Hero Banner - UP TO 25% OFF -->
         <div class="hero-banner rounded-2xl overflow-hidden mb-8 relative card-item">
             <div class="px-6 py-12 md:py-16 text-center">
                 <p class="text-white/80 text-sm mb-2">LIMITED TIME OFFER</p>
-                <h2 class="text-4xl md:text-6xl font-bold text-white mb-3">UP TO <span class="text-yellow-400">25% OFF</span></h2>
+                <h2 class="text-4xl md:text-6xl font-bold text-white mb-3">UP TO <span class="text-white underline decoration-white/60 decoration-4 underline-offset-8">25% OFF</span></h2>
                 <p class="text-white/70 text-sm mb-6">ENDS SOON</p>
-                <a href="shop.html" class="inline-block bg-white text-black px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition btn-press">Shop Now →</a>
+                <a href="{{ Auth::guard('customer')->check() ? route('dashboard.auth.items') : route('dashboard.items') }}" class="inline-block bg-white text-black px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition btn-press">Shop Now →</a>
             </div>
             <!-- Decorative elements -->
             <div class="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl"></div>
@@ -39,94 +41,92 @@
         <div class="mb-10">
             <div class="flex justify-between items-center mb-5 animate-slide-right">
                 <h2 class="text-xl md:text-2xl font-bold text-gray-900">Recommended Styles</h2>
-                <a href="{{ route('dashboard.items') }}" class="text-gray-500 text-sm hover:text-black">See All →</a>
+                <a href="{{ Auth::guard('customer')->check() ? route('dashboard.auth.items') : route('dashboard.items') }}" class="text-gray-500 text-sm hover:text-black">See All →</a>
             </div>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {{-- <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"> --}}
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
                 @forelse ($products->take(8) as $item)
-                    <div class="product-card group card-item h-100">
+                    <div class="product-card group card-item flex h-full flex-col">
+                        @php
+                            $images = json_decode($item->prdctimage, true);
+                            $firstImage = $images[0] ?? null;
+                            $minPrice = $item->variations->min('variant_price');
+                        @endphp
                         @if(Auth::guard('customer')->check())
-                            <a href="{{ route('itemdetails.auth.index', $item->encrypted_id) }}">
+                            <a href="{{ route('itemdetails.auth.index', $item->encrypted_id) }}" class="block" tabindex="-1" aria-hidden="true">
                         @else
-                            <a href="{{ route('itemdetails.index', $item->encrypted_id) }}">
+                            <a href="{{ route('itemdetails.index', $item->encrypted_id) }}" class="block" tabindex="-1" aria-hidden="true">
                         @endif
                             <div class="relative">
                                 @if ($item->prdcttag === 'Popular')
-                                    <div class="discount-badge popular rounded-pill text-xs spantag">
+                                    <div class="discount-badge popular text-xs">
                                         {{ $item->prdcttag }}
                                     </div>
                                 @elseif ($item->prdcttag === 'New Arrival')
-                                    <div class="discount-badge new-arrival rounded-pill text-xs">
+                                    <div class="discount-badge new-arrival text-xs">
                                         {{ $item->prdcttag }}
                                     </div>
                                 @elseif ($item->prdcttag === 'Sale')
-                                    <div class="discount-badge sale rounded-pill text-xs">
+                                    <div class="discount-badge sale text-xs">
                                         {{ $item->prdcttag }}
                                     </div>
                                 @endif
 
-                                @php
-                                    $images = json_decode($item->prdctimage, true);
-                                    $firstImage = $images[0] ?? null;
-                                @endphp
-                                <div class="image-container">
-                                    <img src="{{ $firstImage ? asset('storage/' . $firstImage) : asset('storage/products/default.png') }}" class="product-image" alt="{{ $item->prdctname }}">
+                                <div class="image-container aspect-[4/5]">
+                                    <img src="{{ $firstImage ? asset('storage/' . $firstImage) : asset('storage/products/default.png') }}" class="product-image" alt="{{ $item->prdctname }}" loading="lazy">
                                 </div>
                             </div>
                         </a>
-                        <div class="p-4 pt-0">
-                            <div class="flex justify-between items-start mb-1">
-                                <h3 class="font-semibold text-gray-900 text-base" onclick="window.location.href='product.html?id=${product.id}'">
-                                    {{ strlen($item->prdctname) > 25 
-                                            ? substr($item->prdctname, 0, 25) . '...' 
-                                            : $item->prdctname }}
+                        <div class="flex flex-1 flex-col p-3 sm:p-4">
+                            <div class="flex items-start justify-between gap-2">
+                                <h3 class="line-clamp-2 min-h-10 text-sm font-semibold text-gray-900 sm:min-h-12 sm:text-base">
+                                    {{ $item->prdctname }}
                                 </h3>
-                                <div class="flex items-center gap-1">
+                                <div class="flex shrink-0 items-center gap-1 pt-0.5">
                                     <i class="fas fa-star rating-star"></i>
                                     <span class="text-xs font-medium text-gray-700">4.5</span>
                                 </div>
                             </div>
-                            
-                            <div class="flex items-center gap-2 mb-1">
-                                <span class="text-xl font-bold text-gray-900">₱{{ number_format($item->variations->min('variant_price'), 2) }}</span>
-                                <span class="text-sm text-gray-400 line-through hidden sm:inline">₱200.00</span>
+
+                            <div class="mt-1 flex min-h-6 flex-wrap items-baseline gap-2 sm:min-h-7">
+                                <span class="text-base font-bold text-gray-900 sm:text-xl">₱{{ number_format($minPrice, 2) }}</span>
+                                <span class="hidden text-xs text-gray-400 line-through sm:inline">₱200.00</span>
                             </div>
-                            
-                            {{-- <p class="text-xs text-gray-500 mb-2 hidden sm:inline">Colors</p> --}}
-                            
-                            <div class="flex items-center justify-between mb-3">
-                                <div class="flex items-center gap-2 hidden sm:inline">
-                                    <i class="far fa-clock text-xs text-gray-400"></i>
-                                    <span class="text-xs text-gray-500">
+
+                            <p class="mt-1 min-h-5 truncate text-xs text-gray-500">{{ $item->variations->count() }} variation(s) available</p>
+
+                            <div class="mt-1 flex min-h-5 items-center justify-between gap-2 text-xs text-gray-500">
+                                <div class="hidden min-w-0 items-center gap-1.5 sm:flex">
+                                    <i class="far fa-clock shrink-0 text-[11px] text-gray-400"></i>
+                                    <span class="truncate">
                                         {{ $item->created_at->diffForHumans(null, true) === '0 seconds'
                                                     ? 'Now'
                                                     : $item->created_at->diffForHumans() }}
                                     </span>
                                 </div>
-                                <div class="flex items-center gap-1">
-                                    <i class="fas fa-eye text-xs text-gray-400"></i>
-                                    <span class="text-xs text-gray-500">reviews</span>
+                                <div class="flex shrink-0 items-center gap-1">
+                                    <i class="fas fa-eye text-[11px] text-gray-400"></i>
+                                    <span>reviews</span>
                                 </div>
                             </div>
-                            
-                            <div class="fixed bottom-0 left-0 right-0 flex gap-2 p-4 bg-white z-40">
+
+                            <div class="mt-auto flex flex-col gap-2 pt-3 sm:flex-row">
                                 @if(Auth::guard('customer')->check())
-                                    <button class="add-cart-btn flex-1">
+                                    <button class="add-cart-btn min-h-11 flex-1" onclick="window.location.href='{{ route('itemdetails.auth.index', $item->encrypted_id) }}'">
                                         <i class="fas fa-shopping-cart text-sm"></i>
-                                        <span class="hidden sm:inline">Add Cart</span>
+                                        <span>Add Cart</span>
                                     </button>
-                                    <button class="buy-now-btn flex-1">
+                                    <button class="buy-now-btn min-h-11 flex-1" onclick="window.location.href='{{ route('itemdetails.auth.index', $item->encrypted_id) }}'">
                                         <i class="fas fa-shopping-bag text-sm"></i>
-                                        <span class="hidden sm:inline">Buy Now</span>
+                                        <span>Buy Now</span>
                                     </button>
                                 @else
-                                    <button class="add-cart-btn flex-1" onclick="redirectToLogin()">
+                                    <button class="add-cart-btn min-h-11 flex-1" onclick="window.ShopLink.redirectToLogin()">
                                         <i class="fas fa-shopping-cart text-sm"></i>
-                                        <span class="hidden sm:inline">Add Cart</span>
+                                        <span>Add Cart</span>
                                     </button>
-                                    <button class="buy-now-btn flex-1" onclick="redirectToLogin()">
+                                    <button class="buy-now-btn min-h-11 flex-1" onclick="window.ShopLink.redirectToLogin()">
                                         <i class="fas fa-shopping-bag text-sm"></i>
-                                        <span class="hidden sm:inline">Buy Now</span>
+                                        <span>Buy Now</span>
                                     </button>
                                 @endif
                             </div>
@@ -138,46 +138,20 @@
             </div>
         </div>
     </main>
-    
-    <script>
-        function redirectToLogin() {
-            const currentUrl = window.location.href;
-            window.location.href = "{{ route('shop.login') }}?redirect=" + encodeURIComponent(currentUrl);
-        }
-    </script>
 @endsection
 
 @push('scripts')
-    {{-- <script>
-        // Category filtering functionality for the marquee
-        document.querySelectorAll('.category-chip').forEach(chip => {
-            chip.addEventListener('click', function() {
-                const category = this.getAttribute('data-category');
-                
-                // Update active state on all chips
-                document.querySelectorAll('.category-chip').forEach(c => {
-                    if (c.getAttribute('data-category') === category) {
-                        c.classList.add('active');
-                        c.classList.remove('bg-gray-100', 'text-gray-800');
-                        c.classList.add('bg-black', 'text-white');
-                    } else {
-                        c.classList.remove('active');
-                        c.classList.add('bg-gray-100', 'text-gray-800');
-                        c.classList.remove('bg-black', 'text-white');
-                    }
-                });
-                
-                // Filter products - add your product filtering logic here
-                // Example: filter products by data-category attribute
-                document.querySelectorAll('#products-grid .product-link').forEach(product => {
-                    const productCategory = product.getAttribute('data-category');
-                    if (category === 'all' || productCategory === category) {
-                        product.style.display = '';
-                    } else {
-                        product.style.display = 'none';
-                    }
-                });
+    <script>
+        // Category chip active state (delegated; works with marquee duplicates)
+        document.addEventListener('click', function (e) {
+            var chip = e.target.closest('.category-chip');
+            if (!chip) return;
+            document.querySelectorAll('.category-chip').forEach(function (c) {
+                c.classList.remove('active', 'bg-black', 'text-white');
+                c.classList.add('bg-gray-100', 'text-gray-800');
             });
+            chip.classList.add('active', 'bg-black', 'text-white');
+            chip.classList.remove('bg-gray-100', 'text-gray-800');
         });
-    </script> --}}
+    </script>
 @endpush

@@ -18,4 +18,28 @@ class CustomerController extends Controller
     {
         return view('admin.customer.listcustomer');
     }
+
+    public function show()
+    {
+        $data = Customer::orderBy('created_at', 'DESC')->get();
+
+        return response()->json(['data' => $data]);
+    }
+
+    public function updateStatus(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|integer',
+            'cstatus' => 'required|in:1,2',
+        ]);
+
+        try {
+            $customer = Customer::findOrFail($request->input('id'));
+            $customer->update(['cstatus' => $request->input('cstatus')]);
+
+            return response()->json(['success' => true, 'message' => 'Customer status updated successfully!'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => true, 'message' => 'Failed to update customer status!'], 404);
+        }
+    }
 }

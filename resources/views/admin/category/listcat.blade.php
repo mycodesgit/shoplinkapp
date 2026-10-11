@@ -163,13 +163,18 @@
         </div>
     </div>
 
+@endsection
+
+@push('scripts')
     <script>
         var categoryReadRoute = "{{ route('category.show') }}";
         var categoryCreateRoute = "{{ route('category.store') }}";
         var categoryUpdateRoute = "{{ route('category.update', ['id' => ':id']) }}";
         var categoryDeleteRoute = "{{ route('category.destroy', ['id' => ':id']) }}";
     </script>
-    
+
+    @include('admin.adscript.cat.categorySerialize')
+
     <script>
         // Font Awesome 6 Icons - Common icons for categories
         const fontAwesomeIcons = [
@@ -308,4 +313,4 @@
             });
         }
     </script>
-@endsection
+@endpush

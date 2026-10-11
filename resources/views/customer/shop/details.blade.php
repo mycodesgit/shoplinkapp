@@ -1,17 +1,13 @@
 @extends('customer.layouts.app')
 
+@section('title', 'Shoplink | Product Details')
+
 @section('content')
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 md:pb-10"> 
-        <!-- Toast Notification -->
-        <div id="toast" class="fixed top-20 md:top-6 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-5 py-2.5 rounded-full shadow-lg z-50 transition-all duration-300 opacity-0 pointer-events-none text-sm whitespace-nowrap">
-            <i class="fas fa-check-circle text-green-400 mr-2"></i>
-            <span id="toastMessage">Added to cart</span>
-        </div>
-
         <!-- Navigation Row -->
         <div class="flex flex-wrap items-center justify-between gap-4 mb-6 pb-3 border-b border-gray-100">
             <div class="flex-shrink-0">
-                <button onclick="window.history.back()" class="group flex items-center justify-center w-10 h-10 md:w-11 md:h-11 rounded-full bg-white shadow-sm border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-900 transition-all duration-200 hover:-translate-x-0.5 focus:outline-none focus:ring-2 focus:ring-indigo-300" aria-label="Go back">
+                <button onclick="window.history.back()" class="group flex items-center justify-center w-10 h-10 md:w-11 md:h-11 rounded-full bg-white shadow-sm border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-900 transition-all duration-200 hover:-translate-x-0.5 focus:outline-none focus:ring-2 focus:ring-gray-300" aria-label="Go back">
                     <i class="fas fa-arrow-left text-base md:text-lg"></i>
                 </button>
             </div>
@@ -19,23 +15,23 @@
                 <nav class="flex items-center" aria-label="Breadcrumb">
                     <ol class="flex items-center flex-wrap justify-end gap-1 text-sm md:text-base">
                         <li class="inline-flex items-center">
-                            <a href="{{ url('/') }}" class="text-gray-500 hover:text-indigo-600 transition-colors duration-200">
+                            <a href="{{ url('/') }}" class="text-gray-500 hover:text-black transition-colors duration-200">
                                 <i class="fas fa-home text-xs md:text-sm"></i>
                                 <span class="sr-only">Home</span>
                             </a>
                             <i class="fas fa-chevron-right text-gray-300 text-xs mx-1 md:mx-1.5"></i>
                         </li>
                         <li class="inline-flex items-center sm:inline-block">
-                            <a href="{{ route('dashboard.items') }}" class="text-gray-500 hover:text-indigo-600 transition-colors duration-200">
+                            <a href="{{ Auth::guard('customer')->check() ? route('dashboard.auth.items') : route('dashboard.items') }}" class="text-gray-500 hover:text-black transition-colors duration-200">
                                 <span>Shop</span>
                             </a>
                             <i class="fas fa-chevron-right text-gray-300 text-xs mx-1 md:mx-1.5"></i>
                         </li>
                         @if($product->category)
                         <li class="inline-flex items-center">
-                            <a href="{{ route('dashboard.items', $product->category->slug ?? '#') }}" class="text-gray-500 hover:text-indigo-600 transition-colors duration-200">
+                            <span class="text-gray-500">
                                 {{ strlen($product->category->catname ?? 'Uncategorized') > 10 ? substr($product->category->catname, 0, 10) . '...' : ($product->category->catname ?? 'Uncategorized') }}
-                            </a>
+                            </span>
                             <i class="fas fa-chevron-right text-gray-300 text-xs mx-1 md:mx-1.5"></i>
                         </li>
                         @endif
@@ -105,7 +101,7 @@
             <!-- Product Details Section -->
             <div>
                 <div class="flex items-center gap-2 mb-2">
-                    <i class="fas fa-star text-yellow-400"></i>
+                    <i class="fas fa-star text-black"></i>
                     <span class="font-semibold">4.3</span>
                     <span class="text-gray-400">(128 reviews)</span>
                 </div>
@@ -190,17 +186,17 @@
                 <!-- Action Buttons -->
                 <div class="flex gap-4">
                     @if(Auth::guard('customer')->check())
-                        <button class="add-cart-btn flex-1 py-3 rounded-full font-semibold flex items-center justify-center gap-2 btn-press bg-indigo-600 text-white hover:bg-indigo-700 transition" id="addToCartBtn">
+                        <button class="add-cart-btn min-h-12 flex-1 border-black bg-white py-3 font-semibold text-black hover:bg-gray-100" id="addToCartBtn">
                             <i class="fas fa-shopping-cart"></i> Add to Cart
                         </button>
-                        <button class="buy-now-btn flex-1 py-3 rounded-full font-semibold text-white flex items-center justify-center gap-2 btn-press bg-green-600 hover:bg-green-700 transition" id="buyNowBtn">
+                        <button class="buy-now-btn min-h-12 flex-1 bg-black py-3 font-semibold text-white hover:bg-gray-800" id="buyNowBtn">
                             <i class="fas fa-bolt"></i> Buy Now
                         </button>
                     @else
-                        <button onclick="redirectToLogin()" class="add-cart-btn flex-1 py-3 rounded-full font-semibold flex items-center justify-center gap-2 btn-press bg-indigo-600 text-white hover:bg-indigo-700 transition">
+                        <button onclick="window.ShopLink.redirectToLogin()" class="add-cart-btn min-h-12 flex-1 border-black bg-white py-3 font-semibold text-black hover:bg-gray-100">
                             <i class="fas fa-shopping-cart"></i> Add to Cart
                         </button>
-                        <button onclick="redirectToLogin()" class="buy-now-btn flex-1 py-3 rounded-full font-semibold text-white flex items-center justify-center gap-2 btn-press bg-green-600 hover:bg-green-700 transition">
+                        <button onclick="window.ShopLink.redirectToLogin()" class="buy-now-btn min-h-12 flex-1 bg-black py-3 font-semibold text-white hover:bg-gray-800">
                             <i class="fas fa-bolt"></i> Buy Now
                         </button>
                     @endif
@@ -208,7 +204,9 @@
             </div>
         </div>
     </main>
+@endsection
 
+@push('scripts')
     <script>
         // All variation images data from backend
         const allVariationImages = @json($allVariationImages);
@@ -225,8 +223,7 @@
         let currentImageData = null;
 
         function redirectToLogin() {
-            const currentUrl = window.location.href;
-            window.location.href = "{{ route('shop.login') }}?redirect=" + encodeURIComponent(currentUrl);
+            window.ShopLink.redirectToLogin();
         }
         
         // Function to update UI when variation is selected
@@ -250,7 +247,7 @@
                 if (addBtn) addBtn.disabled = true;
                 if (buyBtn) buyBtn.disabled = true;
             } else if (availableStock <= 10) {
-                stockElement.innerHTML = `<span class="text-orange-600"><i class="fas fa-exclamation-triangle"></i> Low Stock! Only ${availableStock} left</span>`;
+                stockElement.innerHTML = `<span class="text-gray-900 font-medium"><i class="fas fa-exclamation-triangle"></i> Low Stock! Only ${availableStock} left</span>`;
                 if (addBtn) addBtn.disabled = false;
                 if (buyBtn) buyBtn.disabled = false;
             } else {
@@ -309,7 +306,7 @@
                 
                 const img = document.createElement('img');
                 img.src = '{{ asset("storage/") }}/' + item.image;
-                img.className = 'thumbnail w-20 h-20 rounded-lg object-cover border-2 transition-all group-hover:scale-105 group-hover:border-indigo-500';
+                img.className = 'thumbnail w-20 h-20 rounded-lg object-cover border-2 transition-all group-hover:scale-105 group-hover:border-black';
                 img.setAttribute('data-image', '{{ asset("storage/") }}/' + item.image);
                 img.setAttribute('data-variation-id', item.variation_id);
                 img.setAttribute('data-variation-name', item.variation_name || '');
@@ -334,11 +331,11 @@
                     
                     // Update active state
                     document.querySelectorAll('#thumbnailContainer .thumbnail').forEach(t => {
-                        t.classList.remove('border-indigo-500', 'ring-2', 'ring-indigo-200');
+                        t.classList.remove('border-black', 'ring-2', 'ring-gray-300');
                         t.classList.add('border-gray-200');
                     });
                     img.classList.remove('border-gray-200');
-                    img.classList.add('border-indigo-500', 'ring-2', 'ring-indigo-200');
+                    img.classList.add('border-black', 'ring-2', 'ring-gray-300');
                     
                     // Update variation details
                     const variationId = parseInt(img.dataset.variationId);
@@ -367,11 +364,11 @@
                     img.addEventListener('click', function() {
                         document.getElementById('mainImage').src = this.src;
                         document.querySelectorAll('#thumbnailContainer .thumbnail').forEach(t => {
-                            t.classList.remove('border-indigo-500', 'ring-2', 'ring-indigo-200');
+                            t.classList.remove('border-black', 'ring-2', 'ring-gray-300');
                             t.classList.add('border-gray-200');
                         });
                         this.classList.remove('border-gray-200');
-                        this.classList.add('border-indigo-500', 'ring-2', 'ring-indigo-200');
+                        this.classList.add('border-black', 'ring-2', 'ring-gray-300');
                     });
                     
                     container.appendChild(img);
@@ -383,7 +380,7 @@
                 const firstImg = container.firstChild.querySelector('.thumbnail');
                 if (firstImg) {
                     firstImg.classList.remove('border-gray-200');
-                    firstImg.classList.add('border-indigo-500', 'ring-2', 'ring-indigo-200');
+                    firstImg.classList.add('border-black', 'ring-2', 'ring-gray-300');
                     // Trigger click on first thumbnail to load its data
                     container.firstChild.click();
                 }
@@ -414,11 +411,11 @@
                     const thumbnail = document.querySelector(`#thumbnailContainer .thumbnail[data-variation-id="${variationId}"]`);
                     if (thumbnail) {
                         document.querySelectorAll('#thumbnailContainer .thumbnail').forEach(t => {
-                            t.classList.remove('border-indigo-500', 'ring-2', 'ring-indigo-200');
+                            t.classList.remove('border-black', 'ring-2', 'ring-gray-300');
                             t.classList.add('border-gray-200');
                         });
                         thumbnail.classList.remove('border-gray-200');
-                        thumbnail.classList.add('border-indigo-500', 'ring-2', 'ring-indigo-200');
+                        thumbnail.classList.add('border-black', 'ring-2', 'ring-gray-300');
                         
                         // Update main image
                         document.getElementById('mainImage').src = thumbnail.src;
@@ -542,24 +539,13 @@
                 };
                 
                 sessionStorage.setItem('buyNowData', JSON.stringify(buyData));
-                window.location.href = '#';
+                window.location.href = "{{ route('cart.auth.index') }}";
             });
         }
         
-        // Toast notification
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            const toastMessage = document.getElementById('toastMessage');
-            if (!toast || !toastMessage) return;
-            
-            toastMessage.innerText = message;
-            toast.classList.remove('opacity-0', 'pointer-events-none');
-            toast.classList.add('opacity-100');
-            
-            setTimeout(() => {
-                toast.classList.remove('opacity-100');
-                toast.classList.add('opacity-0', 'pointer-events-none');
-            }, 3000);
+        // Toast notification (delegates to global helper for consistent styling)
+        function showToast(message, type = 'success') {
+            window.ShopLink.showToast(message, type);
         }
         
         // Initialize page
@@ -578,7 +564,9 @@
         // Start the app
         init();
     </script>
-    
+@endpush
+
+@push('styles')
     <style>
         /* Custom styles for thumbnails */
         #thumbnailContainer {
@@ -665,4 +653,4 @@
             cursor: not-allowed;
         }
     </style>
-@endsection
+@endpush

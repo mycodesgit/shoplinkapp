@@ -1,17 +1,13 @@
 @extends('customer.layouts.app')
 
+@section('title', 'Shoplink | Checkout')
+
 @section('content')
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 md:pb-10 page-fade">
         <!-- Page Title -->
         <div class="mb-6">
             <h1 class="text-xl md:text-2xl font-bold text-gray-900">Checkout</h1>
             <p class="text-sm text-gray-500 mt-1">Complete your order</p>
-        </div>
-
-        <!-- Toast Notification -->
-        <div id="toast" class="fixed top-20 md:top-6 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-5 py-2.5 rounded-full shadow-lg z-50 transition-all duration-300 opacity-0 pointer-events-none text-sm whitespace-nowrap">
-            <i class="fas" id="toastIcon"></i>
-            <span id="toastMessage"></span>
         </div>
 
         <div class="flex flex-col lg:flex-row gap-6">
@@ -94,7 +90,7 @@
                         <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition has-[:checked]:border-black has-[:checked]:bg-gray-50">
                             <input type="radio" name="payment_method" value="gcash" class="w-4 h-4 text-black focus:ring-black">
                             <div class="flex items-center gap-2">
-                                <i class="fab fa-cc-visa text-blue-600 text-xl"></i>
+                                <i class="fab fa-cc-visa text-gray-600 text-xl"></i>
                                 <span class="font-medium text-sm">GCash</span>
                             </div>
                         </label>
@@ -110,7 +106,7 @@
                         <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition has-[:checked]:border-black has-[:checked]:bg-gray-50">
                             <input type="radio" name="payment_method" value="card" class="w-4 h-4 text-black focus:ring-black">
                             <div class="flex items-center gap-2">
-                                <i class="fas fa-credit-card text-orange-600 text-xl"></i>
+                                <i class="fas fa-credit-card text-gray-600 text-xl"></i>
                                 <span class="font-medium text-sm">Card</span>
                             </div>
                         </label>
@@ -149,7 +145,7 @@
                         </div>
                         <div class="flex justify-between text-gray-600">
                             <span>Delivery Fee</span>
-                            <span id="deliveryFeeDisplay" class="text-green-600">Free</span>
+                            <span id="deliveryFeeDisplay" class="font-medium text-gray-900">Free</span>
                         </div>
                         <div class="flex justify-between text-gray-600 border-b border-gray-200 pb-3">
                             <span>Tax (12% VAT)</span>
@@ -173,33 +169,14 @@
             </div>
         </div>
     </main>
+@endsection
 
+@push('scripts')
     <script>
         let selectedCartItems = [];
-        
+
         function showToast(message, type = 'success') {
-            const toast = document.getElementById('toast');
-            const toastIcon = document.getElementById('toastIcon');
-            const toastMessage = document.getElementById('toastMessage');
-            
-            if (!toast) return;
-            
-            if (type === 'success') {
-                toastIcon.className = 'fas fa-check-circle text-green-400 mr-2';
-            } else if (type === 'error') {
-                toastIcon.className = 'fas fa-exclamation-circle text-red-400 mr-2';
-            } else if (type === 'info') {
-                toastIcon.className = 'fas fa-info-circle text-blue-400 mr-2';
-            }
-            
-            toastMessage.innerText = message;
-            toast.classList.remove('opacity-0', 'pointer-events-none');
-            toast.classList.add('opacity-100');
-            
-            setTimeout(() => {
-                toast.classList.remove('opacity-100');
-                toast.classList.add('opacity-0', 'pointer-events-none');
-            }, 3000);
+            window.ShopLink.showToast(message, type);
         }
         
         // Dynamic payment fields based on selected method
@@ -211,7 +188,7 @@
                 return `
                     <div class="p-4 bg-gray-50 rounded-xl border border-gray-200">
                         <h4 class="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                            <i class="fab fa-cc-visa text-blue-600"></i>
+                            <i class="fab fa-cc-visa text-gray-600"></i>
                             GCash Payment Details
                         </h4>
                         <div class="space-y-3">
@@ -233,7 +210,7 @@
                 return `
                     <div class="p-4 bg-gray-50 rounded-xl border border-gray-200">
                         <h4 class="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                            <i class="fas fa-wallet text-purple-600"></i>
+                            <i class="fas fa-wallet text-gray-600"></i>
                             Maya Payment Details
                         </h4>
                         <div class="space-y-3">
@@ -264,8 +241,8 @@
                                 <div class="relative">
                                     <input type="text" name="card_number" id="cardNumber" class="w-full px-4 py-2 border border-gray-200 rounded-2xl focus:outline-none focus:border-[#e5e7eb] focus:ring-2 focus:ring-[#e5e7eb]/40 transition-all duration-200" placeholder="1234 5678 9012 3456" maxlength="19">
                                     <div class="absolute right-3 top-1/2 -translate-y-1/2 flex gap-1">
-                                        <i class="fab fa-cc-visa text-blue-600 text-lg"></i>
-                                        <i class="fab fa-cc-mastercard text-orange-600 text-lg"></i>
+                                        <i class="fab fa-cc-visa text-gray-600 text-lg"></i>
+                                        <i class="fab fa-cc-mastercard text-gray-600 text-lg"></i>
                                     </div>
                                 </div>
                             </div>
@@ -408,13 +385,9 @@
                 if (deliveryRadio.checked) {
                     addressContainer.classList.remove('hidden');
                     deliveryFeeDisplay.innerHTML = '₱50.00';
-                    deliveryFeeDisplay.classList.remove('text-green-600');
-                    deliveryFeeDisplay.classList.add('text-gray-900');
                 } else {
                     addressContainer.classList.add('hidden');
                     deliveryFeeDisplay.innerHTML = 'Free';
-                    deliveryFeeDisplay.classList.remove('text-gray-900');
-                    deliveryFeeDisplay.classList.add('text-green-600');
                 }
                 updateTotalWithDelivery();
             }
@@ -616,4 +589,4 @@
             setupPlaceOrder();
         });
     </script>
-@endsection
+@endpush

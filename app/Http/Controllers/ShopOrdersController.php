@@ -79,7 +79,14 @@ class ShopOrdersController extends Controller
             
             // Send confirmation using service
             $this->orderService->sendOrderConfirmation($order);
-            
+
+            // Live admin notification (never break checkout if Reverb is down)
+            try {
+                \App\Events\OrderPlaced::dispatch($order->loadCount('items'));
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::warning('OrderPlaced broadcast failed: ' . $e->getMessage());
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => 'Order placed successfully!',

@@ -110,8 +110,12 @@
         </div>
     </div>
 
+@endsection
+
+@push('scripts')
     <script>
         var welcomeReadRoute = "{{ route('welcomebanner.show') }}";
         var welcomeCreateRoute = "{{ route('welcomebanner.store') }}";
     </script>
-@endsection
+    @include('admin.adscript.baner.welcomeSerialize')
+@endpush

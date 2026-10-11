@@ -12,6 +12,7 @@ use App\Http\Controllers\ProductsController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\BannerController;
+use App\Http\Controllers\OrderController;
 
 
 
@@ -74,8 +75,8 @@ Route::group(['middleware'=>['customer_auth']],function(){
         Route::get('/myorder',[ShopOrdersController::class,'index'])->name('orders.auth.index');
         Route::post('/myorder/store',[ShopOrdersController::class,'placeOrder'])->name('placeOrder.auth.index');
         Route::get('/myorder/show/{orderId}', [ShopOrdersController::class, 'show'])->name('myorder.show');
-        Route::post('myorder/show/cancel/{orderId}/cancel', [ShopOrdersController::class, 'cancel'])->name('myorder.cancel');
-        Route::post('/myorder/show/reorder{orderId}/reorder', [ShopOrdersController::class, 'reorder'])->name('myorder.reorder');
+        Route::post('/myorder/{orderId}/cancel', [ShopOrdersController::class, 'cancel'])->name('myorder.cancel');
+        Route::post('/myorder/{orderId}/reorder', [ShopOrdersController::class, 'reorder'])->name('myorder.reorder');
     });
     
     Route::get('/profile/account',[ShopProfileController::class,'index'])->name('profile.auth.account');
@@ -105,8 +106,8 @@ Route::group(['middleware'=>['login_auth']],function(){
 
     Route::prefix('customers')->group(function () {  
         Route::get('/list/view', [CustomerController::class, 'index'])->name('customer.index');
-        Route::post('/list/store', [CustomerController::class, 'store'])->name('customer.store');
         Route::get('/list/show', [CustomerController::class, 'show'])->name('customer.show');
+        Route::post('/list/status', [CustomerController::class, 'updateStatus'])->name('customer.updateStatus');
     });
 
     Route::prefix('users')->group(function () {  
@@ -123,5 +124,12 @@ Route::group(['middleware'=>['login_auth']],function(){
         Route::get('/list/view', [BannerController::class, 'index'])->name('welcomebanner.index');
         Route::post('/list/store', [BannerController::class, 'store'])->name('welcomebanner.store');
         Route::get('/list/show', [BannerController::class, 'show'])->name('welcomebanner.show');
+    });
+
+    Route::prefix('orders')->group(function () {
+        Route::get('/list/view', [OrderController::class, 'index'])->name('order.index');
+        Route::get('/list/show', [OrderController::class, 'show'])->name('order.show');
+        Route::get('/list/details/{id}', [OrderController::class, 'details'])->name('order.details');
+        Route::post('/list/status', [OrderController::class, 'updateStatus'])->name('order.updateStatus');
     });
 });

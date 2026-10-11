@@ -31,8 +31,8 @@
         }
         
         .input-field:focus {
-            border-color: #4f46e5;
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            border-color: #000;
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08);
         }
         
         .input-icon {
@@ -59,8 +59,8 @@
         }
         
         input[type="checkbox"]:checked + .checkbox-custom {
-            background-color: #4f46e5;
-            border-color: #4f46e5;
+            background-color: #000;
+            border-color: #000;
         }
         
         input[type="checkbox"]:checked + .checkbox-custom::after {
@@ -77,7 +77,7 @@
         
         /* Login button styling */
         .login-btn {
-            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            background: #000;
             transition: all 0.3s ease;
             cursor: pointer;
             border: none;
@@ -85,7 +85,8 @@
         
         .login-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2);
+            background: #1f2937;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
         }
         
         .login-btn:active {
@@ -101,7 +102,7 @@
         }
         
         .social-btn:hover {
-            border-color: #4f46e5;
+            border-color: #000;
             background: #f8fafc;
         }
         
@@ -127,8 +128,7 @@
             font-size: 24px;
             opacity: 0.15;
             z-index: 0;
-            pointer-events: auto;
-            cursor: pointer;
+            pointer-events: none;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             animation: float 6s ease-in-out infinite;
         }
@@ -253,7 +253,7 @@
         <!-- Back Button -->
         <div class="mb-4 sm:mb-5 md:mb-2">
             <a href="{{ route('dashboard.index') }}" 
-            class="back-btn group flex items-center gap-2 text-gray-600 hover:text-indigo-600 transition-colors duration-200">
+            class="back-btn group flex items-center gap-2 text-gray-600 hover:text-black transition-colors duration-200">
                 <i class="fas fa-arrow-left text-sm sm:text-base"></i>
                 <span class="text-sm sm:text-base font-medium">Back</span>
             </a>
@@ -261,8 +261,11 @@
 
         <!-- Logo -->
         <div class="text-center mb-6">
-            <div class="inline-flex items-center justify-center">
-                <img src="{{ asset('uilibs/images/logonobg.webp') }}" alt="ShopLink Logo" class="h-35 w-auto">
+            <div class="inline-flex items-center gap-2">
+                <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-black text-lg text-white">
+                    <i class="fas fa-shopping-bag"></i>
+                </span>
+                <span class="text-2xl font-extrabold tracking-tight text-black">ShopLink</span>
             </div>
             <h4 class="text-md font-bold text-gray-800">Sign in to enjoy</h4>
             <p class="text-gray-500 text-sm">to start shopping</p>
@@ -272,13 +275,19 @@
         <form action="{{ route('shop.login.post') }}" method="POST" class="space-y-4">
             @csrf
 
+            @if($errors->any())
+                <div class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3">
+                    {{ $errors->first() }}
+                </div>
+            @endif
+
             <div class="relative">
-                <input type="email" name="email" class="input-field" placeholder="E-mail ID" required>
+                <input type="email" name="email" value="{{ old('email') }}" class="input-field" placeholder="E-mail ID" autocomplete="email" required>
                 <i class="fas fa-envelope input-icon"></i>
             </div>
             
             <div class="relative">
-                <input type="password" name="password" class="input-field" placeholder="Password" required>
+                <input type="password" name="password" class="input-field" placeholder="Password" autocomplete="current-password" required>
                 <i class="fas fa-lock input-icon"></i>
             </div>
             
@@ -288,7 +297,7 @@
                     <span class="checkbox-custom inline-block"></span>
                     <span class="text-sm text-gray-600">Remember me</span>
                 </label>
-                <a href="#" class="text-sm text-indigo-600 font-medium">Forget Password?</a>
+                <a href="#" class="text-sm text-black font-medium">Forget Password?</a>
             </div>
             
             <button type="submit" class="login-btn w-full py-3 rounded-2xl text-white font-semibold text-base shadow-md mt-4">
@@ -322,7 +331,7 @@
         <div class="text-center mt-6">
             <p class="text-sm text-gray-600">
                 Don't have an account?
-                <a href="{{ route('shop.register') }}" class="text-indigo-600 font-semibold ml-1">Register →</a>
+                <a href="{{ route('shop.register') }}" class="text-black font-semibold ml-1">Register →</a>
             </p>
         </div>
     </div>

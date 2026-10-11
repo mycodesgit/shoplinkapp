@@ -256,6 +256,9 @@
         </div>
     </div>
 
+@endsection
+
+@push('scripts')
     <script>
         var userReadRoute = "{{ route('user.show') }}";
         var userCreateRoute = "{{ route('user.store') }}";
@@ -264,4 +267,5 @@
         var userPassUpdateRoute = "{{ route('userUpdatePassword', ['id' => ':id']) }}";
         var userStatusUpdateRoute = "{{ route('userUpdateStatus', ['id' => ':id']) }}";
     </script>
-@endsection
+    @include('admin.adscript.user.userSerialize')
+@endpush

@@ -4,100 +4,73 @@
     Shoplink || Products
 @endsection
 
-@section('body')
+@push('styles')
 <style>
-        .upload-container {
-            padding: 5px;
-        }
+    .upload-container {
+        padding: 5px;
+    }
+    .upload-container h2 {
+        margin-bottom: 20px;
+        color: #333;
+    }
+    .upload-area,
+    .upload-areaedit {
+        border: 2px dashed #007B3A;
+        border-radius: 10px;
+        padding: 40px 20px;
+        transition: background 0.3s, border-color 0.3s;
+        color: #888;
+        cursor: pointer;
+        text-align: center;
+    }
+    .upload-area.dragover,
+    .upload-areaedit.dragover {
+        background: #f0f0ff;
+        border-color: #4a42d4;
+        color: #4a42d4;
+    }
+    #file-input,
+    #file-inputedit {
+        display: none;
+    }
+    .preview,
+    .previewedit {
+        margin-top: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+    }
+    .preview img,
+    .previewedit img {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+    }
+    .btn-clearfiles {
+        margin-top: 20px;
+        background: #007B3A;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+    .variation-row {
+        background-color: #f9f9f9;
+        transition: all 0.3s ease;
+    }
+    .variation-row:hover {
+        background-color: #f0f0f0;
+        border-color: #007bff !important;
+    }
+</style>
+@endpush
 
-        .upload-container h2 {
-            margin-bottom: 20px;
-            color: #333;
-        }
-
-        .upload-area {
-            border: 2px dashed #007B3A;
-            border-radius: 10px;
-            padding: 40px 20px;
-            transition: background 0.3s, border-color 0.3s;
-            color: #888;
-            cursor: pointer;
-            text-align: center;
-        }
-
-        .upload-areaedit {
-            border: 2px dashed #007B3A;
-            border-radius: 10px;
-            padding: 40px 20px;
-            transition: background 0.3s, border-color 0.3s;
-            color: #888;
-            cursor: pointer;
-            text-align: center;
-        }
-
-        .upload-area.dragover {
-            background: #f0f0ff;
-            border-color: #4a42d4;
-            color: #4a42d4;
-        }
-
-        .upload-areaedit.dragover {
-            background: #f0f0ff;
-            border-color: #4a42d4;
-            color: #4a42d4;
-        }
-
-        #file-input {
-            display: none;
-        }
-
-        #file-inputedit {
-            display: none;
-        }
-
-        .preview {
-            margin-top: 20px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: center;
-        }
-
-        .preview img {
-            width: 80px;
-            height: 80px;
-            object-fit: cover;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-        }
-
-        .previewedit {
-            margin-top: 20px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: center;
-        }
-
-        .previewedit img {
-            width: 80px;
-            height: 80px;
-            object-fit: cover;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-        }
-
-        .btn-clearfiles {
-            margin-top: 20px;
-            background: #007B3A;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-    </style>
+@section('body')
     <div class="row ">
         <div class="col-12">
             <div class="mb-6">
@@ -276,58 +249,6 @@
                         <button type="submit" class="btn btn-success">Save</button>
                     </div>
                 </form>
-
-                <script>
-                let variationIndex = 1;
-
-                function addVariation() {
-                    let html = `
-                        <div class="variation-row border rounded p-3 mb-3">
-                            <div class="row g-2">
-                                <div class="col-md-2">
-                                    <input type="text" class="form-control" name="variations[${variationIndex}][name]" 
-                                        placeholder="Type (e.g., Color)" required>
-                                </div>
-                                <div class="col-md-2">
-                                    <input type="text" class="form-control" name="variations[${variationIndex}][value]" 
-                                        placeholder="Value (e.g., Black)" required>
-                                </div>
-                                <div class="col-md-2">
-                                    <input type="text" class="form-control" name="variations[${variationIndex}][sku]" 
-                                        placeholder="SKU" required>
-                                </div>
-                                <div class="col-md-2">
-                                    <input type="number" class="form-control" name="variations[${variationIndex}][price]" 
-                                        placeholder="Price" step="0.01" required>
-                                </div>
-                                <div class="col-md-2">
-                                    <input type="number" class="form-control" name="variations[${variationIndex}][stock]" 
-                                        placeholder="Stock" required>
-                                </div>
-                                <div class="col-md-2">
-                                    <input type="file" class="form-control" name="variations[${variationIndex}][image]" 
-                                        accept="image/*">
-                                    <button type="button" class="btn btn-danger btn-sm mt-2" 
-                                        onclick="this.closest('.variation-row').remove()">Remove</button>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    document.getElementById('variations-container').insertAdjacentHTML('beforeend', html);
-                    variationIndex++;
-                }
-                </script>
-
-                <style>
-                .variation-row {
-                    background-color: #f9f9f9;
-                    transition: all 0.3s ease;
-                }
-                .variation-row:hover {
-                    background-color: #f0f0f0;
-                    border-color: #007bff !important;
-                }
-                </style>
             </div>
         </div>
     </div>
@@ -468,13 +389,58 @@
             </div>
         </div>
     </div>
+@endsection
 
+@push('scripts')
     <script>
         var productReadRoute = "{{ route('product.show') }}";
         var productCreateRoute = "{{ route('product.store') }}";
         var productUpdateRoute = "{{ route('product.update', ['id' => ':id']) }}";
         var productDeleteRoute = "{{ route('product.destroy', ['id' => ':id']) }}";
         var photoStorage = "{{ asset('storage/') }}";
+    </script>
+
+    @include('admin.adscript.prod.prodSerialize')
+
+    <script>
+        let variationIndex = 1;
+
+        function addVariation() {
+            let html = `
+                <div class="variation-row border rounded p-3 mb-3">
+                    <div class="row g-2">
+                        <div class="col-md-2">
+                            <input type="text" class="form-control" name="variations[${variationIndex}][name]"
+                                placeholder="Type (e.g., Color)" required>
+                        </div>
+                        <div class="col-md-2">
+                            <input type="text" class="form-control" name="variations[${variationIndex}][value]"
+                                placeholder="Value (e.g., Black)" required>
+                        </div>
+                        <div class="col-md-2">
+                            <input type="text" class="form-control" name="variations[${variationIndex}][sku]"
+                                placeholder="SKU" required>
+                        </div>
+                        <div class="col-md-2">
+                            <input type="number" class="form-control" name="variations[${variationIndex}][price]"
+                                placeholder="Price" step="0.01" required>
+                        </div>
+                        <div class="col-md-2">
+                            <input type="number" class="form-control" name="variations[${variationIndex}][stock]"
+                                placeholder="Stock" required>
+                        </div>
+                        <div class="col-md-2">
+                            <input type="file" class="form-control" name="variations[${variationIndex}][image]"
+                                accept="image/*">
+                            <button type="button" class="btn btn-danger btn-sm mt-2"
+                                onclick="this.closest('.variation-row').remove()">Remove</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('variations-container').insertAdjacentHTML('beforeend', html);
+            variationIndex++;
+        }
     </script>
 
     <script>
@@ -599,4 +565,4 @@
             });
         }
     </script>
-@endsection
+@endpush

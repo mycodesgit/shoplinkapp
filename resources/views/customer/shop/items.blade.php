@@ -1,15 +1,11 @@
 @extends('customer.layouts.app')
 
+@section('title', 'Shoplink | Shop')
+
 @section('content')
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 md:pb-10 page-fade"> 
-        <!-- Toast Notification -->
-        <div id="toast" class="fixed top-20 md:top-6 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-5 py-2.5 rounded-full shadow-lg z-50 transition-all duration-300 opacity-0 pointer-events-none text-sm whitespace-nowrap">
-            <i class="fas fa-check-circle text-green-400 mr-2"></i>
-            <span id="toastMessage"></span>
-        </div>
-
         <!-- Modal Popup - FULLY RESPONSIVE -->
-        <div id="productModal" class="fixed inset-0 z-50 hidden" style="display: none;">
+        <div id="productModal" class="fixed inset-0 z-50 block p-3 sm:p-6" style="display: none;" role="dialog" aria-modal="true">
             <!-- Modal Content -->
             <div class="bg-white rounded-2xl w-full modal-responsive shadow-2xl relative mx-auto" onclick="event.stopPropagation()">
                 <div class="sticky top-0 bg-white border-b border-gray-100 px-4 sm:px-5 py-3 sm:py-4 flex justify-between items-center rounded-t-2xl z-10">
@@ -70,11 +66,13 @@
                         </div>
                     </div>
 
-                    <!-- Add to Cart Button -->
-                    <button onclick="confirmAddToCart()" class="add-cart-btn w-full py-3 sm:py-3.5 mt-4 sm:mt-5 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition">
-                        <i class="fas fa-shopping-cart text-sm mr-2"></i>
-                        Add to Cart
-                    </button>
+                    <!-- Add to Cart Button (sticky footer — always reachable on mobile) -->
+                    <div class="sticky bottom-0 -mx-4 mt-4 rounded-b-3xl border-t border-gray-100 bg-white/95 px-4 py-3 backdrop-blur sm:-mx-5 sm:mt-5 sm:px-5 md:-mx-6 md:px-6">
+                        <button onclick="confirmAddToCart()" class="add-cart-btn min-h-12 w-full bg-black py-3 font-medium text-white transition hover:bg-gray-800">
+                            <i class="fas fa-shopping-cart text-sm mr-2"></i>
+                            Add to Cart
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -104,16 +102,16 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5" id="productsGrid">
+        <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5" id="productsGrid">
             @forelse ($products->take(8) as $item)
-                <div class="product-card group card-item" data-product-id="{{ $item->encrypted_id }}">
+                <div class="product-card group card-item flex h-full flex-col" data-product-id="{{ $item->encrypted_id }}" data-category="{{ strtolower(optional($item->category)->catname ?? 'all') }}">
                     @php
                         $images = json_decode($item->prdctimage, true);
                         $firstImage = $images[0] ?? null;
                         $minPrice = $item->variations->min('variant_price');
                         $maxPrice = $item->variations->max('variant_price');
                         $hasMultiplePrices = $minPrice != $maxPrice;
-                        
+
                         // Get unique variation types (colors, sizes, etc.)
                         $variationTypes = $item->variations->groupBy('variation_name');
                         $colors = isset($variationTypes['Color']) ? $variationTypes['Color'] : collect();
@@ -127,99 +125,99 @@
                             }
                         }
                     @endphp
-                    @if(!$hasAvailableStock)
-                        <div class="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/50 rounded-lg flex items-center justify-center z-10">
-                            <span class="text-white font-bold px-4 py-1.5 bg-red-600 rounded-full text-sm shadow-lg backdrop-blur-sm">Out of Stock</span>
-                        </div>
-                    @endif
                     <div class="relative">
                         @if ($item->prdcttag === 'Popular')
-                            <div class="discount-badge popular rounded-pill text-xs spantag">
+                            <div class="discount-badge popular text-xs">
                                 {{ $item->prdcttag }}
                             </div>
                         @elseif ($item->prdcttag === 'New Arrival')
-                            <div class="discount-badge new-arrival rounded-pill text-xs">
+                            <div class="discount-badge new-arrival text-xs">
                                 {{ $item->prdcttag }}
                             </div>
                         @elseif ($item->prdcttag === 'Sale')
-                            <div class="discount-badge sale rounded-pill text-xs">
+                            <div class="discount-badge sale text-xs">
                                 {{ $item->prdcttag }}
                             </div>
                         @endif
 
-                        <div class="image-container">
+                        <div class="image-container aspect-[4/5]">
                             @if(Auth::guard('customer')->check())
-                                <a href="{{ route('itemdetails.auth.index', $item->encrypted_id) }}">
+                                <a href="{{ route('itemdetails.auth.index', $item->encrypted_id) }}" class="block h-full" tabindex="-1" aria-hidden="true">
                             @else
-                                <a href="{{ route('itemdetails.index', $item->encrypted_id) }}">
+                                <a href="{{ route('itemdetails.index', $item->encrypted_id) }}" class="block h-full" tabindex="-1" aria-hidden="true">
                             @endif
-                                <img src="{{ $firstImage ? asset('storage/' . $firstImage) : asset('storage/products/default.png') }}" class="product-image" alt="{{ $item->prdctname }}">
+                                <img src="{{ $firstImage ? asset('storage/' . $firstImage) : asset('storage/products/default.png') }}" class="product-image" alt="{{ $item->prdctname }}" loading="lazy">
                             </a>
                         </div>
+                        @if(!$hasAvailableStock)
+                            <div class="absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-black/50 p-2">
+                                <span class="rounded-full bg-red-600 px-3 py-1 text-xs font-bold text-white shadow-lg sm:text-sm">Out of Stock</span>
+                            </div>
+                        @endif
                     </div>
-                    <div class="p-4 pt-0">
-                        <div class="flex justify-between items-start mb-1">
-                            <h3 class="font-semibold text-gray-900 text-base cursor-pointer" onclick="window.location.href='{{ Auth::guard('customer')->check() ? route('itemdetails.auth.index', $item->encrypted_id) : route('itemdetails.index', $item->encrypted_id) }}'">
-                                {{ strlen($item->prdctname) > 25 ? substr($item->prdctname, 0, 25) . '...' : $item->prdctname }}
+                    <div class="flex flex-1 flex-col p-3 sm:p-4">
+                        <div class="flex items-start justify-between gap-2">
+                            <h3 class="line-clamp-2 min-h-10 cursor-pointer text-sm font-semibold text-gray-900 sm:min-h-12 sm:text-base" onclick="window.location.href='{{ Auth::guard('customer')->check() ? route('itemdetails.auth.index', $item->encrypted_id) : route('itemdetails.index', $item->encrypted_id) }}'">
+                                {{ $item->prdctname }}
                             </h3>
-                            <div class="flex items-center gap-1">
+                            <div class="flex shrink-0 items-center gap-1 pt-0.5">
                                 <i class="fas fa-star rating-star"></i>
                                 <span class="text-xs font-medium text-gray-700">4.5</span>
                             </div>
                         </div>
-                        
-                        <div class="flex items-center gap-2 mb-1">
+
+                        <div class="mt-1 flex min-h-6 flex-wrap items-baseline gap-x-2 sm:min-h-7">
                             @if($hasMultiplePrices)
-                                <span class="text-xl font-bold text-gray-900">₱{{ number_format($minPrice, 2) }}</span>
-                                <span class="text-sm text-gray-500">-</span>
-                                <span class="text-lg font-semibold text-gray-900">₱{{ number_format($maxPrice, 2) }}</span>
+                                <span class="text-base font-bold text-gray-900 sm:text-xl">₱{{ number_format($minPrice, 2) }}</span>
+                                <span class="text-xs text-gray-400 sm:text-sm">-</span>
+                                <span class="text-sm font-semibold text-gray-900 sm:text-lg">₱{{ number_format($maxPrice, 2) }}</span>
                             @else
-                                <span class="text-xl font-bold text-gray-900">₱{{ number_format($minPrice, 2) }}</span>
+                                <span class="text-base font-bold text-gray-900 sm:text-xl">₱{{ number_format($minPrice, 2) }}</span>
                             @endif
                         </div>
-                        
+
                         <!-- Color Options (if available) -->
                         @if($colors->count() > 0)
-                            <p class="text-xs text-gray-500 mb-2">
-                                Colors: 
+                            <p class="mt-1 min-h-5 truncate text-xs text-gray-500">
+                                Colors:
                                 @foreach($colors as $index => $color)
-                                    <span class="inline-block w-4 h-3 rounded-full border border-gray-300 ml-1" 
+                                    <span class="ml-1 inline-block h-3 w-4 rounded-full border border-gray-300"
                                         style="background-color: {{ strtolower($color->variation_value) }}"
                                         title="{{ $color->variation_value }}"></span>
                                 @endforeach
                             </p>
                         @else
-                            <p class="text-xs text-gray-500 mb-2">{{ $item->variations->count() }} variation(s) available</p>
+                            <p class="mt-1 min-h-5 truncate text-xs text-gray-500">{{ $item->variations->count() }} variation(s) available</p>
                         @endif
-                        
-                        <div class="flex items-center justify-between mb-3">
-                            <div class="flex items-center gap-2">
-                                <i class="far fa-clock text-xs text-gray-400"></i>
-                                <span class="text-xs text-gray-500">
+
+                        <div class="mt-1 flex min-h-5 items-center justify-between gap-2 text-xs text-gray-500">
+                            <div class="flex min-w-0 items-center gap-1.5">
+                                <i class="far fa-clock shrink-0 text-[11px] text-gray-400"></i>
+                                <span class="truncate">
                                     {{ $item->created_at->diffForHumans(null, true) === '0 seconds' ? 'Now' : $item->created_at->diffForHumans() }}
                                 </span>
                             </div>
-                            <div class="flex items-center gap-1">
-                                <i class="fas fa-eye text-xs text-gray-400"></i>
-                                <span class="text-xs text-gray-500">reviews</span>
+                            <div class="flex shrink-0 items-center gap-1">
+                                <i class="fas fa-eye text-[11px] text-gray-400"></i>
+                                <span>reviews</span>
                             </div>
                         </div>
-                        
-                        <div class="flex gap-2">
+
+                        <div class="mt-auto flex flex-col gap-2 pt-3 sm:flex-row">
                             @if(Auth::guard('customer')->check())
-                                <button class="add-cart-btn flex-1" onclick="openModal({{ json_encode($item) }})" {{ !$hasAvailableStock ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : '' }}>
+                                <button class="add-cart-btn min-h-11 flex-1 text-xs sm:text-[13px]" onclick='openModal(@json($item))' {{ !$hasAvailableStock ? 'disabled' : '' }}>
                                     <i class="fas fa-shopping-cart text-sm"></i>
                                     Add Cart
                                 </button>
-                                <button class="buy-now-btn flex-1" onclick="buyNow({{ $item->encrypted_id }})" {{ !$hasAvailableStock ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : '' }}>
+                                <button class="buy-now-btn min-h-11 flex-1 text-xs sm:text-[13px]" onclick="buyNow('{{ $item->encrypted_id }}')" {{ !$hasAvailableStock ? 'disabled' : '' }}>
                                     Buy Now
                                 </button>
                             @else
-                                <button class="add-cart-btn flex-1" onclick="redirectToLogin()">
+                                <button class="add-cart-btn min-h-11 flex-1 text-xs sm:text-[13px]" onclick="window.ShopLink.redirectToLogin()">
                                     <i class="fas fa-shopping-cart text-sm"></i>
                                     Add Cart
                                 </button>
-                                <button class="buy-now-btn flex-1" onclick="redirectToLogin()">
+                                <button class="buy-now-btn min-h-11 flex-1 text-xs sm:text-[13px]" onclick="window.ShopLink.redirectToLogin()">
                                     Buy Now
                                 </button>
                             @endif
@@ -234,9 +232,10 @@
             @endforelse
         </div>
     </main>
+@endsection
 
+@push('scripts')
     <script>
-        // Modal variables
         let currentProduct = null;
         let currentProductVariations = [];
         let currentVariation = null;
@@ -245,8 +244,7 @@
         let mainProductImages = [];
 
         function redirectToLogin() {
-            const currentUrl = window.location.href;
-            window.location.href = "{{ route('shop.login') }}?redirect=" + encodeURIComponent(currentUrl);
+            window.ShopLink.redirectToLogin();
         }
 
         // Updated openModal function - FIXED for bottom of page
@@ -275,24 +273,18 @@
             // Reset quantity display
             document.getElementById('modalQuantity').innerText = currentQuantity;
             
-            // Show modal
+            // Show modal (block layout so a tall card scrolls instead of clipping)
             const modal = document.getElementById('productModal');
-            modal.style.display = 'flex';
-            
+            modal.style.display = 'block';
+            modal.scrollTop = 0;
+            document.body.style.overflow = 'hidden';
+
             // AFTER modal is shown, update image for selected variation
             setTimeout(() => {
                 if (currentVariation) {
                     updateProductImageForVariation(currentVariation);
                     const availableStock = currentVariation.available_stock || currentVariation.variant_stock;
                     updateStockDisplay(availableStock);
-                }
-                
-                // Scroll modal into view - this fixes the bottom of page issue
-                const modalContent = document.querySelector('.modal-responsive');
-                if (modalContent) {
-                    modalContent.scrollTop = 0;
-                    // Smooth scroll to modal
-                    modal.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }
             }, 100);
         }
@@ -524,6 +516,7 @@
         function closeModal() {
             const modal = document.getElementById('productModal');
             modal.style.display = 'none';
+            document.body.style.overflow = '';
         }
 
         function incrementQuantity() {
@@ -555,7 +548,7 @@
         }
 
         function buyNow(productId) {
-            window.location.href = "/checkout?product=" + productId;
+            window.location.href = "/checkout?product=" + encodeURIComponent(productId);
         }
 
         // Add to cart function
@@ -628,61 +621,45 @@
         }
 
         function updateCartCount(count) {
-            const cartCountElement = document.getElementById('cartCount');
-            if (cartCountElement) {
-                cartCountElement.textContent = count;
-                cartCountElement.classList.remove('hidden');
-            }
+            window.ShopLink.setCartCount(count);
         }
 
         function fetchCartCount() {
-            fetch('{{ route("cart.realtime.count") }}', {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    updateCartCount(data.cart_count);
-                }
-            })
-            .catch(error => console.error('Error fetching cart count:', error));
+            if (window.cartManager && window.cartManager.manualRefresh) {
+                window.cartManager.manualRefresh();
+            }
         }
 
         function showToast(message, type = 'success') {
-            const toast = document.getElementById('toast');
-            if (!toast) return;
-            
-            const toastMessage = document.getElementById('toastMessage');
-            const icon = toast.querySelector('i');
-            
-            toastMessage.innerText = message;
-            
-            if (type === 'error') {
-                icon.className = 'fas fa-exclamation-circle text-red-400 mr-2';
-            } else if (type === 'warning') {
-                icon.className = 'fas fa-exclamation-triangle text-yellow-400 mr-2';
-            } else if (type === 'info') {
-                icon.className = 'fas fa-info-circle text-blue-400 mr-2';
-            } else {
-                icon.className = 'fas fa-check-circle text-green-400 mr-2';
-            }
-            
-            toast.classList.remove('opacity-0', 'pointer-events-none');
-            toast.classList.add('opacity-100', 'pointer-events-auto');
-            
-            setTimeout(() => {
-                toast.classList.remove('opacity-100', 'pointer-events-auto');
-                toast.classList.add('opacity-0', 'pointer-events-none');
-            }, 3000);
+            window.ShopLink.showToast(message, type);
         }
 
-        // Initialize
+        // Category search + tab filtering
         document.addEventListener('DOMContentLoaded', function() {
-            fetchCartCount();
+            var searchInput = document.getElementById('searchInput');
+            var tabs = document.querySelectorAll('.category-tab');
+            var activeCategory = 'all';
+
+            function applyFilters() {
+                var q = (searchInput ? searchInput.value : '').toLowerCase().trim();
+                document.querySelectorAll('#productsGrid .product-card').forEach(function (card) {
+                    var name = (card.querySelector('h3') ? card.querySelector('h3').textContent : '').toLowerCase();
+                    var cat = (card.getAttribute('data-category') || 'all').toLowerCase();
+                    var matchQ = !q || name.includes(q);
+                    var matchC = activeCategory === 'all' || cat === activeCategory;
+                    card.style.display = (matchQ && matchC) ? '' : 'none';
+                });
+            }
+
+            if (searchInput) searchInput.addEventListener('input', applyFilters);
+            tabs.forEach(function (tab) {
+                tab.addEventListener('click', function () {
+                    tabs.forEach(function (t) { t.classList.remove('active'); });
+                    tab.classList.add('active');
+                    activeCategory = (tab.getAttribute('data-category') || 'all').toLowerCase();
+                    applyFilters();
+                });
+            });
         });
 
         // Close modal on escape key
@@ -699,11 +676,14 @@
             }
         });
     </script>
+@endpush
 
+@push('styles')
     <style>
         /* Modal Styles - Fully Responsive with Scrolling */
         
-        /* Modal Container */
+        /* Modal Container — block layout + overlay scroll so tall
+           content on mobile scrolls instead of clipping */
         #productModal {
             position: fixed;
             top: 0;
@@ -715,11 +695,13 @@
             display: none;
             overflow-y: auto;
             overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
             padding: 20px;
             cursor: pointer;
         }
         
-        /* Modal Content - Responsive and Scrollable */
+        /* Modal Content — no max-height / no clipping; the overlay scrolls */
         .modal-responsive {
             max-width: 95%;
             width: 100%;
@@ -729,29 +711,8 @@
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
             border: 1px solid rgba(0, 0, 0, 0.05);
             animation: modalSlideDown 0.3s ease-out;
-            max-height: calc(100vh - 40px);
-            overflow-y: hidden;
             position: relative;
             cursor: default;
-        }
-        
-        /* Custom scrollbar for modal */
-        .modal-responsive::-webkit-scrollbar {
-            width: 6px;
-        }
-        
-        .modal-responsive::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
-        
-        .modal-responsive::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 10px;
-        }
-        
-        .modal-responsive::-webkit-scrollbar-thumb:hover {
-            background: #555;
         }
         
         /* Tablet and Desktop sizes */
@@ -762,7 +723,6 @@
             
             .modal-responsive {
                 max-width: 85%;
-                max-height: calc(100vh - 60px);
                 margin: 30px auto;
             }
         }
@@ -770,7 +730,6 @@
         @media (min-width: 768px) {
             .modal-responsive {
                 max-width: 700px;
-                max-height: calc(100vh - 80px);
                 margin: 40px auto;
             }
         }
@@ -778,7 +737,6 @@
         @media (min-width: 1024px) {
             .modal-responsive {
                 max-width: 800px;
-                max-height: calc(100vh - 100px);
                 margin: 50px auto;
             }
         }
@@ -787,14 +745,12 @@
         @media (max-width: 640px) {
             #productModal {
                 padding: 10px;
-                align-items: flex-start;
             }
             
             .modal-responsive {
                 max-width: 98%;
                 border-radius: 20px;
-                max-height: calc(100vh - 20px);
-                margin: 10px auto;
+                margin: 10px auto 24px;
             }
             
             .modal-responsive .p-4 {
@@ -847,10 +803,6 @@
         
         /* Landscape orientation */
         @media (max-width: 768px) and (orientation: landscape) {
-            .modal-responsive {
-                max-height: calc(100vh - 20px);
-            }
-            
             .modal-responsive .flex-col.sm\:flex-row {
                 flex-direction: row !important;
             }
@@ -1004,23 +956,6 @@
             color: #ef4444;
         }
         
-        /* Toast notification */
-        #toast {
-            animation: slideInDown 0.3s ease-out;
-            z-index: 10000;
-        }
-        
-        @keyframes slideInDown {
-            from {
-                transform: translate(-50%, 100px);
-                opacity: 0;
-            }
-            to {
-                transform: translate(-50%, 0);
-                opacity: 1;
-            }
-        }
-        
         /* Loading animation */
         @keyframes spin {
             0% { transform: rotate(0deg); }
@@ -1071,4 +1006,4 @@
             }
         }
     </style>
-@endsection
+@endpush

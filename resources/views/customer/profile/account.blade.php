@@ -1,5 +1,7 @@
 @extends('customer.layouts.app')
 
+@section('title', 'Shoplink | Profile')
+
 @section('content')
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 md:pb-10 page-fade"> 
         
@@ -19,7 +21,7 @@
                     @endif
                     <h2 class="text-xl font-bold text-gray-900">{{ Auth::guard('customer')->user()->fname }} {{ Auth::guard('customer')->user()->lname }}</h2>
                     <p class="text-gray-500 text-sm">{{ Auth::guard('customer')->user()->email }}</p>
-                    <button type="button" onclick="openEditModal()" class="mt-3 text-sm text-blue-600 hover:text-blue-700">
+                    <button type="button" onclick="openEditModal()" class="mt-3 text-sm text-black hover:text-gray-700">
                         <i class="fas fa-edit"></i> Edit Profile
                     </button>
                 </div>
@@ -198,7 +200,7 @@
                         @endif
                         <h2 class="text-xl font-bold text-gray-900">{{ Auth::guard('customer')->user()->fname }} {{ Auth::guard('customer')->user()->lname }}</h2>
                         <p class="text-gray-500 text-sm">{{ Auth::guard('customer')->user()->email }}</p>
-                        <button type="button" onclick="openEditModal()" class="mt-3 text-sm text-blue-600 hover:text-blue-700">
+                        <button type="button" onclick="openEditModal()" class="mt-3 text-sm text-black hover:text-gray-700">
                             <i class="fas fa-edit"></i> Edit Profile
                         </button>
                     </div>
@@ -371,7 +373,7 @@
                         @endif
                         <h2 class="text-xl font-bold text-gray-900">{{ Auth::guard('customer')->user()->fname }} {{ Auth::guard('customer')->user()->lname }}</h2>
                         <p class="text-gray-500 text-sm">{{ Auth::guard('customer')->user()->email }}</p>
-                        <button type="button" onclick="openEditModal()" class="mt-3 text-sm text-blue-600 hover:text-blue-700">
+                        <button type="button" onclick="openEditModal()" class="mt-3 text-sm text-black hover:text-gray-700">
                             <i class="fas fa-edit"></i> Edit Profile
                         </button>
                     </div>
@@ -564,7 +566,7 @@
                                 </div>
                             @endif
                         </div>
-                        <label for="avatar" style="position: absolute; bottom: 0; right: 0; background: #2563eb; border-radius: 9999px; padding: 0.5rem; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                        <label for="avatar" style="position: absolute; bottom: 0; right: 0; background: #000; border-radius: 9999px; padding: 0.5rem; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
                             <i class="fas fa-camera" style="color: white; font-size: 0.75rem;"></i>
                         </label>
                         <input type="file" name="avatar" id="avatar" style="display: none;" accept="image/*" onchange="previewAvatar(this)">
@@ -658,14 +660,16 @@
                     <button type="button" onclick="closeEditModal()" style="flex: 1; background: #f3f4f6; color: #374151; padding: 0.625rem; border-radius: 0.5rem; font-weight: 500; border: none; cursor: pointer;">
                         Cancel
                     </button>
-                    <button type="submit" style="flex: 1; background: #2563eb; color: white; padding: 0.625rem; border-radius: 0.5rem; font-weight: 500; border: none; cursor: pointer;">
+                    <button type="submit" style="flex: 1; background: #000; color: white; padding: 0.625rem; border-radius: 0.5rem; font-weight: 500; border: none; cursor: pointer;">
                         Save Changes
                     </button>
                 </div>
             </form>
         </div>
     </div>
+@endsection
 
+@push('scripts')
     <script>
         function openEditModal() {
             const modal = document.getElementById('editProfileModal');
@@ -714,4 +718,4 @@
             }
         });
     </script>
-@endsection
+@endpush

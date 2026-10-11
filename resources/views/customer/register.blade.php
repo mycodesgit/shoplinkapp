@@ -31,8 +31,8 @@
         }
         
         .input-field:focus {
-            border-color: #4f46e5;
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            border-color: #000;
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08);
         }
         
         .input-icon {
@@ -59,8 +59,8 @@
         }
         
         input[type="checkbox"]:checked + .checkbox-custom {
-            background-color: #4f46e5;
-            border-color: #4f46e5;
+            background-color: #000;
+            border-color: #000;
         }
         
         input[type="checkbox"]:checked + .checkbox-custom::after {
@@ -77,7 +77,7 @@
         
         /* Login button styling */
         .login-btn {
-            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            background: #000;
             transition: all 0.3s ease;
             cursor: pointer;
             border: none;
@@ -85,7 +85,8 @@
         
         .login-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2);
+            background: #1f2937;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
         }
         
         .login-btn:active {
@@ -101,7 +102,7 @@
         }
         
         .social-btn:hover {
-            border-color: #4f46e5;
+            border-color: #000;
             background: #f8fafc;
         }
         
@@ -127,8 +128,7 @@
             font-size: 24px;
             opacity: 0.15;
             z-index: 0;
-            pointer-events: auto;
-            cursor: pointer;
+            pointer-events: none;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             animation: float 6s ease-in-out infinite;
         }
@@ -253,7 +253,7 @@
         <!-- Back Button -->
         <div class="mb-4 sm:mb-5 md:mb-2">
             <a href="{{ route('shop.login') }}" 
-            class="back-btn group flex items-center gap-2 text-gray-600 hover:text-indigo-600 transition-colors duration-200">
+            class="back-btn group flex items-center gap-2 text-gray-600 hover:text-black transition-colors duration-200">
                 <i class="fas fa-arrow-left text-sm sm:text-base"></i>
                 <span class="text-sm sm:text-base font-medium">Back</span>
             </a>
@@ -261,8 +261,11 @@
 
         <!-- Logo -->
         <div class="text-center mb-6">
-            <div class="inline-flex items-center justify-center">
-                <img src="{{ asset('uilibs/images/logonobg.webp') }}" alt="ShopLink Logo" class="h-35 w-auto">
+            <div class="inline-flex items-center gap-2">
+                <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-black text-lg text-white">
+                    <i class="fas fa-shopping-bag"></i>
+                </span>
+                <span class="text-2xl font-extrabold tracking-tight text-black">ShopLink</span>
             </div>
             <h4 class="text-md font-bold text-gray-800">Create your account</h4>
             <p class="text-gray-500 text-sm">to start shopping with ShopLink</p>
@@ -317,7 +320,7 @@
 
     <!-- jQuery -->
     <script src="{{ asset('uilibs/plugins/jquery/jquery.min.js') }}"></script>
-    
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             var passwordInput = document.getElementById('password');
@@ -330,10 +333,7 @@
             }
         });
     </script>
-    
-    <script>
-        var userCreateRoute = "";
-    </script>
+
     @include('script.registerjs')
 
 </body>

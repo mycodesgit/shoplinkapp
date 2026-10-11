@@ -1,5 +1,7 @@
 @extends('customer.layouts.app')
 
+@section('title', 'Shoplink | Order Details')
+
 @section('content')
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 md:pb-10 page-fade">
         <!-- Back Button -->
@@ -127,8 +129,8 @@
                                 
                                 <!-- Special Instructions -->
                                 @if($item->special_instructions)
-                                    <div class="mt-2 bg-yellow-50 rounded-lg p-2">
-                                        <p class="text-xs text-yellow-700">
+                                    <div class="mt-2 bg-gray-100 rounded-lg p-2">
+                                        <p class="text-xs text-gray-700">
                                             <i class="fas fa-pen mr-1"></i> Note: {{ $item->special_instructions }}
                                         </p>
                                     </div>
@@ -338,7 +340,7 @@
                         <div class="flex justify-between text-sm">
                             <span class="text-gray-500">Status:</span>
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium 
-                                {{ $order->payment_status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
+                                {{ $order->payment_status === 'paid' ? 'bg-black text-white' : 'bg-gray-100 text-gray-800' }}">
                                 {{ ucfirst($order->payment_status) }}
                             </span>
                         </div>
@@ -366,66 +368,53 @@
             </div>
         </div>
     </main>
+@endsection
 
+@push('scripts')
     <script>
         function showToast(message, type = 'success') {
-            const toast = document.getElementById('toast');
-            const toastIcon = document.getElementById('toastIcon');
-            const toastMessage = document.getElementById('toastMessage');
-            
-            if (!toast) return;
-            
-            if (type === 'success') {
-                toastIcon.className = 'fas fa-check-circle text-green-400 mr-2';
-            } else if (type === 'error') {
-                toastIcon.className = 'fas fa-exclamation-circle text-red-400 mr-2';
-            } else if (type === 'info') {
-                toastIcon.className = 'fas fa-info-circle text-blue-400 mr-2';
-            }
-            
-            toastMessage.innerText = message;
-            toast.classList.remove('opacity-0', 'pointer-events-none');
-            toast.classList.add('opacity-100');
-            
-            setTimeout(() => {
-                toast.classList.remove('opacity-100');
-                toast.classList.add('opacity-0', 'pointer-events-none');
-            }, 3000);
+            window.ShopLink.showToast(message, type);
         }
 
         function cancelOrder(orderId) {
-            if (confirm('Are you sure you want to cancel this order?')) {
-                const cancelUrl = "{{ route('myorder.cancel', '') }}/" + orderId;
-                
-                fetch(cancelUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'Accept': 'application/json'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showToast('Order cancelled successfully', 'success');
-                        setTimeout(() => {
-                            window.location.href = "{{ route('orders.auth.index') }}";
-                        }, 1500);
-                    } else {
-                        showToast(data.message || 'Failed to cancel order', 'error');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showToast('Network error. Please try again.', 'error');
-                });
-            }
+            window.ShopLink.confirm({
+                title: 'Cancel this order?',
+                message: 'The order will be cancelled and this cannot be undone.',
+                confirmText: 'Yes, Cancel Order',
+                cancelText: 'Keep My Order',
+                onConfirm: function () {
+                    var cancelUrl = "{{ route('myorder.cancel', '__ID__') }}".replace('__ID__', orderId);
+
+                    fetch(cancelUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showToast('Order cancelled successfully', 'success');
+                            setTimeout(() => {
+                                window.location.href = "{{ route('orders.auth.index') }}";
+                            }, 1500);
+                        } else {
+                            showToast(data.message || 'Failed to cancel order', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showToast('Network error. Please try again.', 'error');
+                    });
+                }
+            });
         }
 
         function reorder(orderId) {
-            const reorderUrl = "{{ route('myorder.reorder', '') }}/" + orderId;
-            
+            var reorderUrl = "{{ route('myorder.reorder', '__ID__') }}".replace('__ID__', orderId);
+
             fetch(reorderUrl, {
                 method: 'POST',
                 headers: {
@@ -451,7 +440,9 @@
             });
         }
     </script>
+@endpush
 
+@push('styles')
     <style>
         .page-fade {
             animation: fadeSlideUp 0.35s ease-out;
@@ -468,4 +459,4 @@
             }
         }
     </style>
-@endsection
+@endpush

@@ -1,17 +1,13 @@
 @extends('customer.layouts.app')
 
+@section('title', 'Shoplink | My Orders')
+
 @section('content')
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 md:pb-10 page-fade">
         <!-- Page Title -->
         <div class="mb-6">
             <h1 class="text-xl md:text-2xl font-bold text-gray-900">My Orders</h1>
             <p class="text-sm text-gray-500 mt-1">Review and track your orders</p>
-        </div>
-
-        <!-- Toast Notification -->
-        <div id="toast" class="fixed top-20 md:top-6 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-5 py-2.5 rounded-full shadow-lg z-50 transition-all duration-300 opacity-0 pointer-events-none text-sm whitespace-nowrap">
-            <i class="fas" id="toastIcon"></i>
-            <span id="toastMessage"></span>
         </div>
 
         @if($orders->isEmpty())
@@ -149,10 +145,10 @@
                                             </div>
                                         </div>
                                         <div class="flex items-center gap-3">
-                                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                                                 <i class="fas fa-hourglass-half mr-1 text-xs"></i> Pending
                                             </span>
-                                            <button onclick="viewOrder('{{ $order->encrypted_id }}')" class="text-blue-600 text-sm font-medium hover:text-blue-800 transition ml-auto sm:ml-0">View Details <i class="fas fa-arrow-right ml-1 text-xs"></i></button>
+                                            <button onclick="viewOrder('{{ route('myorder.show', $order->encrypted_id) }}')" class="text-black text-sm font-medium hover:text-gray-700 transition ml-auto sm:ml-0">View Details <i class="fas fa-arrow-right ml-1 text-xs"></i></button>
                                         </div>
                                     </div>
                                     <div class="mt-3 pt-3 border-t border-gray-100 flex flex-wrap justify-between items-center gap-2">
@@ -267,16 +263,16 @@
                                         </div>
                                         <div class="flex items-center gap-3">
                                             @if($order->status === 'accepted')
-                                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-900">
                                                     <i class="fas fa-check-circle mr-1 text-xs"></i> {{ ucfirst($order->status) }}
                                                 </span>
                                             @elseif($order->status === 'preparing')
-                                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-800 text-white">
                                                     <i class="fas fa-check-circle mr-1 text-xs"></i> {{ ucfirst($order->status) }}
                                                 </span>
                                             @else
                                             @endif
-                                            <button onclick="viewOrder('{{ $order->encrypted_id }}')" class="text-blue-600 text-sm font-medium hover:text-blue-800 transition ml-auto sm:ml-0">View Details <i class="fas fa-arrow-right ml-1 text-xs"></i></button>
+                                            <button onclick="viewOrder('{{ route('myorder.show', $order->encrypted_id) }}')" class="text-black text-sm font-medium hover:text-gray-700 transition ml-auto sm:ml-0">View Details <i class="fas fa-arrow-right ml-1 text-xs"></i></button>
                                         </div>
                                     </div>
                                     <div class="mt-3 pt-3 border-t border-gray-100 flex flex-wrap justify-between items-center gap-2">
@@ -289,7 +285,7 @@
                                             @endif
                                         </div>
                                         <div class="flex gap-2">
-                                            <button onclick="viewOrder({{ $order->encrypted_id }})" class="text-green-600 text-sm font-medium hover:text-blue-800 transition">Track <i class="fas fa-map-marker-alt ml-1 text-xs"></i></button>
+                                            <button onclick="viewOrder('{{ route('myorder.show', $order->encrypted_id) }}')" class="text-black text-sm font-medium hover:text-gray-700 transition">Track <i class="fas fa-map-marker-alt ml-1 text-xs"></i></button>
                                             {{-- @if($order->canCancel())
                                             <button onclick="cancelOrder({{ $order->id }})" class="text-red-500 hover:text-red-700 text-sm">
                                                 <i class="far fa-trash-alt mr-1"></i> Cancel
@@ -404,11 +400,11 @@
                                             </div>
                                         </div>
                                         <div class="flex items-center gap-3">
-                                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-black text-white">
                                                 <i class="fas fa-box-open mr-1 text-xs"></i> 
                                                 {{ $order->status === 'ready_to_claim' ? 'Ready to Claim' : ($order->status === 'ready_to_deliver' ? 'Ready to Deliver' : 'Out for Delivery') }}
                                             </span>
-                                            <button onclick="viewOrder('{{ $order->encrypted_id }}')" class="text-blue-600 text-sm font-medium hover:text-blue-800 transition ml-auto sm:ml-0">View Details <i class="fas fa-arrow-right ml-1 text-xs"></i></button>
+                                            <button onclick="viewOrder('{{ route('myorder.show', $order->encrypted_id) }}')" class="text-black text-sm font-medium hover:text-gray-700 transition ml-auto sm:ml-0">View Details <i class="fas fa-arrow-right ml-1 text-xs"></i></button>
                                         </div>
                                     </div>
                                     <div class="mt-3 pt-3 border-t border-gray-100 flex flex-wrap justify-between items-center gap-2">
@@ -427,7 +423,7 @@
                                         </button>
                                         @endif
                                         @if($order->status === 'ready_to_deliver')
-                                        <button onclick="viewOrder({{ $order->encrypted_id }})" class="text-green-600 text-sm font-medium hover:text-blue-800 transition">Track <i class="fas fa-map-marker-alt ml-1 text-xs"></i></button>
+                                        <button onclick="viewOrder('{{ route('myorder.show', $order->encrypted_id) }}')" class="text-black text-sm font-medium hover:text-gray-700 transition">Track <i class="fas fa-map-marker-alt ml-1 text-xs"></i></button>
                                         @endif
                                     </div>
                                 </div>
@@ -528,10 +524,10 @@
                                             </div>
                                         </div>
                                         <div class="flex items-center gap-3">
-                                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-black text-white">
                                                 <i class="fas fa-check mr-1 text-xs"></i> Delivered
                                             </span>
-                                            <button onclick="viewOrder('{{ $order->encrypted_id }}')" class="text-blue-600 text-sm font-medium hover:text-blue-800 transition ml-auto sm:ml-0">View Details <i class="fas fa-arrow-right ml-1 text-xs"></i></button>
+                                            <button onclick="viewOrder('{{ route('myorder.show', $order->encrypted_id) }}')" class="text-black text-sm font-medium hover:text-gray-700 transition ml-auto sm:ml-0">View Details <i class="fas fa-arrow-right ml-1 text-xs"></i></button>
                                         </div>
                                     </div>
                                     <div class="mt-3 pt-3 border-t border-gray-100 flex flex-wrap justify-between items-center gap-2">
@@ -539,7 +535,7 @@
                                             Delivered: {{ $order->delivered_at ? $order->delivered_at->format('M d, Y h:m:A') : $order->updated_at->format('M d, Y h:m:A') }}
                                         </div>
                                         @if($order->status === 'delivered')
-                                            <button onclick="reorder({{ $order->id }})" class="text-sm text-yellow-600 font-medium hover:text-blue-800 transition">
+                                            <button onclick="reorder({{ $order->id }})" class="text-sm text-black font-medium hover:text-gray-700 transition">
                                                 <i class="fas fa-redo-alt mr-1"></i> Reorder
                                             </button>
                                         @endif
@@ -552,61 +548,49 @@
             </div>
         @endif
     </main>
+@endsection
 
+@push('scripts')
     <script>
         function showToast(message, type = 'success') {
-            const toast = document.getElementById('toast');
-            const toastIcon = document.getElementById('toastIcon');
-            const toastMessage = document.getElementById('toastMessage');
-            
-            if (!toast) return;
-            
-            if (type === 'success') {
-                toastIcon.className = 'fas fa-check-circle text-green-400 mr-2';
-            } else if (type === 'error') {
-                toastIcon.className = 'fas fa-exclamation-circle text-red-400 mr-2';
-            } else if (type === 'info') {
-                toastIcon.className = 'fas fa-info-circle text-blue-400 mr-2';
-            }
-            
-            toastMessage.innerText = message;
-            toast.classList.remove('opacity-0', 'pointer-events-none');
-            toast.classList.add('opacity-100');
-            
-            setTimeout(() => {
-                toast.classList.remove('opacity-100');
-                toast.classList.add('opacity-0', 'pointer-events-none');
-            }, 3000);
+            window.ShopLink.showToast(message, type);
         }
 
-        function viewOrder(orderId) {
-            window.location.href = "{{ route('myorder.show', '') }}/" + orderId;
+        function viewOrder(url) {
+            window.location.href = url;
         }
 
         function cancelOrder(orderId) {
-            if (confirm('Are you sure you want to cancel this order?')) {
-                fetch("{{ url('/customer/orders') }}/" + orderId + "/cancel", {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'Accept': 'application/json'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showToast('Order cancelled successfully', 'success');
-                        setTimeout(() => location.reload(), 1500);
-                    } else {
-                        showToast(data.message || 'Failed to cancel order', 'error');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showToast('Network error. Please try again.', 'error');
-                });
-            }
+            window.ShopLink.confirm({
+                title: 'Cancel this order?',
+                message: 'The order will be cancelled and this cannot be undone.',
+                confirmText: 'Yes, Cancel Order',
+                cancelText: 'Keep My Order',
+                onConfirm: function () {
+                    var cancelUrl = "{{ route('myorder.cancel', '__ID__') }}".replace('__ID__', orderId);
+                    fetch(cancelUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showToast('Order cancelled successfully', 'success');
+                            setTimeout(() => location.reload(), 1500);
+                        } else {
+                            showToast(data.message || 'Failed to cancel order', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showToast('Network error. Please try again.', 'error');
+                    });
+                }
+            });
         }
 
         function showQRCode(orderId) {
@@ -614,7 +598,8 @@
         }
 
         function reorder(orderId) {
-            fetch("{{ url('/customer/orders') }}/" + orderId + "/reorder", {
+            var reorderUrl = "{{ route('myorder.reorder', '__ID__') }}".replace('__ID__', orderId);
+            fetch(reorderUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -655,9 +640,9 @@
                     if (tabValue === activeId) {
                         btn.classList.add('tab-active');
                         btn.classList.remove('text-gray-500', 'border-transparent');
-                        btn.classList.add('text-blue-600', 'border-blue-600');
+                        btn.classList.add('text-black', 'border-black');
                     } else {
-                        btn.classList.remove('text-blue-600', 'border-blue-600', 'tab-active');
+                        btn.classList.remove('text-black', 'border-black', 'tab-active');
                         btn.classList.add('text-gray-500', 'border-transparent');
                     }
                 });
@@ -686,7 +671,9 @@
             setActiveTab('pending');
         })();
     </script>
+@endpush
 
+@push('styles')
     <style>
         @keyframes fadeIn {
             from {
@@ -716,7 +703,7 @@
             left: 0;
             width: 100%;
             height: 2px;
-            background-color: #2563eb;
+            background-color: #000;
             border-radius: 4px;
         }
         @media (max-width: 640px) {
@@ -733,4 +720,4 @@
             cursor: pointer;
         }
     </style>
-@endsection
+@endpush

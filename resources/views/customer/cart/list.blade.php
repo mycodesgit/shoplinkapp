@@ -1,15 +1,12 @@
 @extends('customer.layouts.app')
 
+@section('title', 'Shoplink | Cart')
+
 @section('content')
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 md:pb-10 page-fade">
         <div class="mb-6">
             <h1 class="text-xl md:text-2xl font-bold text-gray-900">Shopping Cart</h1>
             <p class="text-sm text-gray-500 mt-1">Select items to checkout</p>
-        </div>
-
-        <div id="toast" class="fixed top-20 md:top-6 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-5 py-2.5 rounded-full shadow-lg z-50 transition-all duration-300 opacity-0 pointer-events-none text-sm whitespace-nowrap">
-            <i class="fas" id="toastIcon"></i>
-            <span id="toastMessage"></span>
         </div>
 
         @if($cartItems->isEmpty())
@@ -207,7 +204,7 @@
                             </div>
                             <div class="flex justify-between text-gray-600">
                                 <span>Shipping</span>
-                                <span class="text-green-600">Free</span>
+                                <span class="font-medium text-gray-900">Free</span>
                             </div>
                             <div class="flex justify-between text-gray-600 border-b border-gray-200 pb-3">
                                 <span>Tax (12% VAT)</span>
@@ -235,23 +232,12 @@
             </div>
         @endif
     </main>
+@endsection
 
+@push('scripts')
     <script>
         function showToast(message, type = 'success') {
-            const toast = document.getElementById('toast');
-            const toastIcon = document.getElementById('toastIcon');
-            const toastMessage = document.getElementById('toastMessage');
-            if (!toast) return;
-            
-            toastIcon.className = type === 'success' ? 'fas fa-check-circle text-green-400 mr-2' : 
-                                 (type === 'error' ? 'fas fa-exclamation-circle text-red-400 mr-2' : 'fas fa-info-circle text-blue-400 mr-2');
-            toastMessage.innerText = message;
-            toast.classList.remove('opacity-0', 'pointer-events-none');
-            toast.classList.add('opacity-100');
-            setTimeout(() => {
-                toast.classList.remove('opacity-100');
-                toast.classList.add('opacity-0', 'pointer-events-none');
-            }, 3000);
+            window.ShopLink.showToast(message, type);
         }
         
         // Update the order summary based on selected checkboxes
@@ -436,10 +422,9 @@
                         }
                         
                         // Update cart count badges
-                        const cartCount = document.getElementById('cartCount');
-                        const mobileBadge = document.getElementById('mobileCartBadge');
-                        if (cartCount) cartCount.innerText = data.cart_count;
-                        if (mobileBadge) mobileBadge.innerText = data.cart_count;
+                        if (window.ShopLink && window.ShopLink.setCartCount) {
+                            window.ShopLink.setCartCount(data.cart_count);
+                        }
                         
                         showToast('Item removed from cart', 'success');
                         
@@ -581,10 +566,12 @@
             updateOrderSummary();
         });
     </script>
+@endpush
 
+@push('styles')
     <style>
         button:disabled { opacity: 0.6; cursor: not-allowed; }
         .cart-dec, .cart-inc, .cart-decdesktop, .cart-incdesktop { cursor: pointer; transition: transform 0.1s; }
         .cart-dec:active, .cart-inc:active, .cart-decdesktop:active, .cart-incdesktop:active { transform: scale(0.95); }
     </style>
-@endsection
+@endpush
